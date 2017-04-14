@@ -71,7 +71,7 @@ void Para_ResetToFactorySetup(void)
  float pid_att_in[3]={0.75,0.2,2.2};
  
  float pid_att_out_yaw[3]={0.8,0.05,0.3};
- float pid_att_in_yaw[3]={1.16,0.1,1.2};
+ float pid_att_in_yaw[3]={1.2,0.1,1.2};
   /* PID 默认值 */
 	pid_setup.groups.ctrl1.pitch.kp = pid_att_in[0];//0.6;
 	pid_setup.groups.ctrl1.roll.kp  = pid_setup.groups.ctrl1.pitch.kp;	

@@ -185,7 +185,7 @@ void Positon_control(float T)//     光流定点
 		nav_acc_pid.kp=0.1;
 		nav_acc_pid.ki=0.00;
 		nav_acc_pid.kd=0.0;	
-		nav_acc_pid.dead=0.025*1000;
+		nav_acc_pid.dead=0.015*1000;
 		nav_acc_pid.flt_nav_kd=15;
 	}
 	static u8 pos_reset_state[2];
@@ -224,6 +224,11 @@ void Positon_control(float T)//     光流定点
 		reset_nav_pos(Y); reset_nav_pos(X);
 	  nav_pos_ctrl[X].err_i=nav_pos_ctrl[Y].err_i=nav_acc_ctrl[X].err_i=nav_acc_ctrl[Y].err_i=nav_spd_ctrl[X].err_i=nav_spd_ctrl[Y].err_i=0;
 	}
+	static u8 mode_flow_hold_position_reg;
+	if(mode_flow_hold_position_reg!=mode.flow_hold_position)
+	{reset_nav_pos(Y); reset_nav_pos(X);}
+	mode_flow_hold_position_reg=mode.flow_hold_position;
+	
 	if(mode.flow_f_use_ukfm==1||mode.flow_f_use_ukfm==2)
 		nav_pos_ctrl[X].mode=2;//golable mode
 	else if(mode.flow_f_use_ukfm==0)
@@ -296,8 +301,8 @@ head  |    1 PIT y-   90d in marker
 	
 	for (i=0;i<2;i++){ 
 		nav_pos_ctrl[i].now=pos[i];
-	  POS_CONTROL_SPD_ESO(&eso_pos_spd[i],nav_pos_ctrl[i].exp*1000,nav_pos_ctrl[i].now*1000,eso_pos_spd[i].u,out_timer_nav,3000,nav_pos_pid.kp,nav_pos_pid.dead*1000);//速度环自抗扰控制	
-		nav_pos_ctrl[i].err = ( nav_pos_pid.kp*LIMIT(my_deathzoom1(nav_pos_ctrl[i].exp - nav_pos_ctrl[i].now,nav_pos_pid.dead),-3,3)*1000 );
+	  POS_CONTROL_SPD_ESO(&eso_pos_spd[i],nav_pos_ctrl[i].exp*1000,nav_pos_ctrl[i].now*1000,eso_pos_spd[i].u,out_timer_nav,1.5*1000,nav_pos_pid.kp,nav_pos_pid.dead*1000);//速度环自抗扰控制	
+		nav_pos_ctrl[i].err = ( nav_pos_pid.kp*LIMIT(my_deathzoom1(nav_pos_ctrl[i].exp - nav_pos_ctrl[i].now,nav_pos_pid.dead),-1.5,1.5)*1000 );
     if(eso_pos_spd[i].b0==0&&nav_pos_pid.ki>0){
 		nav_pos_ctrl[i].err_i += nav_pos_pid.ki *nav_pos_ctrl[i].err *out_timer_nav;
 		nav_pos_ctrl[i].err_i = LIMIT(nav_pos_ctrl[i].err_i,-Thr_Weight *NAV_POS_INT,Thr_Weight *NAV_POS_INT);
@@ -310,7 +315,7 @@ if(eso_pos_spd[i].b0==0)
 else
 	  nav_pos_ctrl[i].pid_out = nav_pos_ctrl[i].err_d +eso_pos_spd[i].u;
 
-		nav_pos_ctrl[i].pid_out = LIMIT(nav_pos_ctrl[i].pid_out,-3*1000,3*1000);//m/s
+		nav_pos_ctrl[i].pid_out = LIMIT(nav_pos_ctrl[i].pid_out,-1.5*1000,1.5*1000);//m/s
 		nav_pos_ctrl[i].err_old = nav_pos_ctrl[i].err;
 		}
 	}
@@ -335,8 +340,9 @@ else
 	nav_spd_ctrl[X].exp=nav_pos_ctrl[X].pid_out;	
 	}		
 	
-  
-	 
+  if(mode.flow_hold_position!=2)
+	 nav_spd_ctrl[Y].exp=nav_spd_ctrl[X].exp=0;
+	
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;

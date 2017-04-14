@@ -19,9 +19,6 @@
 #define F_INNER 2
 #define H_INNER 2
 
-
-
-
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x0101
 //================系统===================

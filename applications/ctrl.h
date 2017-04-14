@@ -43,7 +43,7 @@ void CTRL_2(float);
 void CTRL_1(float);
 void Ctrl_Para_Init(void);
 void Thr_Ctrl(float);
-void All_Out(float x,float y,float z);
+void All_Out(float x,float y,float z,float T);
 
 extern u8 Thr_Low,force_Thr_low;
 extern float Thr_Weight;

@@ -296,7 +296,7 @@ if(eso_att_inner_c[PITr].b0==0){
 		#endif
   #endif		
 	}
-	All_Out(ctrl_1.out.x,ctrl_1.out.y,ctrl_1.out.z);
+	All_Out(ctrl_1.out.x,ctrl_1.out.y,ctrl_1.out.z,T);
 
 
 	ctrl_1.err_old.x = ctrl_1.err.x;
@@ -321,7 +321,7 @@ void Thr_Ctrl(float T)
 	
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
-	if((fabs(Pit_fc)>60||fabs(Rol_fc)>60)&&fly_ready&&mode.att_pid_tune==0)
+	if((fabs(Pit_fc)>1.5*MAX_CTRL_ANGLE||fabs(Rol_fc)>1.5*MAX_CTRL_ANGLE)&&fly_ready&&mode.att_pid_tune==0)
 		force_Thr_low=1;
 //protect flag init	
 //	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)
@@ -375,7 +375,7 @@ float motor[MAXMOTORS];
 float posture_value[MAXMOTORS];
 float curve[MAXMOTORS];
 s16 motor_out[MAXMOTORS];
-void All_Out(float out_roll,float out_pitch,float out_yaw)
+void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 {
 
 	u8 i;
@@ -455,6 +455,29 @@ void All_Out(float out_roll,float out_pitch,float out_yaw)
 			motor[i] = 0;
 		}
 	}
+	static u8 state;
+	static u16 cnt;
+	switch(state)
+	{
+		case 0:
+			  if(fly_ready)
+				{state=1;cnt=0;}
+			break;
+	  case 1:
+				for(i=0;i<MAXMOTORS;i++)
+				motor[i] =(10 *READY_SPEED);
+		    if(!fly_ready)
+					state=0;
+				if(cnt++>2.5/LIMIT(T,0.001,1))
+					state=2;
+			break;
+		case 2:
+			  if(!fly_ready)
+					state=0;
+		break;
+	}
+	
+	
 	/* xxx */
 	for(i=0;i<MAXMOTORS;i++)
 	{
