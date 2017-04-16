@@ -149,8 +149,10 @@ u8 pos_kf_state[3];
 		temp_pos[LAT]=(float)(int16_t)((*(data_buf+15)<<8)|*(data_buf+16))/100.;//m  lat->1 Y
 		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+17)<<8)|*(data_buf+18))/1000.;//m
 		float temp=(float)(int16_t)((*(data_buf+19)<<8)|*(data_buf+20))/1000.;//m
+		#if !SONAR_USE_FC
 		if(temp<4.5)
 	  m100.H_G=ALT_POS_SONAR2 = temp;
+		#endif
 		ALT_VEL_BMP=(float)(int16_t)((*(data_buf+21)<<8)|*(data_buf+22))/1000.;//m
 		ALT_POS_BMP=(float)(int32_t)((*(data_buf+23)<<24)|(*(data_buf+24)<<16)|(*(data_buf+25)<<8)|*(data_buf+26))/1000.;//m
 		m100.H_Spd=ALT_VEL_BMP_EKF=(float)(int16_t)((*(data_buf+27)<<8)|*(data_buf+28))/1000.;//m
@@ -239,7 +241,7 @@ u8 pos_kf_state[3];
 		ak8975.Mag_Val.y=(int16_t)(*(data_buf+18)<<8)|*(data_buf+19);
 		ak8975.Mag_Val.z=(int16_t)(*(data_buf+20)<<8)|*(data_buf+21);
 		int temp=(int16_t)(*(data_buf+22)<<8)|*(data_buf+23);
-		if(temp<3200)
+		if(temp<5000)
 	  ultra_distance = temp;
 	  baro_matlab_data[0]=baroAlt=(int32_t)((*(data_buf+24)<<24)|(*(data_buf+25)<<16)|(*(data_buf+26)<<8)|*(data_buf+27));
 		
@@ -769,7 +771,7 @@ void Uart5_Init(u32 br_num)//-----odroid
 //	}
 
 }
-float mark_map[10][4];
+float mark_map[10][5];//x y z yaw id
 u16 PWM_DJI[4]={0};
 void Data_Receive_Anl5(u8 *data_buf,u8 num)
 {
@@ -836,24 +838,42 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	circle.yaw=To_180_degrees((int16_t)((*(data_buf+15)<<8)|*(data_buf+16))-90);	
 	circle.spdx=(int16_t)((*(data_buf+17)<<8)|*(data_buf+18));
 	circle.spdy=(int16_t)((*(data_buf+19)<<8)|*(data_buf+20));
+	//map	
 	mark_map[0][0]=(int16_t)((*(data_buf+21)<<8)|*(data_buf+22));
 	mark_map[0][1]=(int16_t)((*(data_buf+23)<<8)|*(data_buf+24));
 	mark_map[0][2]=(int16_t)((*(data_buf+25)<<8)|*(data_buf+26));
-	mark_map[1][0]=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));
-	mark_map[1][1]=(int16_t)((*(data_buf+29)<<8)|*(data_buf+30));
-	mark_map[1][2]=(int16_t)((*(data_buf+31)<<8)|*(data_buf+32));
-	mark_map[2][0]=(int16_t)((*(data_buf+33)<<8)|*(data_buf+34));
-	mark_map[2][1]=(int16_t)((*(data_buf+35)<<8)|*(data_buf+36));
-	mark_map[2][2]=(int16_t)((*(data_buf+37)<<8)|*(data_buf+38));
-	mark_map[3][0]=(int16_t)((*(data_buf+39)<<8)|*(data_buf+40));
-	mark_map[3][1]=(int16_t)((*(data_buf+41)<<8)|*(data_buf+42));
-	mark_map[3][2]=(int16_t)((*(data_buf+43)<<8)|*(data_buf+44));
-	
-	mark_map[0][3]=*(data_buf+45);
-	mark_map[1][3]=*(data_buf+46);
-	mark_map[2][3]=*(data_buf+47);
-	mark_map[3][3]=*(data_buf+48);
+	mark_map[0][3]=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));
+	mark_map[0][4]=*(data_buf+29);
+	mark_map[1][0]=(int16_t)((*(data_buf+30)<<8)|*(data_buf+31));
+	mark_map[1][1]=(int16_t)((*(data_buf+32)<<8)|*(data_buf+33));
+	mark_map[1][2]=(int16_t)((*(data_buf+34)<<8)|*(data_buf+35));
+	mark_map[1][3]=(int16_t)((*(data_buf+36)<<8)|*(data_buf+37));
+	mark_map[1][4]=*(data_buf+38);
 	}	
+	else if(*(data_buf+2)==0x22)//QR MAP2
+	{
+	mark_map[2][0]=(int16_t)((*(data_buf+4)<<8)|*(data_buf+5));
+	mark_map[2][1]=(int16_t)((*(data_buf+6)<<8)|*(data_buf+7));
+	mark_map[2][2]=(int16_t)((*(data_buf+8)<<8)|*(data_buf+9));
+	mark_map[2][3]=(int16_t)((*(data_buf+10)<<8)|*(data_buf+11));
+	mark_map[2][4]=*(data_buf+12);
+	mark_map[3][0]=(int16_t)((*(data_buf+13)<<8)|*(data_buf+14));
+	mark_map[3][1]=(int16_t)((*(data_buf+15)<<8)|*(data_buf+16));
+	mark_map[3][2]=(int16_t)((*(data_buf+17)<<8)|*(data_buf+18));
+	mark_map[3][3]=(int16_t)((*(data_buf+19)<<8)|*(data_buf+20));
+	mark_map[3][4]=*(data_buf+21);
+	mark_map[4][0]=(int16_t)((*(data_buf+22)<<8)|*(data_buf+23));
+	mark_map[4][1]=(int16_t)((*(data_buf+24)<<8)|*(data_buf+25));
+	mark_map[4][2]=(int16_t)((*(data_buf+26)<<8)|*(data_buf+27));
+	mark_map[4][3]=(int16_t)((*(data_buf+28)<<8)|*(data_buf+29));
+	mark_map[4][4]=*(data_buf+30);	
+	mark_map[5][0]=(int16_t)((*(data_buf+31)<<8)|*(data_buf+32));
+	mark_map[5][1]=(int16_t)((*(data_buf+33)<<8)|*(data_buf+34));
+	mark_map[5][2]=(int16_t)((*(data_buf+35)<<8)|*(data_buf+36));
+	mark_map[5][3]=(int16_t)((*(data_buf+37)<<8)|*(data_buf+38));
+	mark_map[5][4]=*(data_buf+39);
+	}
+		
 }
 u8 TxBuffer5[256];
 u8 TxCounter5=0;
@@ -940,6 +960,12 @@ void Uart5_Send(unsigned char *DataToSend ,u8 data_num)
 while(USART_GetFlagStatus(UART5, USART_FLAG_TXE) == RESET);
 USART_SendData(UART5, data_num); ;//USART1, ch); 
 
+}
+
+void Uart3_Send(u8 data_num)
+{
+while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+USART_SendData(USART3, data_num); ;//USART1, ch); 
 }
 
 
@@ -2070,7 +2096,7 @@ USART_SendData(USART1, DataToSend);
 
 }
 
-void Usart3_Init(u32 br_num)//-------PXY
+void Usart3_Init(u32 br_num)//-------sonar
 {
 	USART_InitTypeDef USART_InitStructure;
 	USART_ClockInitTypeDef USART_ClockInitStruct;
@@ -2235,7 +2261,7 @@ void USART3_IRQHandler(void)
 		USART_ClearITPendingBit(USART3,USART_IT_RXNE);//清除中断标志
 
 		com_data = USART3->DR;
-
+    Ultra_Get(com_data);
 				if(RxState3==0&&com_data==0xAA)
 		{
 			RxState3=1;
@@ -2751,6 +2777,7 @@ void data_per_uart3(void)
 
 u8 SendBuff4[SEND_BUF_SIZE4];	//发送数据缓冲区
 u16 nrf_uart_cnt;
+int sd_save[25*3];
 void data_per_uart4(u8 sel)
 {
 	u8 i;	u8 sum = 0;
@@ -3128,10 +3155,144 @@ switch(sel){
 	sum += SendBuff4[i];
 	SendBuff4[nrf_uart_cnt++] = sum;
 	break;
+	case SEND_SD_SAVE1://<--------------------------------sd general save 
+	cnt_reg=nrf_uart_cnt;
+	SendBuff4[nrf_uart_cnt++]=0xAA;
+	SendBuff4[nrf_uart_cnt++]=0xAF;
+	SendBuff4[nrf_uart_cnt++]=0x81;//功能字
+	SendBuff4[nrf_uart_cnt++]=0;//数据量
+	for(i=0;i<20;i++){
+	_temp=sd_save[i];//id
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	}
+
+  SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
+	for( i=cnt_reg;i<nrf_uart_cnt;i++)
+	sum += SendBuff4[i];
+	SendBuff4[nrf_uart_cnt++] = sum;	
+	break;
+  case SEND_SD_SAVE2:
+	cnt_reg=nrf_uart_cnt;
+	SendBuff4[nrf_uart_cnt++]=0xAA;
+	SendBuff4[nrf_uart_cnt++]=0xAF;
+	SendBuff4[nrf_uart_cnt++]=0x82;//功能字
+	SendBuff4[nrf_uart_cnt++]=0;//数据量
+	for(i=20;i<20*2;i++){
+	_temp=sd_save[i];//id
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	}
+
+  SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
+	for( i=cnt_reg;i<nrf_uart_cnt;i++)
+	sum += SendBuff4[i];
+	SendBuff4[nrf_uart_cnt++] = sum;	
+	break;
+	case SEND_SD_SAVE3:
+	cnt_reg=nrf_uart_cnt;
+	SendBuff4[nrf_uart_cnt++]=0xAA;
+	SendBuff4[nrf_uart_cnt++]=0xAF;
+	SendBuff4[nrf_uart_cnt++]=0x83;//功能字
+	SendBuff4[nrf_uart_cnt++]=0;//数据量
+
+	for(i=20*2;i<20*3;i++){
+	_temp=sd_save[i];//id
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	}
+	
+  SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
+	for( i=cnt_reg;i<nrf_uart_cnt;i++)
+	sum += SendBuff4[i];
+	SendBuff4[nrf_uart_cnt++] = sum;	
+	break;
 	
 	default:break;
 }
 }
+u8 sd_pub_sel=0;
+void sd_publish(void)
+{u8 cnt;
+	switch(sd_pub_sel){
+	case 0:	
+	//sd 1	
+	sd_save[cnt++]=mark_map[0][0];
+	sd_save[cnt++]=mark_map[0][1];
+	sd_save[cnt++]=mark_map[0][2];	
+	sd_save[cnt++]=mark_map[0][3];
+	sd_save[cnt++]=mark_map[0][4];
+
+	sd_save[cnt++]=mark_map[1][0];
+	sd_save[cnt++]=mark_map[1][1];
+	sd_save[cnt++]=mark_map[1][2];	
+	sd_save[cnt++]=mark_map[1][3];
+	sd_save[cnt++]=mark_map[1][4];
+
+	sd_save[cnt++]=mark_map[2][0];
+	sd_save[cnt++]=mark_map[2][1];
+	sd_save[cnt++]=mark_map[2][2];	
+	sd_save[cnt++]=mark_map[2][3];
+	sd_save[cnt++]=mark_map[2][4];
+
+	sd_save[cnt++]=mark_map[3][0];
+	sd_save[cnt++]=mark_map[3][1];
+	sd_save[cnt++]=mark_map[3][2];	
+	sd_save[cnt++]=mark_map[3][3];
+	sd_save[cnt++]=mark_map[3][4];
+
+	//sd 2  20~39
+	sd_save[cnt++]=mark_map[4][0];
+	sd_save[cnt++]=mark_map[4][1];
+	sd_save[cnt++]=mark_map[4][2];	
+	sd_save[cnt++]=mark_map[4][3];
+	sd_save[cnt++]=mark_map[4][4];
+
+	sd_save[cnt++]=mark_map[5][0];
+	sd_save[cnt++]=mark_map[5][1];
+	sd_save[cnt++]=mark_map[5][2];	
+	sd_save[cnt++]=mark_map[5][3];
+	sd_save[cnt++]=mark_map[5][4];
+
+	sd_save[cnt++]=circle.check&&circle.connect;
+	sd_save[cnt++]=circle.x;
+	sd_save[cnt++]=circle.y;
+	sd_save[cnt++]=circle.z;
+	sd_save[cnt++]=circle.pit;
+
+	sd_save[cnt++]=circle.rol;
+	sd_save[cnt++]=circle.yaw;
+	sd_save[cnt++]=flow_matlab_data[0]*1000;	
+	sd_save[cnt++]=flow_matlab_data[1]*1000;
+	sd_save[cnt++]=ALT_POS_SONAR2*1000;
+	//sd 3 40~59
+	sd_save[cnt++]=flow_matlab_data[2]*1000;	
+	sd_save[cnt++]=flow_matlab_data[3]*1000;
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=mpu6050.Acc.x;
+	sd_save[cnt++]=mpu6050.Acc.y;
+
+	sd_save[cnt++]=mpu6050.Acc.z;
+	sd_save[cnt++]=mpu6050.Gyro.x;
+	sd_save[cnt++]=mpu6050.Gyro.y;
+	sd_save[cnt++]=mpu6050.Gyro.z;
+	sd_save[cnt++]=ak8975.Mag_Val.x;
+
+	sd_save[cnt++]=ak8975.Mag_Val.y;
+	sd_save[cnt++]=ak8975.Mag_Val.z;
+	sd_save[cnt++]=Pit_fc*100;
+	sd_save[cnt++]=Rol_fc*100;
+	sd_save[cnt++]=Yaw_fc*100;
+
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+	break;
+	}
+}	
+
 
 void clear_nrf_uart(void)
 {u16 i;

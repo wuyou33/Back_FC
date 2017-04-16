@@ -462,22 +462,20 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 		case 0:
 			  if(fly_ready)
 				{state=1;cnt=0;}
-			break;
+		break;
 	  case 1:
 				for(i=0;i<MAXMOTORS;i++)
-				motor[i] =(10 *READY_SPEED);
+				motor[i] = LIMIT(motor[i], (10 *READY_SPEED),(10*MAX_PWM) );
 		    if(!fly_ready)
 					state=0;
-				if(cnt++>2.5/LIMIT(T,0.001,1))
+				if(cnt++>2/LIMIT(T,0.001,1))
 					state=2;
-			break;
+		break;
 		case 2:
 			  if(!fly_ready)
 					state=0;
 		break;
-	}
-	
-	
+	}	
 	/* xxx */
 	for(i=0;i<MAXMOTORS;i++)
 	{

@@ -248,21 +248,22 @@ void Duty_10ms()
 //						  else	
 							clear_nrf_uart();		
 							nrf_uart_cnt=0;
+						  sd_publish();			
 							switch(sd_sel){
 							case 0:sd_sel=1;		
-							data_per_uart4(SEND_M100);	
+							data_per_uart4(SEND_SD_SAVE1);	
 							break;
 							case 1:sd_sel=2;
-							data_per_uart4(SEND_ALT);
+							data_per_uart4(SEND_SD_SAVE2);
 							break;
-							case 2:sd_sel=3;
-							data_per_uart4(SEND_FLOW);
+							case 2:sd_sel=0;
+							data_per_uart4(SEND_SD_SAVE3);
 							break;
-							case 3:sd_sel=4;
-							data_per_uart4(SEND_MARKER);
-							break;
-							case 4:sd_sel=0;
-							data_per_uart4(SEND_IMU);//data_per_uart4(SEND_DEBUG);
+//							case 3:sd_sel=4;
+//							data_per_uart4(SEND_MARKER);
+//							break;
+//							case 4:sd_sel=0;
+//							data_per_uart4(SEND_IMU);//data_per_uart4(SEND_DEBUG);
 							
 							}
 							USART_DMACmd(UART4,USART_DMAReq_Tx,ENABLE);    
@@ -389,8 +390,11 @@ void Duty_50ms()
 
 	mode_check(CH_filter,mode_value);
   if(!NAV_BOARD_CONNECT)			
-	ANO_AK8975_Read();//Ultra_Duty();
-	
+	ANO_AK8975_Read();
+	#if SONAR_USE_FC
+	if((!Thr_Low)||NS==2)
+	Ultra_Duty();
+	#endif
 	if(circle.lose_cnt++>4/0.05)
 	circle.connect=0;
 	if(marker.lose_cnt++>4/0.05)

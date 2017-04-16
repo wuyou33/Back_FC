@@ -117,7 +117,6 @@ float ESO_CONTROL(ESO *eso_in,float v,float y,float u,float T,float MAX,float er
 if(eso_in->not_use_px4)
 {
 e1=my_deathzoom1(v-eso_in->z[0],eso_in->eso_dead);
-//e2=-eso_in->z[1];
 e2=eso_in->v2-eso_in->z[1];	
 }	
 else if(mode.use_px4_err)
@@ -144,9 +143,6 @@ eso_in->u=eso_in->KP*e1;
 	}
 	if(fabs(e1)>eso_in->eso_dead)
   eso_in->disturb_u_reg=eso_in->disturb_u;
-//	else
-//	eso_in->disturb_u_reg*flt_eso+(1-flt_eso)*eso_in->disturb_u;	
-	
 	eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
 	}
 return  eso_in->u=LIMIT(eso_in->u+0*eso_in->integer,-MAX,MAX);
@@ -188,7 +184,6 @@ float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float M
 	//----------模型增益
   eso_in->b0=20;		
 	}
-	//if(SPID.YD!=0)eso_in->b0=SPID.YD;
 	#if ESO_PARA_USE_REAL_TIME
 	    eso_in->h0=T;
 			eso_in->beta0=1/(eso_in->h0+0.000001);
@@ -196,7 +191,6 @@ float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float M
 			eso_in->tao=eso_in->h0*2;
 	#endif
 	if(mode.att_pid_tune&&mode.en_pid_sb_set){
-	//eso_in->KD=0.001*SPID.ID*4;
 	eso_in->KP=ctrl_1.PID[PIDPITCH].kp ;
 	}
 	SMOOTH_IN_ESO(eso_in,v);
@@ -211,7 +205,7 @@ float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float M
 	return eso_in->u;
 }
 
-//姿态内环
+//缀较颥内环
 float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float MAX)
 { if(!eso_in->init)
 	{
@@ -246,7 +240,6 @@ float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float
 	//----------模型增益
   eso_in->b0=20;//40;		
 	}
-	//if(SPID.YD!=0)eso_in->b0=SPID.YD;
 	#if ESO_PARA_USE_REAL_TIME
 	    eso_in->h0=T;
 			eso_in->beta0=1/(eso_in->h0+0.000001);
@@ -254,7 +247,6 @@ float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float
 			eso_in->tao=eso_in->h0*2;
 	#endif
 	if(mode.att_pid_tune&&mode.en_pid_sb_set){
-	//eso_in->KD=0.001*SPID.ID*4;
 	eso_in->KP=0.001*SPID.IP;
 	}
 	SMOOTH_IN_ESO(eso_in,v);
@@ -273,13 +265,11 @@ float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float
 float ESO_CONTROL_HEIGH(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4,u8 for_high)
 {static float e0,e1,e2;
 e1=my_deathzoom1(v-eso_in->z[0],eso_in->eso_dead);
-//e1=v-eso_in->z[0];
 e2=-eso_in->z[1];
 eso_in->u=eso_in->KP*e1;
 	if(for_high){
 	if(eso_in->b0!=0&&!mode.height_safe){
 		eso_in->disturb_u=eso_in->z[1]/eso_in->b0;
-    //eso_in->u-=Thr_Weight *eso_in->disturb_u;
 		if(fabs(e1)>eso_in->eso_dead)
 		eso_in->disturb_u_reg=eso_in->disturb_u;
 		eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
@@ -287,7 +277,6 @@ eso_in->u=eso_in->KP*e1;
 	else{
 		if(eso_in->b0!=0){
 		eso_in->disturb_u=eso_in->z[1]/eso_in->b0;
-    //eso_in->u-=Thr_Weight *eso_in->disturb_u;
 		if(fabs(e1)>eso_in->eso_dead)
 		eso_in->disturb_u_reg=eso_in->disturb_u;
 		eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
@@ -343,7 +332,6 @@ float HIGH_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,flo
 	eso_in->r1=0.5/pow(eso_in->h0,2);
 	eso_in->h1=eso_in->h0*5;
 	//----------模型增益
-  //eso_in->b0=15;		
 	}   
 	 #if ESO_PARA_USE_REAL_TIME
 	    eso_in->h0=T;
@@ -352,14 +340,11 @@ float HIGH_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,flo
 	    eso_in->tao=eso_in->h0*2;	
 	 #endif
 	eso_in->KP=kp_in;
-	//if(SPID.YD!=0&&SPID.YD!=800&&(KEY[0]==1&&KEY[1]==1))eso_in->b0=SPID.YD;
   ESO_2N_H(eso_in,v, y, u, T, MAX,0,1);
 	ESO_CONTROL_HEIGH(eso_in,v, y, u, T, MAX,0,1);
 	return eso_in->u;
 }
- 
-
-
+//位置控制内环 
 float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,float dead)
 { if(!eso_in->init)
 	{
@@ -398,7 +383,6 @@ float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,
 	    eso_in->tao=eso_in->h0*2;	
 	 #endif
 	eso_in->KP=kp_in;eso_in->eso_dead=dead;
-	//if(SPID.YD!=0&&SPID.YD!=800&&(KEY[0]==0&&KEY[1]==0))eso_in->b0=SPID.YD;
   ESO_2N_H(eso_in,v, y, u, T, MAX,0,0);
 	ESO_CONTROL_HEIGH(eso_in,v, y, u, T, MAX,0,0);
 	return eso_in->u;
@@ -429,6 +413,5 @@ eso_in->b01=eso_in->b0;
 //eso_in->b01=LIMIT(eso_in->b01,10,80);
 //reg_e=eso_in->e;
 //reg_e1=reg_e;
-
 }
 

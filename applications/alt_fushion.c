@@ -91,6 +91,7 @@ float Alt_Offset_m1;
 int en_bias_fix=0;
 float flt_body_acc=0.5;
 float k_body_acc=0.3;
+float K_SONAR=3.6;
 float acc_est,acc_est_imu;
 void ukf_baro_task1(float T)// 气压计加速度计融合
 {
@@ -99,8 +100,27 @@ if(!init)
 {
 
 }	
-float posz;
+#if SONAR_USE_FC
+float posz_sonar=LIMIT(ultra.relative_height,0,5);
+		if( fabs(posz_sonar - ALT_POS_SONAR2) < 0.1 )
+		{			
+			ALT_POS_SONAR2 += ( 1 / ( 1 + 1 / ( K_SONAR*4.0f *3.14f *dt ) ) ) *(posz_sonar - ALT_POS_SONAR2) ;
+		}
+		else if( fabs(posz_sonar - ALT_POS_SONAR2) < 0.2 )
+		{
+			ALT_POS_SONAR2 += ( 1 / ( 1 + 1 / ( K_SONAR*2.2f *3.14f *dt ) ) ) *(posz_sonar- ALT_POS_SONAR2) ;
+		}
+		else if( fabs(posz_sonar - ALT_POS_SONAR2) < 0.4 )
+		{
+			ALT_POS_SONAR2 += ( 1 / ( 1 + 1 / ( K_SONAR*1.2f *3.14f *dt ) ) ) *(posz_sonar- ALT_POS_SONAR2) ;
+		}
+		else
+		{
+			ALT_POS_SONAR2 += ( 1 / ( 1 + 1 / ( K_SONAR*0.6f *3.14f *dt ) ) ) *(posz_sonar- ALT_POS_SONAR2) ;
+		}	
+#endif
 
+float posz;
 if(!mode.test3){
 if(NAV_BOARD_CONNECT||1)
 posz=(float)(baro.relative_height)/1000.;
@@ -108,7 +128,8 @@ else
 posz=(float)baroAlt/1000.;
 }
 else
-posz=LIMIT(ALT_POS_SONAR2,0,3.5);
+posz=LIMIT(ALT_POS_SONAR2,0,5);
+
 //float posz_flt=(float)baro_only_move_flt/1000.;
 static float temp_r;
 u8 i,j;
@@ -170,7 +191,7 @@ float acc_body_temp[3];
 		ero.baro_ekf=0;
 		}
 		
-	 if(ALT_POS_SONAR2<3.5)
+	 if(ALT_POS_SONAR2<4.5)
 		mode.test3=1;//mode.height_safe=1;//mode.en_sd_save=1;
 		else
 		mode.test3=0;//mode.height_safe=0;//	mode.en_sd_save=0;
@@ -220,7 +241,7 @@ float acc_body_temp[3];
 	
 	acc_est=(ALT_VEL_BMP_UKF_OLDX-spd_r)/T;
 	spd_r=ALT_VEL_BMP_UKF_OLDX;
-	if(fabs(acc_est)>5||fabs(ALT_VEL_BMP_UKF_OLDX)>8)	
+	if(fabs(acc_est)>5||fabs(ALT_VEL_BMP_UKF_OLDX)>4)	
   {ero.baro_ekf=1;ero.baro_ekf_cnt++;}
 	
 

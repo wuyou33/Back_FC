@@ -331,10 +331,16 @@ void Send_IMU_NAV(void);
 #define SEND_QR 6
 #define SEND_M100 7
 #define SEND_MARKER 8
+#define SEND_SD_SAVE1 9
+#define SEND_SD_SAVE2 10
+#define SEND_SD_SAVE3 11
+extern int sd_save[25*3];
+void sd_publish(void);
 extern float rate_gps_board;
 void Send_DJI(void);
 void Send_DJI2(void);
 void Send_DJI3(void);
+void Uart3_Send(u8 data_num);
 extern u16 DJI_RC[4],DJI_RC_TEMP[4],PWM_DJI[4];
 void Send_IMU_TO_GPS(void);
 #define SEND_BUF_SIZE1 64+32	//发送数据长度,最好等于sizeof(TEXT_TO_SEND)+2的整数倍.

@@ -74,7 +74,9 @@ u8 All_Init()
 	USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);     
 	MYDMA_Enable(DMA2_Stream7,SEND_BUF_SIZE1+2);     
 	#endif	
-	
+	#if SONAR_USE_FC
+	Ultrasonic_Init();
+	#endif
 	#if !FLASH_USE_STM32	
 	W25QXX_Init();		
 	while(W25QXX_ReadID()!=W25Q32)								//检测不到flash

@@ -664,11 +664,6 @@
               <FilePath>.\applications\height_ctrl1.c</FilePath>
             </File>
             <File>
-              <FileName>anotc_baro_ctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
-            </File>
-            <File>
               <FileName>eso.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\eso.c</FilePath>
@@ -679,9 +674,9 @@
           <GroupName>Communication</GroupName>
           <Files>
             <File>
-              <FileName>dma.c</FileName>
+              <FileName>usart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\dma.c</FilePath>
+              <FilePath>.\drivers\usart.c</FilePath>
             </File>
             <File>
               <FileName>rc.c</FileName>
@@ -689,9 +684,9 @@
               <FilePath>.\applications\rc.c</FilePath>
             </File>
             <File>
-              <FileName>usart.c</FileName>
+              <FileName>dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\usart.c</FilePath>
+              <FilePath>.\applications\dma.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -704,14 +699,19 @@
               <FilePath>.\drivers\mpu6050.c</FilePath>
             </File>
             <File>
-              <FileName>bmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\bmp.c</FilePath>
-            </File>
-            <File>
               <FileName>ak8975.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\ak8975.c</FilePath>
+            </File>
+            <File>
+              <FileName>anotc_baro_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\bmp.c</FilePath>
             </File>
             <File>
               <FileName>ultrasonic.c</FileName>

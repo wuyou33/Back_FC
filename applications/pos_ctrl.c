@@ -221,7 +221,7 @@ void Positon_control(float T)//     光流定点
 	
 	if((!fly_ready||Thr_Low)&&NS==2)
 	{ 
-		reset_nav_pos(Y); reset_nav_pos(X);
+		reset_nav_pos(Y);reset_nav_pos(X);
 	  nav_pos_ctrl[X].err_i=nav_pos_ctrl[Y].err_i=nav_acc_ctrl[X].err_i=nav_acc_ctrl[Y].err_i=nav_spd_ctrl[X].err_i=nav_spd_ctrl[Y].err_i=0;
 	}
 	static u8 mode_flow_hold_position_reg;
@@ -444,7 +444,6 @@ else
 	static u8 move[2]={0};
 	if(mode.sb_smooth)
 	{
-		
 			switch(move[Y])	{
 			case 0:
 			flt_use[Y]=nav_spd_pid.flt_nav;	
@@ -477,7 +476,6 @@ else
 			{move[X]=0;}
 		  break;
 		 }
-		
 	}
 	else
 	flt_use[Y]=flt_use[X]=nav_spd_pid.flt_nav;
