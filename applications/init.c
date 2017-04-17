@@ -79,7 +79,7 @@ u8 All_Init()
 	#endif
 	#if !FLASH_USE_STM32	
 	W25QXX_Init();		
-	while(W25QXX_ReadID()!=W25Q32)								//检测不到flash
+	while(W25QXX_ReadID()!=W25Q32&&W25QXX_ReadID()!=W25Q16)								//检测不到flash
 	Delay_ms(100);
 	#endif
 	READ_PARM();//读取参数

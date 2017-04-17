@@ -28,7 +28,7 @@ extern u8 mcuID[3];
 #define USE_BLE_FOR_APP 1
 #define TUNING_X 1   //0->y 1->x 
 #define TUNING_Z 1   //higher than tuning x or y
-#define SONAR_USE_FC 0
+#define SONAR_USE_FC 1
 #define USE_US100           //使用us100型号超声波 
 #define SONAR_HEIGHT 0.015
 #define MAXMOTORS 		(4)		//电机数量

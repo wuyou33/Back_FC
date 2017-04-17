@@ -8,6 +8,7 @@
 #include "height_ctrl.h"
 #include "include.h"
 #include "rc.h"
+#include "ultrasonic.h"
 //#include "kf_oldx.h"
 #include "baro_ekf_oldx.h"
 //sonar
@@ -101,6 +102,7 @@ if(!init)
 
 }	
 #if SONAR_USE_FC
+float dt=T;
 float posz_sonar=LIMIT(ultra.relative_height,0,5);
 		if( fabs(posz_sonar - ALT_POS_SONAR2) < 0.1 )
 		{			

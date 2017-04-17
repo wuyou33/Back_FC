@@ -392,7 +392,7 @@ void Duty_50ms()
   if(!NAV_BOARD_CONNECT)			
 	ANO_AK8975_Read();
 	#if SONAR_USE_FC
-	if((!Thr_Low)||NS==2)
+	if((!Thr_Low)||NS==0)
 	Ultra_Duty();
 	#endif
 	if(circle.lose_cnt++>4/0.05)

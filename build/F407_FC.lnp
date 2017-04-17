@@ -36,6 +36,7 @@
 ".\applications\kf_oldx.lib"
 ".\applications\baro_ekf_oldx.lib"
 ".\build\ctrl.o"
+".\build\bmp.o"
 ".\build\pos_ctrl.o"
 ".\build\height_ctrl1.o"
 ".\build\eso.o"
@@ -45,7 +46,6 @@
 ".\build\mpu6050.o"
 ".\build\ak8975.o"
 ".\build\anotc_baro_ctrl.o"
-".\build\bmp.o"
 ".\build\ultrasonic.o"
 --strict --scatter ".\build\F407_FC.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols

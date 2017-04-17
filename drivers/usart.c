@@ -3201,6 +3201,7 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	}
+	SendBuff4[nrf_uart_cnt++]=mode.en_sd_save;
 	
   SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 	for( i=cnt_reg;i<nrf_uart_cnt;i++)
@@ -3213,7 +3214,7 @@ switch(sel){
 }
 u8 sd_pub_sel=0;
 void sd_publish(void)
-{u8 cnt;
+{u8 cnt=0;
 	switch(sd_pub_sel){
 	case 0:	
 	//sd 1	
