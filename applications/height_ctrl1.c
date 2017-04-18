@@ -472,7 +472,7 @@ void Ultra_Ctrl1(float T,float thr)//Œª÷√ª∑PID
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,2);
 	#endif		
-	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
+	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*0)*1000;
 		
 	}	
   ultra_ctrl.exp=exp_height;

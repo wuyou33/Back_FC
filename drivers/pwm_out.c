@@ -12,7 +12,7 @@ u8 motor_cal=0;//电调校准标志位
 void 	MOTOR_SET(void)
 {
 #if USE_MINI_BOARD
-Delay_ms(4000);
+Delay_ms(1000);
  	TIM3->CCR1 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//5	
  	TIM3->CCR2 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//6	
   TIM3->CCR3 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//7	
@@ -21,7 +21,7 @@ Delay_ms(4000);
   TIM4->CCR2 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//8	
 	TIM4->CCR3 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//7	
   TIM4->CCR4 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//8	
-Delay_ms(4000);
+Delay_ms(2000);
 	TIM3->CCR1 = PWM_RADIO *( 0 ) + INIT_DUTY;				//5	
  	TIM3->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//6	
   TIM3->CCR3 = PWM_RADIO *( 0 ) + INIT_DUTY;				//7	
@@ -30,6 +30,7 @@ Delay_ms(4000);
   TIM4->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//8	
 	TIM4->CCR3 = PWM_RADIO *( 0 ) + INIT_DUTY;				//7	
   TIM4->CCR4 = PWM_RADIO *( 0 ) + INIT_DUTY;				//8	
+Delay_ms(100);	
 #else	
 Delay_ms(4000);
  	TIM1->CCR1 = PWM_RADIO *( 1000 ) + INIT_DUTY;				//5	

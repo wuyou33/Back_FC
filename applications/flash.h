@@ -14,7 +14,7 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 
 
-#define FLASH_USE_STM32 0
+#define FLASH_USE_STM32 1
 #define SIZE_FLASH_ROOM 80*2
 //FLASH起始地址
 #define STM32_FLASH_BASE 0x08000000 	//STM32 FLASH的起始地址

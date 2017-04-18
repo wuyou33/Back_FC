@@ -50,8 +50,9 @@ float inner_loop_time,inner_loop_time_yaw;
 float test[5];	
 float Rol_fc1,Pit_fc1,Yaw_fc1;
 void Duty_2ms()
-{
+{ static u8 init;
 	static u8 cnt;
+	static u16 cnt_init;
   float temp;
 	temp = Get_Cycle_T(GET_T_INNER)/1000000.0f; 						//获取内环准确的执行周期
 	if(temp<0.001||temp>0.003)
@@ -63,18 +64,19 @@ void Duty_2ms()
 	MPU6050_Read(); 															//读取mpu6轴传感器
 
 	MPU6050_Data_Prepare( inner_loop_time );			//mpu6轴传感器数据处理
-	if(cnt++>4){cnt=0;
+	//if(cnt++>0){cnt=0;
 	inner_loop_time_yaw = Get_Cycle_T(GET_T_IMU_YAW)/1000000.0f;	
 	/*IMU更新姿态。输入：半个执行周期，三轴陀螺仪数据（转换到度每秒），三轴加速度计数据（4096--1G）；输出：ROLPITYAW姿态角*/
 	//if(!NAV_BOARD_CONNECT)
+	if(cnt_init++>2/0.002){cnt_init=65530;
  	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
 	,&Rol_fc,&Pit_fc,&Yaw_fc1);
-  }
+  //}
 	if(NAV_BOARD_CONNECT)
 		Yaw_fc=Yaw;
 	else
 		Yaw_fc=Yaw_fc1;
-		
+  }	
 //	MadgwickAHRSupdate(inner_loop_time,my_deathzoom_21(mpu6050_fc.Gyro_deg.x,0.5)/57.3, my_deathzoom_21(mpu6050_fc.Gyro_deg.y,0.5)/57.3, 
 //	my_deathzoom_21(mpu6050_fc.Gyro_deg.z,0.5)/57.3,(float)mpu6050_fc.Acc.x/4096., (float)mpu6050_fc.Acc.y/4096., (float)mpu6050_fc.Acc.z/4096.,
 //	0,0,0,
@@ -392,7 +394,7 @@ void Duty_50ms()
   if(!NAV_BOARD_CONNECT)			
 	ANO_AK8975_Read();
 	#if SONAR_USE_FC
-	if((!Thr_Low)||NS==0)
+	//if(!Thr_Low||NS==0)
 	Ultra_Duty();
 	#endif
 	if(circle.lose_cnt++>4/0.05)
@@ -401,6 +403,8 @@ void Duty_50ms()
 	marker.connect=0;
 	circle.use_spd=circle.connect&&mode.flow_sel;
 	
+	static u8 led_cnt;
+	if(led_cnt++>1.5/0.05){led_cnt=0;LEDRGB();}
 }
 
 

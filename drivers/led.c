@@ -23,6 +23,9 @@ void LED_Init()
 	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_12;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 #endif
+	LEDRGB();
+	Delay_ms(1000);
+	LEDRGB();
 }
 
 void LEDRGB(void)

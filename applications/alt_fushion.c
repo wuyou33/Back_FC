@@ -176,7 +176,7 @@ float acc_body_temp[3];
 		//temp_r += ( 1 / ( 1 + 1 / ( 10 *3.14f *T ) ) ) *my_deathzoom( (temp_r - acc_temp1),0 );
     static float acc_bais;
 		//acc_bais-=X_ukf_barob[3];//(ALT_POS_BMP_UKF_OLDX-posz)*k_acc_bais;
-	  acc_body[2]=acc_bmp=LIMIT(my_deathzoom1(wz_acc-acc_off_baro*0,dead_accz)*acc_scale_bmp,-3.6,3.6);//+LIMIT(acc_bais,-1.5,1.5);
+	  acc_body[2]=acc_bmp=LIMIT(my_deathzoom1(wz_acc-acc_off_baro*1,dead_accz)*acc_scale_bmp,-3.6,3.6);//+LIMIT(acc_bais,-1.5,1.5);
     // rotate acc to world frame
    	#if !DEBUG_WITHOUT_SB
 		#if USE_RECIVER_MINE==1
@@ -193,7 +193,7 @@ float acc_body_temp[3];
 		ero.baro_ekf=0;
 		}
 		
-	 if(ALT_POS_SONAR2<4.5)
+	 if((ALT_POS_SONAR2<4.5&&height_ctrl_mode!=1)&&ultra.measure_ok )
 		mode.test3=1;//mode.height_safe=1;//mode.en_sd_save=1;
 		else
 		mode.test3=0;//mode.height_safe=0;//	mode.en_sd_save=0;
@@ -212,7 +212,7 @@ float acc_body_temp[3];
 		mode_reg=mode.test3;
    	#endif 
 	//#define BARO_UKF 
-	//#define BARO_KF	
+	#define BARO_KF	
 		
 	#if defined(BARO_UKF) //UKF
 

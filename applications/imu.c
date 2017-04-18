@@ -8,7 +8,7 @@
 #include "filter.h"
 #include "quar.h"
 #define Kp 0.3f                	// proportional gain governs rate of convergence to accelerometer/magnetometer
-#define Ki 0.0f                	// 0.001  integral gain governs rate of convergence of gyroscope biases
+#define Ki 0.001f                	// 0.001  integral gain governs rate of convergence of gyroscope biases
 
 #define IMU_INTEGRAL_LIM  ( 2.0f *ANGLE_TO_RADIAN )
 #define NORM_ACC_LPF_HZ 10  		//(Hz)
@@ -31,23 +31,33 @@ xyz_f_t mag_sim_3d,acc_3d_hg,acc_ng,acc_ng_offset;
 
 u8 acc_ng_cali;
 extern u8 fly_ready;
+float yaw_mag;
 void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, float az,float *rol,float *pit,float *yaw) 
-{		
+{	static u8 init;
 	float ref_err_lpf_hz;
 	static float yaw_correct;
 	float mag_norm_tmp;
 	static xyz_f_t mag_tmp;
-	static float yaw_mag;
 	
+	if(!init)
+	{
+	init=1;
+	ref.err_tmp.x=ref.err_tmp.y=ref.err_tmp.z=0;
+	ref.err.x=ref.err.y=ref.err.z=0;
+	ref.err_lpf.x=ref.err_lpf.y=ref.err_lpf.z=0;
+	ref.err_Int.x=ref.err_Int.y=ref.err_Int.z=0;
+	ref.g.x=ref.g.y=ref.g.z=0;
+	}
 	mag_norm_tmp = 20 *(6.28f *half_T);	
 	
-	mag_norm_xyz = my_sqrt(ak8975.Mag_Val.x * ak8975.Mag_Val.x + ak8975.Mag_Val.y * ak8975.Mag_Val.y + ak8975.Mag_Val.z * ak8975.Mag_Val.z);
-	
+	mag_norm_xyz = my_sqrt(ak8975_fc.Mag_Val.x * ak8975_fc.Mag_Val.x + ak8975_fc.Mag_Val.y * ak8975_fc.Mag_Val.y + ak8975_fc.Mag_Val.z * ak8975_fc.Mag_Val.z);
+	if(mag_norm_xyz==0)
+		mag_norm_xyz=0.0001;
 		if( mag_norm_xyz != 0)
 	{
-		mag_tmp.x += mag_norm_tmp *( (float)ak8975.Mag_Val.x /( mag_norm_xyz ) - mag_tmp.x);
-		mag_tmp.y += mag_norm_tmp *( (float)ak8975.Mag_Val.y /( mag_norm_xyz ) - mag_tmp.y);	
-		mag_tmp.z += mag_norm_tmp *( (float)ak8975.Mag_Val.z /( mag_norm_xyz ) - mag_tmp.z);	
+		mag_tmp.x += mag_norm_tmp *( (float)ak8975_fc.Mag_Val.x /( mag_norm_xyz ) - mag_tmp.x);
+		mag_tmp.y += mag_norm_tmp *( (float)ak8975_fc.Mag_Val.y /( mag_norm_xyz ) - mag_tmp.y);	
+		mag_tmp.z += mag_norm_tmp *( (float)ak8975_fc.Mag_Val.z /( mag_norm_xyz ) - mag_tmp.z);	
 	}
 
 	/*
@@ -60,7 +70,8 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	simple_3d_trans(&reference_v,&mag_tmp,&mag_sim_3d); 
 	
 	mag_norm = my_sqrt(mag_sim_3d.x * mag_sim_3d.x + mag_sim_3d.y *mag_sim_3d.y);
-	
+	if(mag_norm==0)
+		mag_norm=0.0001;
 	if( mag_sim_3d.x != 0 && mag_sim_3d.y != 0 && mag_sim_3d.z != 0 && mag_norm != 0)
 	{
 		yaw_mag = fast_atan2( ( mag_sim_3d.y/mag_norm ) , ( mag_sim_3d.x/mag_norm) ) *57.3f;
@@ -107,7 +118,8 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 
 	// 计算加速度向量的模
 	norm_acc = my_sqrt(ax*ax + ay*ay + az*az);   
-
+  if(norm_acc==0)
+		norm_acc=1;
 
 	if(ABS(ax)<4400 && ABS(ay)<4400 && ABS(az)<4400 )
 	{	
@@ -154,12 +166,12 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	{
 		if( fly_ready  )
 		{
-			yaw_correct = Kp *0.2f *To_180_degrees(yaw_mag - Yaw);
+			yaw_correct = Kp *0.2f *To_180_degrees(yaw_mag - Yaw_fc1);
 			//已经解锁，只需要低速纠正。
 		}
 		else
 		{
-			yaw_correct = Kp *1.5f *To_180_degrees(yaw_mag - Yaw);
+			yaw_correct = Kp *1.5f *To_180_degrees(yaw_mag - Yaw_fc1);
 			//没有解锁，视作开机时刻，快速纠正
 		}
 // 		if( yaw_correct>360 || yaw_correct < -360  )
@@ -188,6 +200,8 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 
 	/* 四元数规一化 normalise quaternion */
 	norm_q = my_sqrt(ref_q[0]*ref_q[0] + ref_q[1]*ref_q[1] + ref_q[2]*ref_q[2] + ref_q[3]*ref_q[3]);
+	if(norm_q==0)
+		norm_q=1;
 	ref_q_imd_down_fc[0]=ref_q[0] = ref_q[0] / norm_q;
 	ref_q_imd_down_fc[1]=ref_q[1] = ref_q[1] / norm_q;
 	ref_q_imd_down_fc[2]=ref_q[2] = ref_q[2] / norm_q;

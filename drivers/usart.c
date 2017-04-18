@@ -150,8 +150,8 @@ u8 pos_kf_state[3];
 		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+17)<<8)|*(data_buf+18))/1000.;//m
 		float temp=(float)(int16_t)((*(data_buf+19)<<8)|*(data_buf+20))/1000.;//m
 		#if !SONAR_USE_FC
-		if(temp<4.5)
-	  m100.H_G=ALT_POS_SONAR2 = temp;
+		if(temp<4.5){ultra.measure_ok=1;
+	  m100.H_G=ALT_POS_SONAR2 = temp;}
 		#endif
 		ALT_VEL_BMP=(float)(int16_t)((*(data_buf+21)<<8)|*(data_buf+22))/1000.;//m
 		ALT_POS_BMP=(float)(int32_t)((*(data_buf+23)<<24)|(*(data_buf+24)<<16)|(*(data_buf+25)<<8)|*(data_buf+26))/1000.;//m
