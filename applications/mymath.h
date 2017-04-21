@@ -1,13 +1,3 @@
-/***
-*mymath.h
-*
-*       
-*
-*Purpose:
-*       This file defined the functions and variables used by users
-*       to fast computation the result of trigonometric functions and
-*       the square root.
-****/
 #include "stm32f4xx.h"
 
 #ifndef __MYMATH_H__

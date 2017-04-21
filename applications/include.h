@@ -15,9 +15,6 @@
 #include "stm32f4xx_dma.h"
 #include "eso.h"
 #include "fly_mode.h"
-#define F_OUTTER 5
-#define F_INNER 2
-#define H_INNER 2
 
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x0101
@@ -35,7 +32,6 @@ extern u8 mcuID[3];
 #define GET_TIME_NUM 	(20)		//设置获取时间的数组数量
 #define CH_NUM 				(8) 	//接收机通道数量
 #define USE_TOE_IN_UNLOCK 1 // 0：默认解锁方式，1：外八解锁方式
-//=======================================
 /***************中断优先级******************/
 #define NVIC_GROUP NVIC_PriorityGroup_3		//中断分组选择
 #define NVIC_PWMIN_P			1		//接收机采集
@@ -90,6 +86,23 @@ extern u8 mcuID[3];
 #define EN_DMA_UART2 0  //FLOW
 #define EN_DMA_UART3 0  //GPS
 #define EN_DMA_UART4 1 //SD
+//================控制=====================
+#define MAX_VERTICAL_SPEED_UP  5000										//最大上升速度mm/s
+#define MAX_VERTICAL_SPEED_DW  3000										//最大下降速度mm/s
+
+#define MAX_CTRL_ANGLE			30.0f										//遥控能达到的最大角度
+#define ANGLE_TO_MAX_AS 		30.0f										//角度误差N时，期望角速度达到最大（可以通过调整CTRL_2的P值调整）
+#define CTRL_2_INT_LIMIT 		0.5f *MAX_CTRL_ANGLE		//外环积分幅度
+
+#define MAX_CTRL_ASPEED 	 	300.0f									//ROL,PIT允许的最大控制角速度
+#define MAX_CTRL_YAW_SPEED 	150.0f									//YAW允许的最大控制角速度
+#define CTRL_1_INT_LIMIT 		0.5f *MAX_CTRL_ASPEED		//内环积分幅度
+
+#define MAX_PWM				100			///%	最大PWM输出为100%油门
+#define MAX_THR       80 			///%	油门通道最大占比80%，留20%给控制量
+#define READY_SPEED   20			///%	解锁后电机转速20%油门
+//=========================================
+
 enum
 {
  A_X = 0,
@@ -114,26 +127,6 @@ enum
  AUX3 ,
  AUX4 ,
 };
-
-//================控制=====================
-#define MAX_VERTICAL_SPEED_UP  5000										//最大上升速度mm/s
-#define MAX_VERTICAL_SPEED_DW  3000										//最大下降速度mm/s
-
-#define MAX_CTRL_ANGLE			30.0f										//遥控能达到的最大角度
-#define ANGLE_TO_MAX_AS 		30.0f										//角度误差N时，期望角速度达到最大（可以通过调整CTRL_2的P值调整）
-#define CTRL_2_INT_LIMIT 		0.5f *MAX_CTRL_ANGLE		//外环积分幅度
-
-#define MAX_CTRL_ASPEED 	 	300.0f									//ROL,PIT允许的最大控制角速度
-#define MAX_CTRL_YAW_SPEED 	150.0f									//YAW允许的最大控制角速度
-#define CTRL_1_INT_LIMIT 		0.5f *MAX_CTRL_ASPEED		//内环积分幅度
-
-
-#define MAX_PWM				100			///%	最大PWM输出为100%油门
-#define MAX_THR       80 			///%	油门通道最大占比80%，留20%给控制量
-#define READY_SPEED   20			///%	解锁后电机转速20%油门
-//=========================================
-
-
 
 
 enum

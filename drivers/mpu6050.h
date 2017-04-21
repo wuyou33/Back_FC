@@ -11,8 +11,6 @@
 #define FILTER_NUM 10
 
 
-
-
 typedef struct 
 {
 	char Acc_CALIBRATE;

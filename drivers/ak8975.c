@@ -1,5 +1,3 @@
-
-
 #include "ak8975.h"
 #include "parameter.h"
 #include "mymath.h"

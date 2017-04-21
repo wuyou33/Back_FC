@@ -1,20 +1,7 @@
 #ifndef __STMFLASH_H__
 #define __STMFLASH_H__
 #include "stm32f4xx.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32F407开发板
-//STM32内部FLASH读写 驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//创建日期:2014/5/9
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2014-2024
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 
-
-#define FLASH_USE_STM32 1
+#define FLASH_USE_STM32 1 //使用STM32 模拟
 #define SIZE_FLASH_ROOM 80*2
 //FLASH起始地址
 #define STM32_FLASH_BASE 0x08000000 	//STM32 FLASH的起始地址

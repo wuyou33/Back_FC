@@ -68,7 +68,7 @@ void Para_ResetToFactorySetup(void)
 // 	sensor_setup.Offset.Acc_Temperature = 0;
 // 	sensor_setup.Offset.Gyro_Temperature = 0;
  float pid_att_out[3]={0.7,0.0,0.0};
- float pid_att_in[3]={0.7,0.2,2.2};
+ float pid_att_in[3]={0.66,0.2,2.2};
  
  float pid_att_out_yaw[3]={0.8,0.05,0.3};
  float pid_att_in_yaw[3]={1.2,0.1,1.2};

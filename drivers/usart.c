@@ -96,14 +96,8 @@ void Usart2_Init(u32 br_num)//--GOL-link
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 	//使能USART2
 	USART_Cmd(USART2, ENABLE); 
-//	//使能发送（进入移位）中断
-//	if(!(USART2->CR1 & USART_CR1_TXEIE))
-//	{
-//		USART_ITConfig(USART2, USART_IT_TXE, ENABLE); 
-//	}
-
-
 }
+
 RESULT color;
 float dt_flow_rx;
 u16 data_rate_gol_link;
@@ -505,8 +499,6 @@ void Send_IMU_TO_FLOW2(void)
 	_temp = (vs16)(mpu6050.Acc_I16.z);//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-
-
 	
 	_temp = (vs16)(mpu6050.Gyro_I16.x);//q_nav[0]*1000;//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
@@ -533,8 +525,7 @@ void Send_IMU_TO_FLOW2(void)
 	data_to_send[_cnt++]=BYTE0(_temp);	
 	_temp =  ak8975.Mag_CALIBRATED;
 	data_to_send[_cnt++]=BYTE0(_temp);	
-//	_temp =  mode.save_video;
-//	data_to_send[_cnt++]=BYTE0(_temp);	
+
 	data_to_send[3] = _cnt-4;
 
 	for( i=0;i<_cnt;i++)
@@ -573,8 +564,6 @@ void Send_IMU(void)
 	_temp = (vs16)(mpu6050.Gyro_deg.z*100);//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-
-
 	
 	_temp = (vs16)( mpu6050.Acc.x);//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
@@ -586,7 +575,6 @@ void Send_IMU(void)
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
-		
 	_temp = (vs16)LIMIT(ALT_POS_SONAR*1000,0,2500);//ultra_distance;(baro_to_ground);//
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
@@ -683,9 +671,6 @@ void Send_PID(void)
 	_temp=nav_pos_ctrl[X].mode;
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
-
-	
-	
 	data_to_send[3] = _cnt-4;
 
 	for( i=0;i<_cnt;i++)
@@ -695,7 +680,7 @@ void Send_PID(void)
 	Send_Data_GOL_LINK(data_to_send, _cnt);
 }  
 
-
+//send to imu board
 void GOL_LINK_TASK(void)
 {
 static u8 cnt[4];
@@ -709,7 +694,6 @@ if(cnt[2]++>20)
 Send_PID();
 }
 }
-
 
 void Uart5_Init(u32 br_num)//-----odroid
 {
@@ -758,18 +742,10 @@ void Uart5_Init(u32 br_num)//-----odroid
 	USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;  //发送、接收使能
 	USART_Init(UART5, &USART_InitStructure);
 	
-
-
 	//使能UART5接收中断
 	USART_ITConfig(UART5, USART_IT_RXNE, ENABLE);
 	//使能USART5
 	USART_Cmd(UART5, ENABLE); 
-//	//使能发送（进入移位）中断
-//	if(!(USART2->CR1 & USART_CR1_TXEIE))
-//	{
-//		USART_ITConfig(USART2, USART_IT_TXE, ENABLE); 
-//	}
-
 }
 float mark_map[10][5];//x y z yaw id
 u16 PWM_DJI[4]={0};
@@ -813,7 +789,7 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	}	
 	else if(*(data_buf+2)==0x2)//track
   {
-		circle.connect=1;
+	circle.connect=1;
 	circle.lose_cnt=0;
 	track.check=circle.check=(*(data_buf+4));///10.;
 	rc_value_temp=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6));
@@ -968,8 +944,6 @@ while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
 USART_SendData(USART3, data_num); ;//USART1, ch); 
 }
 
-
-
 void UsartSend_UP_LINK(uint8_t ch)
 {
 
@@ -989,7 +963,7 @@ u8 BLE_BAUD[20]={"AT+BAUD[G]"};//C 9600 F 57600 G 115200
 u8 BLE_RENEW[20]={"AT+RENEW"};
 u8 BLE_RATE[20] ={"AT+RATE[100]"};
 u8 SET_PIN[20] ={"AT+PIN6666"};
-void Usart1_Init(u32 br_num)//-------UPload_board1
+void Usart1_Init(u32 br_num)//-------UPload_board1  蓝牙上位机通讯
 {
 	USART_InitTypeDef USART_InitStructure;
 	USART_ClockInitTypeDef USART_ClockInitStruct;
@@ -1041,7 +1015,6 @@ void Usart1_Init(u32 br_num)//-------UPload_board1
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOA, &GPIO_InitStructure); 
 	#endif
-	
 
    //USART1 初始化设置
 	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
@@ -1055,7 +1028,6 @@ void Usart1_Init(u32 br_num)//-------UPload_board1
   USART_Cmd(USART1, ENABLE);  //使能串口1 
 	
 	USART_ClearFlag(USART1, USART_FLAG_TC);
-	
 
 	//使能USART2接收中断
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
@@ -1080,17 +1052,6 @@ GPIO_SetBits(GPIOA,GPIO_Pin_3);//透传模式
 Send_Data_UP_LINK(SET_PIN,20);
 GPIO_ResetBits(GPIOA,GPIO_Pin_3);//透传模式
 #endif
-//	   //USART1 初始化设置
-//	USART_InitStructure.USART_BaudRate =  9600;//波特率设置
-//	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-//	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-//	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-//	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-//	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-//  USART_Init(USART1, &USART_InitStructure); //初始化串口1
-	
-	
-	
 }
 
 int DEBUG[35];
@@ -1187,8 +1148,6 @@ void Send_Status(void)
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
 	
-	
-	
 	SendBuff1[3+st] = SendBuff1_cnt-st-4;
 	for( i=st;i<SendBuff1_cnt;i++)
 		sum += SendBuff1[i];
@@ -1272,9 +1231,7 @@ void Send_BAT(void)
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
 	
-	
 	SendBuff1[3+st] = SendBuff1_cnt-st-4;
-	
 
 	for( i=st;i<SendBuff1_cnt;i++)
 		sum += SendBuff1[i];
@@ -1473,9 +1430,6 @@ void Send_GPS_Ublox(void)
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp32);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp32);
 	
-	
-
-	
 	SendBuff1[3+st] = SendBuff1_cnt-st-4;
 
 	for( i=st;i<SendBuff1_cnt;i++)
@@ -1511,7 +1465,7 @@ void Send_DEBUG1(void)
 	
 //	Send_Data_APP(SendBuff1, _cnt);
 }
-
+//手机APP通讯
 void APP_LINK(void)
 { static u8 flag1=0;
 	static u8 cnt = 0;
@@ -1788,7 +1742,7 @@ void USART1_IRQHandler(void)
 //   OSIntExit(); 
 
 }
-
+//  NRF board 通讯
 
 void Data_Receive_Anl4(u8 *data_buf,u8 num)
 {
@@ -1845,11 +1799,6 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 		RX_CH[AUX4r]=Rc_Get.AUX4;
 		RX_CH[AUX3r]=Rc_Get.AUX3;
 		RX_CH[AUX2r]=Rc_Get.AUX2;
-//		ctrl_angle_offset.x =(float)(Rc_Get.AUX1-500)/1000.*MAX_FIX_ANGLE*2;
-//		ctrl_angle_offset.y =(float)(Rc_Get.AUX2-500)/1000.*MAX_FIX_ANGLE*2;
-
-//		if(fabs(ctrl_angle_offset.x )<0.2)  {ctrl_angle_offset.x =0;}
-//	 	if(fabs(ctrl_angle_offset.y )<0.2)  {ctrl_angle_offset.y =0;}
 		
 	  RX_CH[THRr]=	Rc_Get.THROTTLE-RX_CH_FIX[THRr]	;
 	  RX_CH[ROLr]=  my_deathzoom_rc(Rc_Get.ROLL-RX_CH_FIX[ROLr],100)	;
@@ -2050,9 +1999,6 @@ void Usart4_Init(u32 br_num)//-------SD_board
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
-
-	
-
    //USART1 初始化设置
 	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
@@ -2065,7 +2011,6 @@ void Usart4_Init(u32 br_num)//-------SD_board
   USART_Cmd(UART4, ENABLE);  //使能串口1 
 	
 	USART_ClearFlag(UART4, USART_FLAG_TC);
-	
 
 	//使能USART2接收中断
   USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
@@ -3506,8 +3451,4 @@ SendBuff4[i++]=ctemp;
 temp+=ctemp;
 
 SendBuff4[i++]=(temp%256);
-SendBuff4[i++]=(0xaa);
 }
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
-
-

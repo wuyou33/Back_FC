@@ -1,5 +1,3 @@
-
-
 #include "mpu6050.h"
 #include "mymath.h"
 #include "i2c_soft.h"

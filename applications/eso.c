@@ -255,7 +255,7 @@ float OLDX_ESO_2N_POS(ESO *eso_in,float v,float y,float u,float T,float MAX,u8 f
 	eso_in->z[0]+=eso_in->h0*(eso_in->z[1]-eso_in->beta0*e+eso_in->b0*eso_in->Thr_Weight *u);
 	eso_in->z[1]+=-eso_in->h0*eso_in->beta1*e;
 	eso_in->z[1]=LIMIT_ESO(eso_in->z[1],-MAX*eso_in->Thr_Weight*(eso_in->b0+1),MAX*eso_in->Thr_Weight*(eso_in->b0+1));
-//	if(for_high)
+//	if(eso_in->eso_for_z)
 //	eso_in->z[1]=0;	
 	if(eso_in->n==0)
 		eso_in->n=1;

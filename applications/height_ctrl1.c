@@ -54,15 +54,15 @@ void Ultra_PID_Init()
 {
 	HOLD_THR =HOLD_THR_PWM;//《--------------------修改悬停油门  根据不同飞行器动力和重量实验 
 //-------------------外环PID参数初始化
-	ultra_pid.kp = 0.88;//0.88;
-	ultra_pid.ki = 0.1;//0.05;		
-	ultra_pid.kd = 0.0;//1.2;
+	ultra_pid.kp = 0.88;
+	ultra_pid.ki = 0.1;
+	ultra_pid.kd = 0.0;
 //------------------安全模式 只有速度环
-  ultra_pid_safe.kp = 0;//0.45;//50.0;//1.8;//1.65;//1.5;
-	ultra_pid_safe.ki = 0.0;//1;//add
+  ultra_pid_safe.kp = 0;
+	ultra_pid_safe.ki = 0.0;
 	ultra_pid_safe.kd = 0.0;
 	//adrc
-	eso_pos[Zr].b0=0;
+	eso_pos[Zr].b0=15;
 	eso_pos[Zr].eso_dead=5;
 	eso_pos[Zr].eso_for_z=1;
 }
@@ -71,18 +71,18 @@ void Ultra_PID_Init()
 void WZ_Speed_PID_Init()
 {//use
 	  Ultra_PID_Init();
-	  wz_speed_pid.kp = 0.45;//0.6;//0.35;//1.25;//0.3;//0.25;//0.5;//0.3; 
-		wz_speed_pid.ki = 0.2;//225;//1.4;//0.08;//0.5; 
-		wz_speed_pid.kd = 1.68;//0.5;//8;//1.5;
+	  wz_speed_pid.kp = 0.45;
+		wz_speed_pid.ki = 0.2;
+		wz_speed_pid.kd = 1.68;
 	  wz_speed_pid.fp=0.2;
 	//------------------------------安全模式PID初始化
-		wz_speed_pid_safe.kp = 0.8;//120.4;//0.5;//0.3; 
-		wz_speed_pid_safe.ki = 0.2;//45.5; 
+		wz_speed_pid_safe.kp = 0.5;
+		wz_speed_pid_safe.ki = 0.2;
 		wz_speed_pid_safe.kd = 1.68; 
 	  wz_speed_pid_use.fp=0.2;
 	//adrc
 	  eso_pos_spd[Zr].b0=15;
-	  eso_pos_spd[Zr].eso_dead=8;	
+	  eso_pos_spd[Zr].eso_dead=2;	
 	  eso_pos_spd[Zr].eso_for_z=1;
 }
 
@@ -188,7 +188,8 @@ void Height_Ctrl1(float T,float thr)
 					
 						 int ultra_sp_tmp=my_deathzoom_21((hc_value.fusion_speed),0);
 						 ultra_speed=LIMIT(ultra_sp_tmp,-2.5*1000,2.5*1000);
-				     if(!hold_alt_flag||mode.en_hinf_height_spd||mode.height_safe||height_ctrl_mode==1)
+				     if(!hold_alt_flag||mode.en_hinf_height_spd||mode.height_safe||
+							 (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
@@ -345,6 +346,12 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else
 		hold_alt_flag=1;
 	
+	if(height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25))
+	#if EN_ATT_CAL_FC		
+	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
+	#else
+	exp_height=ALT_POS_BMP_EKF*1000;
+	#endif
 	
 	if(mode_change){mode_change=0;
 	if(height_ctrl_mode==1)
@@ -365,11 +372,12 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
   #endif
 	mode_safe_reg=mode.height_safe;
 	
+	
 	if(height_ctrl_mode==2&&!mode.height_safe&&ALT_POS_SONAR2*1000>SONAR_HEIGHT*1.5&&mode.h_is_fix){//超声波模式期望高度固定为1.2m
 	if(circle.connect)
-	exp_height=800;
+	exp_height=900;
 	else
-	exp_height=800;	
+	exp_height=900;	
   }
 	
 	if(height_ctrl_mode==1||mode.height_safe)
@@ -387,7 +395,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,2);
 	#endif		
-	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*0)*1000;
+	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
 		
 	}	
   ultra_ctrl.exp=exp_height;
@@ -395,7 +403,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp/2*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) ); 
 	else
 	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) );
 	

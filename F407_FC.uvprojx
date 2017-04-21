@@ -133,7 +133,7 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4100</DriverSelection>
+            <DriverSelection>4099</DriverSelection>
           </Flash1>
           <bUseTDR>0</bUseTDR>
           <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
@@ -484,24 +484,14 @@
           <GroupName>Drivers</GroupName>
           <Files>
             <File>
-              <FileName>iic_hml.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\iic_hml.c</FilePath>
-            </File>
-            <File>
-              <FileName>i2c_soft.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\drivers\i2c_soft.c</FilePath>
-            </File>
-            <File>
-              <FileName>time.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\drivers\time.c</FilePath>
-            </File>
-            <File>
               <FileName>pwm_out.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\pwm_out.c</FilePath>
+            </File>
+            <File>
+              <FileName>iic_hml.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\iic_hml.c</FilePath>
             </File>
             <File>
               <FileName>led.c</FileName>
@@ -509,9 +499,19 @@
               <FilePath>.\drivers\led.c</FilePath>
             </File>
             <File>
+              <FileName>i2c_soft.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\drivers\i2c_soft.c</FilePath>
+            </File>
+            <File>
               <FileName>flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\drivers\time.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -601,7 +601,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Math</GroupName>
+          <GroupName>Math&amp;Fushion</GroupName>
           <Files>
             <File>
               <FileName>imu.c</FileName>
@@ -709,14 +709,14 @@
               <FilePath>.\applications\bmp.c</FilePath>
             </File>
             <File>
-              <FileName>anotc_baro_ctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
-            </File>
-            <File>
               <FileName>ultrasonic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\ultrasonic.c</FilePath>
+            </File>
+            <File>
+              <FileName>anotc_baro_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
             </File>
           </Files>
         </Group>

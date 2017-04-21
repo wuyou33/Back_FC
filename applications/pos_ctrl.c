@@ -30,6 +30,7 @@ float temp;
   *reg=in;
 return LIMIT(temp,-max,max);
 }
+
 float out_back_step[3];
 float k_back_step=1;//1~2.5;
 void backstep_pos(float T,float mess,float exp_x,float exp_y)
@@ -60,6 +61,7 @@ float u2=mess*((1-pow(alfa[4],2))*q5+(alfa[4]+alfa[5])*q6+d_exp_z)/(fr);
 out_back_step[PITr]=u1*sin(Yaw_fc*0.0173)+u2*cos(Yaw_fc*0.0173);
 out_back_step[ROLr]=(-u1*cos(Yaw_fc*0.0173)+u2*sin(Yaw_fc*0.0173))/cos(Pit_fc*0.0173);
 }
+
 #define NAV_ANGLE_MAX 0.8*MAX_CTRL_ANGLE
 float nav[2];
 float GPS_angle[2];
@@ -144,7 +146,7 @@ switch(mode_in){
 
 }
 }
-
+u8 pos_exp_test=0;
 float yaw_qr_off;
 float out_timer_nav,in_timer_nav;
 float acc_temp[3];
@@ -170,10 +172,10 @@ void Positon_control(float T)//     光流定点
 		nav_pos_pid.kp=0.2;
 		nav_pos_pid.ki=0.05;
 		nav_pos_pid.kd=0.0;
-		nav_pos_pid.dead=0.008;
+		nav_pos_pid.dead=0.005;
 		//adrc
 		eso_pos[X].b0=eso_pos[Y].b0=4.5;
-		eso_pos[X].err_limit=eso_pos[Y].err_limit=1500;
+		eso_pos[X].err_limit=eso_pos[Y].err_limit=8000;
 		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
 		nav_spd_pid.f_kp=0.2;
@@ -181,19 +183,19 @@ void Positon_control(float T)//     光流定点
 		nav_spd_pid.ki=0.05;
 		nav_spd_pid.kd=0.3;
 		nav_spd_pid.flt_nav_kd=0.5;
-		nav_spd_pid.dead=0.005*1000;
+		nav_spd_pid.dead=0.01*1000;
 		nav_spd_pid.flt_nav=1;//决定刹车手感
 		//acc
 		nav_acc_pid.f_kp=0.2;
 		nav_acc_pid.kp=0.1;
 		nav_acc_pid.ki=0.00;
 		nav_acc_pid.kd=0.0;	
-		nav_acc_pid.dead=0.015*1000;
+		nav_acc_pid.dead=0.005*1000;
 		nav_acc_pid.flt_nav_kd=15;
 	}
 	static u8 pos_reset_state[2];
 	static u16 pos_reset_cnt[2];
-	if(NS==0||mode.rc_control_flow_pos_sel)
+	if(NS==0||mode.rc_control_flow_pos_sel||Thr_Low)
 	Nav_pos_set_test(mode.rc_control_flow_pos_sel,T);
 	else {
 	for(i=0;i<2;i++){
@@ -201,7 +203,7 @@ void Positon_control(float T)//     光流定点
 			{
 				case 0:
 				 if(fabs(CH_filter[i])>25)
-				 {pos_reset_state[i]=1;pos_reset_cnt[i]=0;}
+				 {pos_reset_state[i]=0;pos_reset_cnt[i]=0;}
 				break;
 				case 1:
 				 reset_nav_pos(i);
@@ -217,7 +219,7 @@ void Positon_control(float T)//     光流定点
 				break;
 			}	
   }
-	
+	if(!pos_exp_test){
 	if(ALT_POS_SONAR2*1000<SONAR_HEIGHT*1.5||!fly_ready||mode.flow_hold_position==0)
 	{reset_nav_pos(Y);reset_nav_pos(X);}
 	}
@@ -227,6 +229,7 @@ void Positon_control(float T)//     光流定点
 		reset_nav_pos(Y);reset_nav_pos(X);
 	  nav_pos_ctrl[X].err_i=nav_pos_ctrl[Y].err_i=nav_acc_ctrl[X].err_i=nav_acc_ctrl[Y].err_i=nav_spd_ctrl[X].err_i=nav_spd_ctrl[Y].err_i=0;
 	}
+ }
 	static u8 mode_flow_hold_position_reg;
 	if(mode_flow_hold_position_reg!=mode.flow_hold_position)
 	{reset_nav_pos(Y); reset_nav_pos(X);}
@@ -344,8 +347,8 @@ else
 	}		
 	
   if(mode.flow_hold_position!=2){
-	 nav_spd_ctrl[Y].exp*=0.5;
-	 nav_spd_ctrl[X].exp*=0.5;}
+	 nav_spd_ctrl[Y].exp*=0.15;
+	 nav_spd_ctrl[X].exp*=0.15;}
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;

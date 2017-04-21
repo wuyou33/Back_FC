@@ -23,10 +23,8 @@ u8 All_Init()
 	#if EN_ATT_CAL_FC
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
 	#endif
-	LED_Init();								//LED功能初始化
-	
-	Para_Init();							//参数初始化
-	
+	LED_Init();								//LED功能初始
+	Para_Init();							//参数初始
 	Delay_ms(100);						//延时
 	
 	#if EN_ATT_CAL_FC

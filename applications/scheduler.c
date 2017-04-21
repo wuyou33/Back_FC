@@ -19,8 +19,6 @@
 
 u16 Rc_Pwm_In[8];
 s16 loop_cnt;
-
-
 loop_t loop;
 
 void Loop_check()  //TIME INTTERRUPT
@@ -31,7 +29,6 @@ void Loop_check()  //TIME INTTERRUPT
 	loop.cnt_10ms++;
 	loop.cnt_20ms++;
 	loop.cnt_50ms++;
-
 	if( loop.check_flag == 1)
 	{
 		loop.err_flag ++;     //每累加一次，证明代码在预定周期内没有跑完。
@@ -44,6 +41,7 @@ void Loop_check()  //TIME INTTERRUPT
 
 void Duty_1ms()
 {
+//none spi mems sample for future
 }
 
 float inner_loop_time,inner_loop_time_yaw;
@@ -64,24 +62,18 @@ void Duty_2ms()
 	MPU6050_Read(); 															//读取mpu6轴传感器
 
 	MPU6050_Data_Prepare( inner_loop_time );			//mpu6轴传感器数据处理
-	//if(cnt++>0){cnt=0;
+
 	inner_loop_time_yaw = Get_Cycle_T(GET_T_IMU_YAW)/1000000.0f;	
 	/*IMU更新姿态。输入：半个执行周期，三轴陀螺仪数据（转换到度每秒），三轴加速度计数据（4096--1G）；输出：ROLPITYAW姿态角*/
-	//if(!NAV_BOARD_CONNECT)
 	if(cnt_init++>2/0.002){cnt_init=65530;
-	
+
  	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
 	,&Rol_fc,&Pit_fc,&Yaw_fc1);
-  //}
-	if(NAV_BOARD_CONNECT)
+	if(NAV_BOARD_CONNECT&&0)
 		Yaw_fc=Yaw;
 	else
 		Yaw_fc=Yaw_fc1;
   }	
-//	MadgwickAHRSupdate(inner_loop_time,my_deathzoom_21(mpu6050_fc.Gyro_deg.x,0.5)/57.3, my_deathzoom_21(mpu6050_fc.Gyro_deg.y,0.5)/57.3, 
-//	my_deathzoom_21(mpu6050_fc.Gyro_deg.z,0.5)/57.3,(float)mpu6050_fc.Acc.x/4096., (float)mpu6050_fc.Acc.y/4096., (float)mpu6050_fc.Acc.z/4096.,
-//	0,0,0,
-//	&Rol_fc,&Pit_fc,&Yaw_fc_q);//计算俯仰和横滚
 	#endif
 	CTRL_1( inner_loop_time ); 										//内环角速度控制。输入：执行周期，期望角速度，测量角速度，角度前馈；输出：电机PWM占空比。<函数未封装>
 	
@@ -109,7 +101,6 @@ void Duty_10ms()
 {
 	static u8 cnt_bmp;
 	static u8 cnt[4];					 		
-
 				//To  Odroid 图像模块
 				if(cnt[0]++>2){cnt[0]=0;
 						#if EN_DMA_UART3 
@@ -121,7 +112,7 @@ void Duty_10ms()
 							MYDMA_Enable(DMA1_Stream3,SEND_BUF_SIZE3);     //开始一次DMA传输！	
 								}	
 						#else
-								;//UsartSend_GPS(state_test);//Send_IMU_TO_GPS();	
+								;
 						#endif
 							}			
 				
@@ -247,8 +238,6 @@ void Duty_10ms()
 							USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送     
 							MYDMA_Enable(DMA2_Stream7,SEND_BUF_SIZE1+2);     //开始一次DMA传输！	  
 							}	
-			
-				
 						
 				//To  SD卡
 						static u8 sd_sel;
@@ -259,9 +248,6 @@ void Duty_10ms()
 								{ 
 							DMA_ClearFlag(DMA1_Stream4,DMA_FLAG_TCIF4);
 							
-//							if(!mode.en_sd_save)
-//							data_per_uart4(SEND_DEBUG);
-//						  else	
 							clear_nrf_uart();		
 							nrf_uart_cnt=0;
 								
@@ -278,16 +264,7 @@ void Duty_10ms()
 							data_per_uart4(SEND_FLOW);	
 							data_per_uart4(SEND_PID);	
 							data_per_uart4(SEND_QR);				
-							break;
-							case 2:sd_sel=0;
-							
-							break;
-//							case 3:sd_sel=4;
-//							data_per_uart4(SEND_MARKER);
-//							break;
-//							case 4:sd_sel=0;
-//							data_per_uart4(SEND_IMU);//data_per_uart4(SEND_DEBUG);
-							
+							break;				
 							}
 							USART_DMACmd(UART4,USART_DMAReq_Tx,ENABLE);    
 							MYDMA_Enable(DMA1_Stream4,nrf_uart_cnt+2);   
@@ -308,15 +285,14 @@ void Duty_20ms()
     
 	  baro_ctrl(baro_task_time,&hc_value);			
 		pos_time=baro_task_time;
-	  //pos_time =(float) Get_Cycle_T(GET_T_EKF)/1000000.;	
-
+		
 	  Positon_control(pos_time);
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
-		RX_CH_PWM[THRr]=	LIMIT(Rc_Get_PWM.THROTTLE-RX_CH_FIX_PWM[THRr]-3,1000,2000)	;
-		RX_CH_PWM[ROLr]=  my_deathzoom_rc(Rc_Get_PWM.ROLL-RX_CH_FIX_PWM[ROLr]-3,5)	;
-		RX_CH_PWM[PITr]=  my_deathzoom_rc(Rc_Get_PWM.PITCH-RX_CH_FIX_PWM[PITr]-3,5)	;
-		RX_CH_PWM[YAWr]=  my_deathzoom_rc(Rc_Get_PWM.YAW-RX_CH_FIX_PWM[YAWr]-3,5)	;
+		RX_CH_PWM[THRr]=	LIMIT(Rc_Get_PWM.THROTTLE-RX_CH_FIX_PWM[THRr],1000,2000)	;
+		RX_CH_PWM[ROLr]=  my_deathzoom_rc(Rc_Get_PWM.ROLL-RX_CH_FIX_PWM[ROLr],2)	;
+		RX_CH_PWM[PITr]=  my_deathzoom_rc(Rc_Get_PWM.PITCH-RX_CH_FIX_PWM[PITr],2)	;
+		RX_CH_PWM[YAWr]=  my_deathzoom_rc(Rc_Get_PWM.YAW-RX_CH_FIX_PWM[YAWr],2)	;
 
 		RX_CH_PWM[AUX3r]=Rc_Get_PWM.POS_MODE;
 		RX_CH_PWM[AUX4r]=Rc_Get_PWM.HEIGHT_MODE;
@@ -382,41 +358,33 @@ void Duty_50ms()
 		mode.h_is_fix=0;			
 		mode.en_eso_h_in=1;
 		mode.yaw_use_eso=0;//KEY[7];
-		mode.test4=1;//pos acc use
+			if(Rc_Get_PWM.RST>1500)
+						mode.test4=1;//pos acc use
+						else
+						mode.test4=0;//pos acc use
+
 		mode.flow_f_use_ukfm=2;
+		mode.baro_f_use_ukfm=0;
+		if(mode.flow_hold_position==2&&circle.connect)	
+		mode.rc_control_flow_pos_sel=1;
+		else if(mode.flow_hold_position==2)	
+		mode.rc_control_flow_pos_sel=2;
+		else
+		mode.rc_control_flow_pos_sel=0; 
 		
-		
-			#if USE_TOE_IN_UNLOCK
-//				if(Rc_Get_PWM.RST>1500 )
-//					
-//					else
-//					mode.test4=0;
-				
-			//if(Rc_Get_PWM.RST>1500 )
-			
-//			else
-//			mode.flow_f_use_ukfm=0;
-			#endif
-		 if(mode.flow_hold_position==2&&circle.connect)	
-     mode.rc_control_flow_pos_sel=1;
-		 else if(mode.flow_hold_position==2)	
-     mode.rc_control_flow_pos_sel=2;
-		 else
-		 mode.rc_control_flow_pos_sel=0; 
 		#if !USE_RECIVER_MINE
 		//	if(Rc_Get_PWM.AUX1>1500&&ALT_POS_SONAR2<3)
-			mode.baro_f_use_ukfm=0;
+	
 		#endif	
-		
-			//}
-		 
-		mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
-
+ 
+	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
-  if(!NAV_BOARD_CONNECT)			
+		
+  if(!NAV_BOARD_CONNECT||1)			
 	ANO_AK8975_Read();
+	
 	#if SONAR_USE_FC
-	//if(!Thr_Low||NS==0)
+	if(!Thr_Low||NS==0)
 	Ultra_Duty();
 	#endif
 	if(circle.lose_cnt++>4/0.05)

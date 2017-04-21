@@ -201,6 +201,3 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 
 
 
-
-
-/******************* (C) COPYRIGHT 2016 ANO TECH *****END OF FILE************/
