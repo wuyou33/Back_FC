@@ -38,6 +38,7 @@
 .\build\mpu6050.o: .\applications\pos_ctrl.h
 .\build\mpu6050.o: .\applications\dma.h
 .\build\mpu6050.o: .\applications\eso.h
+.\build\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\mpu6050.o: .\applications\fly_mode.h
 .\build\mpu6050.o: .\applications\include.h
 .\build\mpu6050.o: .\applications\mymath.h

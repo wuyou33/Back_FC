@@ -3208,10 +3208,63 @@ switch(sel){
 	sum += SendBuff4[i];
 	SendBuff4[nrf_uart_cnt++] = sum;	
 	break;
+	case SEND_QR:
+	cnt_reg=nrf_uart_cnt;
+	SendBuff4[nrf_uart_cnt++]=0xAA;
+	SendBuff4[nrf_uart_cnt++]=0xAF;
+	SendBuff4[nrf_uart_cnt++]=0x61;//功能字
+	SendBuff4[nrf_uart_cnt++]=0;//数据量
+
+  static int x,y,z;
+	if(circle.x!=0)
+		x=circle.x*10;
+	if(circle.y!=0)
+		y=-circle.y*10;
+	if(circle.z!=0)
+		z=circle.z*10;
+	//qr
+	_temp = (int)(x);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(y);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(z);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	//exp
+	_temp = (int)(nav_pos_ctrl[0].exp*1000);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(nav_pos_ctrl[1].exp*1000);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(exp_height);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	//kf
+	_temp = (int)(POS_UKF_X*1000);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(POS_UKF_Y*1000);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp = (int)(ALT_POS_SONAR2*1000);
+	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	
+	
+  SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
+	for( i=cnt_reg;i<nrf_uart_cnt;i++)
+	sum += SendBuff4[i];
+	SendBuff4[nrf_uart_cnt++] = sum;	
+	break;
+	
 	
 	default:break;
 }
 }
+#include "rc.h"
 u8 sd_pub_sel=0;
 void sd_publish(void)
 {u8 cnt=0;
@@ -3267,8 +3320,9 @@ void sd_publish(void)
 	sd_save[cnt++]=flow_matlab_data[1]*1000;
 	sd_save[cnt++]=ALT_POS_SONAR2*1000;
 	//sd 3 40~59
-	sd_save[cnt++]=flow_matlab_data[2]*1000;	
-	sd_save[cnt++]=flow_matlab_data[3]*1000;
+
+	sd_save[cnt++]=circle.spdy;//flow_matlab_data[2]*1000;	
+	sd_save[cnt++]=circle.spdx;//flow_matlab_data[3]*1000;
 	sd_save[cnt++]=0;
 	sd_save[cnt++]=mpu6050.Acc.x;
 	sd_save[cnt++]=mpu6050.Acc.y;
@@ -3285,8 +3339,8 @@ void sd_publish(void)
 	sd_save[cnt++]=Rol_fc*100;
 	sd_save[cnt++]=Yaw_fc*100;
 
-	sd_save[cnt++]=0;
-	sd_save[cnt++]=0;
+	sd_save[cnt++]=flow_matlab_data[2]*1000;
+	sd_save[cnt++]=flow_matlab_data[3]*1000;
 	sd_save[cnt++]=0;
 	sd_save[cnt++]=0;
 	sd_save[cnt++]=0;

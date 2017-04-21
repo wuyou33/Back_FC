@@ -37,5 +37,6 @@
 .\build\stm32f4xx_it.o: applications\pos_ctrl.h
 .\build\stm32f4xx_it.o: applications\dma.h
 .\build\stm32f4xx_it.o: applications\eso.h
+.\build\stm32f4xx_it.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\stm32f4xx_it.o: applications\fly_mode.h
 .\build\stm32f4xx_it.o: applications\include.h

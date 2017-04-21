@@ -37,6 +37,7 @@
 .\build\init.o: applications\pos_ctrl.h
 .\build\init.o: applications\dma.h
 .\build\init.o: applications\eso.h
+.\build\init.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\init.o: applications\fly_mode.h
 .\build\init.o: applications\include.h
 .\build\init.o: .\drivers\pwm_out.h
@@ -47,7 +48,6 @@
 .\build\init.o: applications\rc.h
 .\build\init.o: applications\imu.h
 .\build\init.o: applications\mymath.h
-.\build\init.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\init.o: .\drivers\ms5611.h
 .\build\init.o: .\drivers\ak8975.h
 .\build\init.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

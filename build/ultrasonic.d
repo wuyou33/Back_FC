@@ -37,6 +37,7 @@
 .\build\ultrasonic.o: .\applications\pos_ctrl.h
 .\build\ultrasonic.o: .\applications\dma.h
 .\build\ultrasonic.o: .\applications\eso.h
+.\build\ultrasonic.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ultrasonic.o: .\applications\fly_mode.h
 .\build\ultrasonic.o: .\applications\include.h
 .\build\ultrasonic.o: drivers\ultrasonic.h

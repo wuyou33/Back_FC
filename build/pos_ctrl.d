@@ -37,12 +37,12 @@
 .\build\pos_ctrl.o: applications\pos_ctrl.h
 .\build\pos_ctrl.o: applications\dma.h
 .\build\pos_ctrl.o: applications\eso.h
+.\build\pos_ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\pos_ctrl.o: applications\fly_mode.h
 .\build\pos_ctrl.o: applications\include.h
 .\build\pos_ctrl.o: applications\rc.h
 .\build\pos_ctrl.o: applications\imu.h
 .\build\pos_ctrl.o: applications\mymath.h
-.\build\pos_ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\pos_ctrl.o: applications\ctrl.h
 .\build\pos_ctrl.o: .\drivers\pwm_out.h
 .\build\pos_ctrl.o: .\drivers\mpu6050.h

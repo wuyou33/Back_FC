@@ -69,6 +69,7 @@ void Duty_2ms()
 	/*IMU更新姿态。输入：半个执行周期，三轴陀螺仪数据（转换到度每秒），三轴加速度计数据（4096--1G）；输出：ROLPITYAW姿态角*/
 	//if(!NAV_BOARD_CONNECT)
 	if(cnt_init++>2/0.002){cnt_init=65530;
+	
  	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
 	,&Rol_fc,&Pit_fc,&Yaw_fc1);
   //}
@@ -102,7 +103,7 @@ void Duty_5ms()
 
 float pos_time;
 float baro_task_time;
-u8 UART_UP_LOAD_SEL=2;//<------------------------------上传数据选择
+u8 UART_UP_LOAD_SEL=4;//<------------------------------上传数据选择
 u8 force_flow_ble_debug;
 void Duty_10ms()
 {
@@ -222,11 +223,24 @@ void Duty_10ms()
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 2://BMP UKF
 											data_per_uart1(
-											0,ultra_ctrl.exp,ultra_ctrl.now,
+											ALT_POS_BMP_UKF_OLDX*1000,ultra_ctrl.exp,ultra_ctrl.now,
 											0, wz_speed_pid_v.exp,wz_speed_pid_v.now,
 											VEL_UKF_Y*100,VEL_UKF_X*100,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
+											case 3://BMP UKF
+											data_per_uart1(
+											0,circle.spdx/10,circle.spdy/10,
+											0, flow_matlab_data[2]*100,flow_matlab_data[3]*100,
+											VEL_UKF_Y*100,VEL_UKF_X*100,0,
+											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
+											case 4://BMP UKF
+											data_per_uart1(
+											Rc_Get_PWM.ROLL,Rc_Get_PWM.PITCH,Rc_Get_PWM.YAW,
+											Rc_Get_PWM.THROTTLE, flow_matlab_data[2]*100,flow_matlab_data[3]*100,
+											VEL_UKF_Y*100,VEL_UKF_X*100,0,
+											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											default:break;
+											
 											}
 										}
 									}
@@ -250,16 +264,23 @@ void Duty_10ms()
 //						  else	
 							clear_nrf_uart();		
 							nrf_uart_cnt=0;
-						  sd_publish();			
+								
 							switch(sd_sel){
 							case 0:sd_sel=1;		
+						  sd_publish();		
 							data_per_uart4(SEND_SD_SAVE1);	
+							data_per_uart4(SEND_SD_SAVE2);	
+							data_per_uart4(SEND_SD_SAVE3);	
 							break;
-							case 1:sd_sel=2;
-							data_per_uart4(SEND_SD_SAVE2);
+							case 1:sd_sel=0;
+							data_per_uart4(SEND_M100);	
+							data_per_uart4(SEND_ALT);	
+							data_per_uart4(SEND_FLOW);	
+							data_per_uart4(SEND_PID);	
+							data_per_uart4(SEND_QR);				
 							break;
 							case 2:sd_sel=0;
-							data_per_uart4(SEND_SD_SAVE3);
+							
 							break;
 //							case 3:sd_sel=4;
 //							data_per_uart4(SEND_MARKER);
@@ -388,6 +409,7 @@ void Duty_50ms()
 		#endif	
 		
 			//}
+		 
 		mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 
 	mode_check(CH_filter,mode_value);

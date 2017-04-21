@@ -654,11 +654,6 @@
               <FilePath>.\applications\ctrl.c</FilePath>
             </File>
             <File>
-              <FileName>bmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\bmp.c</FilePath>
-            </File>
-            <File>
               <FileName>pos_ctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\pos_ctrl.c</FilePath>
@@ -707,6 +702,11 @@
               <FileName>ak8975.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\ak8975.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\bmp.c</FilePath>
             </File>
             <File>
               <FileName>anotc_baro_ctrl.c</FileName>

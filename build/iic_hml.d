@@ -38,5 +38,6 @@
 .\build\iic_hml.o: applications\pos_ctrl.h
 .\build\iic_hml.o: applications\dma.h
 .\build\iic_hml.o: applications\eso.h
+.\build\iic_hml.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\iic_hml.o: applications\fly_mode.h
 .\build\iic_hml.o: applications\include.h

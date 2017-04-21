@@ -37,6 +37,7 @@
 .\build\rc.o: applications\pos_ctrl.h
 .\build\rc.o: applications\dma.h
 .\build\rc.o: applications\eso.h
+.\build\rc.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\rc.o: applications\fly_mode.h
 .\build\rc.o: applications\include.h
 .\build\rc.o: applications\rc.h
@@ -48,7 +49,6 @@
 .\build\rc.o: applications\anotc_baro_ctrl.h
 .\build\rc.o: applications\imu.h
 .\build\rc.o: applications\mymath.h
-.\build\rc.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\rc.o: applications\mymath.h
 .\build\rc.o: .\drivers\ultrasonic.h
 .\build\rc.o: .\drivers\ms5611.h

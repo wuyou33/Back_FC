@@ -61,8 +61,10 @@ void Ultra_PID_Init()
   ultra_pid_safe.kp = 0;//0.45;//50.0;//1.8;//1.65;//1.5;
 	ultra_pid_safe.ki = 0.0;//1;//add
 	ultra_pid_safe.kd = 0.0;
-	
+	//adrc
 	eso_pos[Zr].b0=0;
+	eso_pos[Zr].eso_dead=5;
+	eso_pos[Zr].eso_for_z=1;
 }
 
   
@@ -78,8 +80,10 @@ void WZ_Speed_PID_Init()
 		wz_speed_pid_safe.ki = 0.2;//45.5; 
 		wz_speed_pid_safe.kd = 1.68; 
 	  wz_speed_pid_use.fp=0.2;
-	
+	//adrc
 	  eso_pos_spd[Zr].b0=15;
+	  eso_pos_spd[Zr].eso_dead=8;	
+	  eso_pos_spd[Zr].eso_for_z=1;
 }
 
 #define BARO_SPEED_NUM 50
@@ -91,97 +95,8 @@ void height_mode_switch(void)//气压计 超声波自动切换
 {
 static u8 state;
 static u16 cnt,cnt1;	
-
-// if(height_ctrl_mode==2){
-//	 
-//	 switch(state)
-//			{ 
-//			case 0:
-//			if(ultra_ok==1){
-//			if(baro_only_move>BMP_MAX_HEIGHT)
-//			{state=1;height_ctrl_mode_use=1;cnt=0;}
-//			else
-//				height_ctrl_mode_use=2;
-//			}
-//			else
-//			height_ctrl_mode_use=1;
-//			break;
-//			case 1:
-//			if(ALT_POS_SONAR2*1000<ULTRA_MAX_HEIGHT-100)
-//			cnt++;
-//			else
-//			cnt=0;
-
-//			if(cnt>800)
-//			{state=0;height_ctrl_mode_use=2;cnt=0;}
-
-//			break;
-//			}
-
-//}
-// else
- //	height_ctrl_mode_use=height_ctrl_mode;//现在直接通过遥控器切换
 }
 
-//u8 thr_take_off_f = 0;
-//u8 ex_i_en_f,ex_i_en;
-//float thr_set,thr_pid_out,thr_out,thr_take_off,tilted_fix;
-//float thr_hold_estimate(float T,float thr,u8 ready,float en)
-//{
-//static float en_old;		
-//		if(ready == 0)
-//	{
-//		ex_i_en = ex_i_en_f = 0;
-//		en = 0;
-//		thr_take_off = 0;
-//		thr_take_off_f = 0;
-//	}
-//	
-///*飞行中初次进入定高模式切换处理*/
-//	if(ABS(en - en_old) > 0.5f)//从非定高切换到定高
-//	{
-//		if(thr_take_off<10)//未计算起飞油门
-//		{
-//			if(thr_set > -150)
-//			{
-//				thr_take_off = 400;
-//				
-//			}
-//		}
-//		en_old = en;
-//	}
-
-//	
-//	thr_set = my_deathzoom_21(my_deathzoom1((thr - 500),0,40),0,10);
-//	
-//	if(thr_set>0)
-//	{
-//		//set_speed_t = thr_set/450 * MAX_VERTICAL_SPEED_UP;
-//		
-//		if(thr_set>100)
-//		{
-//			ex_i_en_f = 1;
-//			
-//			if(!thr_take_off_f)
-//			{
-//				thr_take_off_f = 1; //用户可能想要起飞
-//				thr_take_off = 350; //直接赋值 一次
-//				
-//			}
-//		}
-//	}
-//	else
-//	{
-//		if(ex_i_en_f == 1)
-//		{
-//			ex_i_en = 1;
-//		}
-//		//set_speed_t = thr_set/450 * MAX_VERTICAL_SPEED_DW;
-//	}	
-//	
-//	
-//	
-//}
 
 float sonar_spd;
 u8 BARO_HIHG_NUM=1;//10;//30;
@@ -377,7 +292,7 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
 	else
 	wz_speed_pid_v.err_i=0;
 	
-	HIGH_CONTROL_ESO(&eso_pos_spd[Zr],exp_z_speed,wz_speed,eso_pos_spd[Zr].u,T,400,wz_speed_pid_use.kp);//速度环自抗扰控制
+	OLDX_POS_CONTROL_ESO(&eso_pos_spd[Zr],exp_z_speed,wz_speed,eso_pos_spd[Zr].u,T,400,wz_speed_pid_use.kp,thr_view);//速度环自抗扰控制
 	
 	if(mode.en_eso_h_in&&!mode.height_safe&&eso_pos_spd[Zr].b0!=0){//ADRC
 	//wz_speed_pid_v.pid_out=thr_lpf + Thr_Weight *LIMIT(wz_speed_pid_use.kp*1 *LIMIT(exp_z_speed,-250,250)+eso_att_inner_c[THRr].u + wz_speed_pid_v.err_d ,-400,400);
@@ -494,7 +409,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else
 	ultra_ctrl.err_i=0;	
 	
-	HIGH_CONTROL_ESO(&eso_pos[Zr],(exp_height),(ultra_dis_lpf),eso_pos[Zr].u,T,800,ultra_pid_use.kp);
+	OLDX_POS_CONTROL_ESO(&eso_pos[Zr],(exp_height),(ultra_dis_lpf),eso_pos[Zr].u,T,800,ultra_pid_use.kp,thr_view);
 
 	if(mode.en_eso_h_in&&!mode.height_safe&&eso_pos[Zr].b0!=0)//ADRC
   ultra_ctrl.pid_out = eso_pos[Zr].u  + ultra_ctrl.err_d;	 

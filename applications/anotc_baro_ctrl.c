@@ -75,14 +75,6 @@ _f_set_st sonar_f_set = {
 													0.2f,
 													0.5f,
 													0.8f	
-//													0.2f,
-//													0.3f,
-//													0.5f,
-//													
-//													0.1f,
-//													0.3f,
-//													0.5f
-
 												};
 
 //气压计融合参数											
@@ -99,14 +91,6 @@ _f_set_st baro_f_set = {
 													0.1f,
 													0.1f,
 													0.2f	
-//													0.2f,
-//													0.3f,
-//													0.5f,
-//													
-//													0.1f,
-//													0.3f,
-//													0.5f
-
 												};
 
 float sonar_weight;
@@ -115,8 +99,7 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 {
 	static u8 step;
 	static float dtime;
-	
-	//
+
 		switch(step)
 	{
 		case 0:
@@ -154,14 +137,10 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 	
 	}
 
-	
-	///////////
 	dtime += dT;
-	
 	if(dtime > 0.01f) //10 ms
 	{
 		dtime = 0;
- 		
 			baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
 			baro.height=MS5611_Pressure;//
 			if(step==0)
@@ -177,13 +156,8 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			#else
 			baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down[2],3500);
 			#endif
-			//fusion_prepare(dT,sonar_av_arr,SONAR_AV_NUM,&sonar_av_cnt,0,&ultra,&sonar);
-			//acc_fusion(dT,&sonar_f_set,acc_3d_hg.z,&sonar,&sonar_fusion);
 		
 	    ukf_baro_task1(dT)	;
-//			fusion_prepare(dT,baro_av_arr,BARO_AV_NUM,&baro_av_cnt,2,&baro,&baro_p);
-//			acc_fusion(dT,&baro_f_set,acc_3d_hg.z,&baro_p,&baro_fusion);
-	
 //////////////////////////////////////////				
 			if(ultra.measure_ok == 1)
 			{
@@ -201,9 +175,7 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			{
 				sonar_weight = 0;
 			}
-      static float wz_acc;
-
-		
+      static float wz_acc;		
 //////////////////////////////////////////
 			wz_speed = baro_fusion.fusion_speed_m.out - baro_fusion.fusion_speed_me.out;
 			sonar_weight=0;

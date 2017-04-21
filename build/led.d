@@ -38,6 +38,7 @@
 .\build\led.o: .\applications\pos_ctrl.h
 .\build\led.o: .\applications\dma.h
 .\build\led.o: .\applications\eso.h
+.\build\led.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\led.o: .\applications\fly_mode.h
 .\build\led.o: .\applications\include.h
 .\build\led.o: .\applications\mymath.h

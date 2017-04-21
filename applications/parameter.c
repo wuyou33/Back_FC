@@ -68,10 +68,14 @@ void Para_ResetToFactorySetup(void)
 // 	sensor_setup.Offset.Acc_Temperature = 0;
 // 	sensor_setup.Offset.Gyro_Temperature = 0;
  float pid_att_out[3]={0.7,0.0,0.0};
- float pid_att_in[3]={0.75,0.2,2.2};
+ float pid_att_in[3]={0.7,0.2,2.2};
  
  float pid_att_out_yaw[3]={0.8,0.05,0.3};
  float pid_att_in_yaw[3]={1.2,0.1,1.2};
+ //adrc
+ eso_att_inner_c[PITr].eso_dead=eso_att_inner_c[ROLr].eso_dead=1;
+ eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=20;
+ eso_att_inner_c[PITr].not_use_px4=eso_att_inner_c[ROLr].not_use_px4=1;
   /* PID 默认值 */
 	pid_setup.groups.ctrl1.pitch.kp = pid_att_in[0];//0.6;
 	pid_setup.groups.ctrl1.roll.kp  = pid_setup.groups.ctrl1.pitch.kp;	

@@ -31,8 +31,8 @@ float CH_filter_D[CH_NUM];
 u8 NS,CH_Error[CH_NUM];
 u16 NS_cnt,CLR_CH_Error[CH_NUM];
  
-s16 MAX_CH[CH_NUM]  = {1900 ,1900 ,1900 ,1900 ,1900 ,1900 ,1900 ,1900 };	//摇杆最大
-s16 MIN_CH[CH_NUM]  = {1100 ,1100 ,1100 ,1100 ,1100 ,1100 ,1100 ,1100 };	//摇杆最小
+s16 MAX_CH[CH_NUM]  = {2000 ,2000 ,2000 ,2000 ,2000 ,2000 ,2000 ,2000 };	//摇杆最大
+s16 MIN_CH[CH_NUM]  = {1000 ,1000 ,1000 ,1000 ,1000 ,1000 ,1000 ,1000 };	//摇杆最小
 char CH_DIR[CH_NUM] = {0    ,0    ,0    ,0    ,0    ,0    ,0    ,0    };  //摇杆方向
 #define CH_OFFSET 500
 
@@ -113,7 +113,7 @@ void RC_Duty( float T , u16 tmp16_CH[CH_NUM] )
 //  全局输出，CH_filter[],0横滚，1俯仰，2油门，3航向 范围：+-500	
 //=================== filter =================================== 		
 			
-			filter_A = 6.28f *10 *T;
+			filter_A = 1.5*6.28f *10 *T;
 			
 			if( ABS(CH_TMP[i] - CH_filter[i]) <100 )
 			{

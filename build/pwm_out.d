@@ -38,6 +38,7 @@
 .\build\pwm_out.o: .\applications\pos_ctrl.h
 .\build\pwm_out.o: .\applications\dma.h
 .\build\pwm_out.o: .\applications\eso.h
+.\build\pwm_out.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\pwm_out.o: .\applications\fly_mode.h
 .\build\pwm_out.o: .\applications\include.h
 .\build\pwm_out.o: .\applications\mymath.h

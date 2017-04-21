@@ -40,12 +40,12 @@
 .\build\height_ctrl1.o: applications\pos_ctrl.h
 .\build\height_ctrl1.o: applications\dma.h
 .\build\height_ctrl1.o: applications\eso.h
+.\build\height_ctrl1.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\height_ctrl1.o: applications\fly_mode.h
 .\build\height_ctrl1.o: applications\include.h
 .\build\height_ctrl1.o: .\drivers\pwm_out.h
 .\build\height_ctrl1.o: applications\rc.h
 .\build\height_ctrl1.o: applications\imu.h
 .\build\height_ctrl1.o: applications\mymath.h
-.\build\height_ctrl1.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\height_ctrl1.o: .\drivers\mpu6050.h
 .\build\height_ctrl1.o: applications\alt_fushion.h

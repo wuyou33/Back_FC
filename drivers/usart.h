@@ -334,6 +334,10 @@ void Send_IMU_NAV(void);
 #define SEND_SD_SAVE1 9
 #define SEND_SD_SAVE2 10
 #define SEND_SD_SAVE3 11
+#define SEND_NRF1 12
+#define SEND_NRF2 13
+#define SEND_NRF3 14
+
 extern int sd_save[25*3];
 void sd_publish(void);
 extern float rate_gps_board;

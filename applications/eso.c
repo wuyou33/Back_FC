@@ -1,13 +1,57 @@
-#include "ctrl.h"
-#include "height_ctrl.h"
 #include "eso.h"
-ESO ESO_BMP;
-ESO eso_att_outter[4],eso_att_inner[4];
+#define LIMIT_ESO( x,min,max ) ( (x) < (min)  ? (min) : ( (x) > (max) ? (max) : (x) ) )
+
 ESO eso_att_outter_c[4],eso_att_inner_c[4];
 ESO eso_pos_spd[3];
 ESO eso_pos[3];
-#define ESO_PARA_USE_REAL_TIME 1
-float fst2(float x1,float x2,float w, float h)
+
+static float my_deathzoom1(float x,float zoom)
+{
+	float t;
+	if(x>0)
+	{
+		t = x - zoom;
+		if(t<0)
+		{
+			t = 0;
+		}
+	}
+	else
+	{
+		t = x + zoom;
+		if(t>0)
+		{
+			t = 0;
+		}
+	}
+  return (t);
+}
+
+static float my_sqrt(float number)
+{
+	long i;
+	float x, y;
+	const float f = 1.5F;
+	x = number * 0.5F;
+	y = number;
+	i = * ( long * ) &y;
+	i = 0x5f3759df - ( i >> 1 );
+
+	y = * ( float * ) &i;
+	y = y * ( f - ( x * y * y ) );
+	y = y * ( f - ( x * y * y ) );
+	return number * y;
+} 
+
+static float sign(float x)
+{
+  if(x>0)
+      return(1);
+  if(x<0)
+      return(-1);
+}
+
+static float fst2(float x1,float x2,float w, float h)
 {
 	float td_y=0;
 	float a0=0,a1,a2;
@@ -28,7 +72,8 @@ float fst2(float x1,float x2,float w, float h)
 	fhan=-w*(a/d-sign(a))*sa-w*sign(a);
 	return(fhan);
 }
-float fst(float x1,float x2,float w, float h)
+
+static float fst(float x1,float x2,float w, float h)
 {
 	float td_y=0;
 	float a0=0;
@@ -40,7 +85,7 @@ float fst(float x1,float x2,float w, float h)
 	d=w*h;
 	d0=h*d;
 	td_y=x1+h*x2;
-	a0=sqrt(d*d+8*w*fabs(td_y));
+	a0=my_sqrt(d*d+8*w*fabs(td_y));
 	
 	if(fabs(td_y)>d0)
 		a=x2+0.5*(a0-d)*sign(td_y);
@@ -53,7 +98,8 @@ float fst(float x1,float x2,float w, float h)
 		fhan=-w*a/d;
 	return(fhan);
 }
-float fal(float e,float alfa,float delta)
+
+static float fal(float e,float alfa,float delta)
 {
 	float y=0.0;
 	if(fabs(e)>delta) y=pow(fabs(e),alfa)*sign(e);
@@ -61,14 +107,22 @@ float fal(float e,float alfa,float delta)
 	return(y);	
 }
 
-float sign(float x)
-{
-  if(x>0)
-      return(1);
-  if(x<0)
-      return(-1);
-}
 
+static void ESO_Safe(ESO *eso_in,u16 thr)
+{ static float Thr_tmp;
+	
+	Thr_tmp += 10 *3.14f *eso_in->h0 *(thr/400.0f - Thr_tmp); //????
+	eso_in->Thr_Weight = LIMIT_ESO(Thr_tmp*1.75,0,1);    							//??????????????
+	
+	if( thr < 100 )
+	{
+		eso_in->Thr_Low = 1;
+	}
+	else
+	{
+		eso_in->Thr_Low = 0;
+	}
+}
 
 void SMOOTH_IN_ESO(ESO *eso_in,float in)
 {
@@ -82,17 +136,17 @@ float ESO_2N(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4
 	float e=0,fe,fe1;
 	eso_in->h=eso_in->h0;
 //********  eso  *************
-if(Thr_Low||eso_in->auto_b0==0)
+if(eso_in->Thr_Low||eso_in->auto_b0==0)
 	eso_in->b01=eso_in->b0;
 	e=eso_in->e=my_deathzoom1(eso_in->z[0]-y,eso_in->eso_dead);
 	fe=fal(e,0.5,eso_in->h0);
 	fe1=fal(e,0.25,eso_in->h0);
-	eso_in->z[0]+=eso_in->h0*(eso_in->z[1]-eso_in->beta0*e+eso_in->b01*Thr_Weight *u);
+	eso_in->z[0]+=eso_in->h0*(eso_in->z[1]-eso_in->beta0*e+eso_in->b01*eso_in->Thr_Weight *u);
 	eso_in->z[1]+=-eso_in->h0*eso_in->beta1*e;
-	eso_in->z[1]=LIMIT(eso_in->z[1],-MAX*Thr_Weight*(eso_in->b01+1),MAX*Thr_Weight*(eso_in->b01+1));
+	eso_in->z[1]=LIMIT_ESO(eso_in->z[1],-MAX*eso_in->Thr_Weight*(eso_in->b01+1),MAX*eso_in->Thr_Weight*(eso_in->b01+1));
 	if(eso_in->n==0)
 		eso_in->n=1;
-	return eso_in->disturb=LIMIT(eso_in->z[1]/eso_in->n,-MAX,MAX);
+	return eso_in->disturb=LIMIT_ESO(eso_in->z[1]/eso_in->n,-MAX,MAX);
 }
 
 float ESO_3N(ESO *eso_in,float v,float y,float u,float T,float MAX)             // v是控制系统的输入，y是控制系统的输出，反馈给ESO，u是ADRC的输出控制量
@@ -104,11 +158,11 @@ float ESO_3N(ESO *eso_in,float v,float y,float u,float T,float MAX)             
 	fe=fal(e,0.5,eso_in->h0);
 	fe1=fal(e,0.25,eso_in->h0);
 	eso_in->z[0]+=eso_in->h*(eso_in->z[1]-eso_in->beta0*e);
-	eso_in->z[1]+=eso_in->h*(eso_in->z[2]-eso_in->beta1*fe+eso_in->b01*Thr_Weight *u);
+	eso_in->z[1]+=eso_in->h*(eso_in->z[2]-eso_in->beta1*fe+eso_in->b01*eso_in->Thr_Weight *u);
 	eso_in->z[2]+=-eso_in->h*eso_in->beta2*fe1;
 		if(eso_in->n==0)
 		eso_in->n=1;
-	return eso_in->disturb=LIMIT(eso_in->z[2]/eso_in->n,-MAX,MAX);
+	return eso_in->disturb=LIMIT_ESO(eso_in->z[2]/eso_in->n,-MAX,MAX);
 }  
 
 float flt_eso=0.5;
@@ -119,23 +173,15 @@ if(eso_in->not_use_px4)
 e1=my_deathzoom1(v-eso_in->z[0],eso_in->eso_dead);
 e2=eso_in->v2-eso_in->z[1];	
 }	
-else if(mode.use_px4_err)
+else 
 {
 e1=my_deathzoom1(ero_px4,eso_in->eso_dead);
 e2=eso_in->z[1];
 }
-else if(!eso_in->use_td)
-{
-e1=v-eso_in->z[0];
-e2=-eso_in->z[1];
-}
-else{
-e1=eso_in->v1-eso_in->z[0];
-e2=eso_in->v2-eso_in->z[1];
-}
-e0+=eso_in->e;//*T;
-
-eso_in->u=eso_in->KP*e1;
+if(eso_in->err_limit>0)	
+eso_in->u=eso_in->KP*LIMIT_ESO(e1,-eso_in->err_limit,eso_in->err_limit);
+else
+eso_in->u=eso_in->KP*e1;	
 	if(eso_in->b01!=0){
   switch(eso_in->level){
 		case 1:eso_in->disturb_u=eso_in->z[1]/eso_in->b01;break; 
@@ -143,36 +189,32 @@ eso_in->u=eso_in->KP*e1;
 	}
 	if(fabs(e1)>eso_in->eso_dead)
   eso_in->disturb_u_reg=eso_in->disturb_u;
-	eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
+	eso_in->u-=eso_in->Thr_Weight *eso_in->disturb_u_reg;	
 	}
-return  eso_in->u=LIMIT(eso_in->u+0*eso_in->integer,-MAX,MAX);
+return  eso_in->u=LIMIT_ESO(eso_in->u+0*eso_in->integer,-MAX,MAX);
 }
 
 
 //姿态内环-<------------------------------<-----------
-float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float MAX)
+float OLDX_ATT_CONTRL_INNER_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,u16 thr)
 { if(!eso_in->init)
-	{
+	{	
   eso_in->init=1;
 	eso_in->level=1;//系统阶次	
-  eso_in->not_use_px4=mode.use_px4_err;
  //-------------跟踪器
 	eso_in->use_td=0;		
 	eso_in->r0=4000;//跟踪速度
-  eso_in->h0=(float)F_INNER/1000;//滤波因子
+  eso_in->h0=T;//滤波因子
  //-------------观测器
 	eso_in->beta0=1/(eso_in->h0);
 	eso_in->beta1=1/(30*pow(eso_in->h0,2));
 	eso_in->beta2=1000;	
-  eso_in->eso_dead=1;
 	eso_in->auto_b0=0;
  //-------------反馈----------------
 	eso_in->out_mode=1;	
-		//-------liner    0
-	eso_in->KP=ctrl_1.PID[PIDROLL].kp;
-	eso_in->KI=0;	
-	eso_in->KD=ctrl_1.PID[PIDROLL].kd;
-		//-------noliner  1
+ //-------liner    0
+	eso_in->KP=kp_in ;	
+	//-------noliner  1
 	eso_in->alfa0=0.25;
   eso_in->alfa1=0.75;
 	eso_in->alfa2=1.5;	
@@ -182,170 +224,65 @@ float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float M
 	eso_in->r1=0.5/pow(eso_in->h0,2);
 	eso_in->h1=eso_in->h0*5;
 	//----------模型增益
-  eso_in->b0=20;		
+  //eso_in->b0=20;		
 	}
+	ESO_Safe(eso_in,thr);
 	#if ESO_PARA_USE_REAL_TIME
 	    eso_in->h0=T;
 			eso_in->beta0=1/(eso_in->h0+0.000001);
    	  eso_in->beta1=1/(30*pow(eso_in->h0,2)+0.000001);
 			eso_in->tao=eso_in->h0*2;
 	#endif
-	if(mode.att_pid_tune&&mode.en_pid_sb_set){
-	eso_in->KP=ctrl_1.PID[PIDPITCH].kp ;
-	}
+	eso_in->KP=kp_in ;
+	if(eso_in->use_td)
 	SMOOTH_IN_ESO(eso_in,v);
 	switch(eso_in->level){
 		case 1:ESO_2N(eso_in,v, y, u, T, MAX,0);break;
 		case 2:ESO_3N(eso_in,v, y, u, T, MAX);break;
 	}
-
-	eso_in->integer+=eso_in->KI*(v-y)*T;
-	eso_in->integer = LIMIT( eso_in->integer, -Thr_Weight *CTRL_2_INT_LIMIT,Thr_Weight *CTRL_2_INT_LIMIT );
 	ESO_CONTROL(eso_in,v, y, u, T, MAX,0);
 	return eso_in->u;
 }
 
-//缀较颥内环
-float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float MAX)
-{ if(!eso_in->init)
-	{
-  eso_in->init=1;
-	eso_in->level=1;//系统阶次	
-  eso_in->not_use_px4=1;
- //-------------跟踪器
-	eso_in->use_td=0;		
-	eso_in->r0=4000;//跟踪速度
-  eso_in->h0=(float)F_INNER/1000;//滤波因子
- //-------------观测器
-	eso_in->beta0=1/(eso_in->h0);
-	eso_in->beta1=1/(30*pow(eso_in->h0,2));
-	eso_in->beta2=1000;	
-  eso_in->eso_dead=1;
-	eso_in->auto_b0=0;
- //-------------反馈----------------
-	eso_in->out_mode=1;	
-		//-------liner    0
-	eso_in->KP=ctrl_1.PID[PIDYAW].kp;
-	eso_in->KI=0;	
-	eso_in->KD=ctrl_1.PID[PIDYAW].kd;
-		//-------noliner  1
-	eso_in->alfa0=0.25;
-  eso_in->alfa1=0.75;
-	eso_in->alfa2=1.5;	
-  eso_in->tao=eso_in->h0*2;		
-	  //-------noliner  2 3
-	eso_in->c=0.5;//阻尼因子	
-	eso_in->r1=0.5/pow(eso_in->h0,2);
-	eso_in->h1=eso_in->h0*5;
-	//----------模型增益
-  eso_in->b0=20;//40;		
-	}
-	#if ESO_PARA_USE_REAL_TIME
-	    eso_in->h0=T;
-			eso_in->beta0=1/(eso_in->h0+0.000001);
-   	  eso_in->beta1=1/(30*pow(eso_in->h0,2)+0.000001);
-			eso_in->tao=eso_in->h0*2;
-	#endif
-	if(mode.att_pid_tune&&mode.en_pid_sb_set){
-	eso_in->KP=0.001*SPID.IP;
-	}
-	SMOOTH_IN_ESO(eso_in,v);
-	switch(eso_in->level){
-		case 1:ESO_2N(eso_in,v, y, u, T, MAX,0);break;
-		case 2:ESO_3N(eso_in,v, y, u, T, MAX);break;
-	}
-
-	eso_in->integer+=eso_in->KI*(v-y)*T;
-	eso_in->integer = LIMIT( eso_in->integer, -Thr_Weight *CTRL_2_INT_LIMIT,Thr_Weight *CTRL_2_INT_LIMIT );
-	ESO_CONTROL(eso_in,v, y, u, T, MAX,0);
-	return eso_in->u;
-}
-//-----------------------------HEIGHT-ESO--------------------------------
-//高度内环
-float ESO_CONTROL_HEIGH(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4,u8 for_high)
-{static float e0,e1,e2;
-e1=my_deathzoom1(v-eso_in->z[0],eso_in->eso_dead);
-e2=-eso_in->z[1];
-eso_in->u=eso_in->KP*e1;
-	if(for_high){
-	if(eso_in->b0!=0&&!mode.height_safe){
-		eso_in->disturb_u=eso_in->z[1]/eso_in->b0;
-		if(fabs(e1)>eso_in->eso_dead)
-		eso_in->disturb_u_reg=eso_in->disturb_u;
-		eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
-	}}
-	else{
-		if(eso_in->b0!=0){
-		eso_in->disturb_u=eso_in->z[1]/eso_in->b0;
-		if(fabs(e1)>eso_in->eso_dead)
-		eso_in->disturb_u_reg=eso_in->disturb_u;
-		eso_in->u-=Thr_Weight *eso_in->disturb_u_reg;	
-	}
-	}
-return  eso_in->u=LIMIT(eso_in->u,-MAX,MAX);
-}
-
-float ESO_2N_H(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4,u8 for_high)             // v是控制系统的输入，y是控制系统的输出，反馈给ESO，u是ADRC的输出控制量
+//-----------------------------POS-ESO--------------------------------
+float OLDX_ESO_2N_POS(ESO *eso_in,float v,float y,float u,float T,float MAX,u8 for_high)             // v是控制系统的输入，y是控制系统的输出，反馈给ESO，u是ADRC的输出控制量
 {
 	float e=0,fe,fe1;
 	eso_in->h=eso_in->h0;
 	e=eso_in->e=my_deathzoom1(eso_in->z[0]-y,eso_in->eso_dead);
 	fe=fal(e,0.5,eso_in->h0);
 	fe1=fal(e,0.25,eso_in->h0);
-	eso_in->z[0]+=eso_in->h0*(eso_in->z[1]-eso_in->beta0*e+eso_in->b0*Thr_Weight *u);
+	eso_in->z[0]+=eso_in->h0*(eso_in->z[1]-eso_in->beta0*e+eso_in->b0*eso_in->Thr_Weight *u);
 	eso_in->z[1]+=-eso_in->h0*eso_in->beta1*e;
-	eso_in->z[1]=LIMIT(eso_in->z[1],-MAX*Thr_Weight*(eso_in->b0+1),MAX*Thr_Weight*(eso_in->b0+1));
-	if(mode.height_safe&&for_high)
-	eso_in->z[1]=0;	
+	eso_in->z[1]=LIMIT_ESO(eso_in->z[1],-MAX*eso_in->Thr_Weight*(eso_in->b0+1),MAX*eso_in->Thr_Weight*(eso_in->b0+1));
+//	if(for_high)
+//	eso_in->z[1]=0;	
 	if(eso_in->n==0)
 		eso_in->n=1;
-	return eso_in->disturb=LIMIT(eso_in->z[1]/eso_in->n,-MAX,MAX);
+	return eso_in->disturb=LIMIT_ESO(eso_in->z[1]/eso_in->n,-MAX,MAX);
 }
 
-float HIGH_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in)
-{ if(!eso_in->init)
-	{
-  eso_in->init=1;
-	eso_in->level=1;//系统阶次	
- //-------------跟踪器
-	eso_in->use_td=0;		
-	eso_in->r0=4000;//跟踪速度
-  eso_in->h0=(float)H_INNER/1000;//滤波因子
- //-------------观测器
-	eso_in->beta0=1/(eso_in->h0);
-	eso_in->beta1=1/(30*pow(eso_in->h0,2));
-	eso_in->beta2=1000;	
-	eso_in->eso_dead=8;	
- //-------------反馈----------------
-	eso_in->out_mode=1;	
-		//-------liner    0
-	eso_in->KP=kp_in;
-	eso_in->KI=0;
-	eso_in->KD=2;
-	//-------noliner  1
-	eso_in->alfa0=0.25;
-  eso_in->alfa1=0.75;
-	eso_in->alfa2=1.5;	
-  eso_in->tao=eso_in->h0*2;		
-	  //-------noliner  2 3
-	eso_in->c=0.5;//阻尼因子	
-	eso_in->r1=0.5/pow(eso_in->h0,2);
-	eso_in->h1=eso_in->h0*5;
-	//----------模型增益
-	}   
-	 #if ESO_PARA_USE_REAL_TIME
-	    eso_in->h0=T;
-  		eso_in->beta0=1/(eso_in->h0+0.000001);
-   	  eso_in->beta1=1/(30*pow(eso_in->h0,2)+0.000001);
-	    eso_in->tao=eso_in->h0*2;	
-	 #endif
-	eso_in->KP=kp_in;
-  ESO_2N_H(eso_in,v, y, u, T, MAX,0,1);
-	ESO_CONTROL_HEIGH(eso_in,v, y, u, T, MAX,0,1);
-	return eso_in->u;
+
+float OLDX_ESO_CONTROL_POS(ESO *eso_in,float v,float y,float u,float T,float MAX,u8 for_high)
+{static float e0,e1,e2;
+e1=my_deathzoom1(v-eso_in->z[0],eso_in->eso_dead);
+e2=-eso_in->z[1];
+
+if(eso_in->err_limit>0)	
+eso_in->u=eso_in->KP*LIMIT_ESO(e1,-eso_in->err_limit,eso_in->err_limit);
+else
+eso_in->u=eso_in->KP*e1;;	
+		if(eso_in->b0!=0){
+		eso_in->disturb_u=eso_in->z[1]/eso_in->b0;
+		if(fabs(e1)>eso_in->eso_dead)
+		eso_in->disturb_u_reg=eso_in->disturb_u;
+		eso_in->u-=eso_in->Thr_Weight *eso_in->disturb_u_reg;	
+	}
+return  eso_in->u=LIMIT_ESO(eso_in->u,-MAX,MAX);
 }
+
 //位置控制内环 
-float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,float dead)
+float OLDX_POS_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,u16 thr_view)
 { if(!eso_in->init)
 	{
   eso_in->init=1;
@@ -353,12 +290,11 @@ float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,
  //-------------跟踪器
 	eso_in->use_td=0;		
 	eso_in->r0=4000;//跟踪速度
-  eso_in->h0=(float)H_INNER/1000;//滤波因子
+  eso_in->h0=T;//滤波因子
  //-------------观测器
 	eso_in->beta0=1/(eso_in->h0);
 	eso_in->beta1=1/(30*pow(eso_in->h0,2));
 	eso_in->beta2=1000;	
-	eso_in->eso_dead=0;	
  //-------------反馈----------------
 	eso_in->out_mode=1;	
 		//-------liner    0
@@ -375,6 +311,7 @@ float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,
 	eso_in->r1=0.5/pow(eso_in->h0,2);
 	eso_in->h1=eso_in->h0*5;
 	//----------模型增益
+	//
 	}   
 	 #if ESO_PARA_USE_REAL_TIME
 	    eso_in->h0=T;
@@ -382,15 +319,15 @@ float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,
    	  eso_in->beta1=1/(30*pow(eso_in->h0,2)+0.000001);
 	    eso_in->tao=eso_in->h0*2;	
 	 #endif
-	eso_in->KP=kp_in;eso_in->eso_dead=dead;
-  ESO_2N_H(eso_in,v, y, u, T, MAX,0,0);
-	ESO_CONTROL_HEIGH(eso_in,v, y, u, T, MAX,0,0);
+	eso_in->KP=kp_in;
+  OLDX_ESO_2N_POS(eso_in,v, y, u, T, MAX,0);
+	OLDX_ESO_CONTROL_POS(eso_in,v, y, u, T, MAX,0);
 	return eso_in->u;
 }
 
 float np=0.01;
 float L1=1.15;
-float AUTO_B0(ESO *eso_in,float v,float y,float u,float T,float MAX)
+float OLDX_AUTO_B0(ESO *eso_in,float v,float y,float u,float T,float MAX)
 {
 static u8 init;
 if(!init){init=1;

@@ -37,6 +37,7 @@
 .\build\parameter.o: applications\pos_ctrl.h
 .\build\parameter.o: applications\dma.h
 .\build\parameter.o: applications\eso.h
+.\build\parameter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\parameter.o: applications\fly_mode.h
 .\build\parameter.o: applications\include.h
 .\build\parameter.o: .\drivers\mpu6050.h
@@ -47,7 +48,6 @@
 .\build\parameter.o: applications\rc.h
 .\build\parameter.o: applications\imu.h
 .\build\parameter.o: applications\mymath.h
-.\build\parameter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\parameter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\build\parameter.o: .\Libraries\FatFS\src\ff.h
 .\build\parameter.o: .\Libraries\FatFS\src\integer.h

@@ -38,13 +38,13 @@
 .\build\ctrl.o: applications\pos_ctrl.h
 .\build\ctrl.o: applications\dma.h
 .\build\ctrl.o: applications\eso.h
+.\build\ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ctrl.o: applications\fly_mode.h
 .\build\ctrl.o: applications\include.h
 .\build\ctrl.o: .\drivers\pwm_out.h
 .\build\ctrl.o: applications\rc.h
 .\build\ctrl.o: applications\imu.h
 .\build\ctrl.o: applications\mymath.h
-.\build\ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ctrl.o: .\drivers\mpu6050.h
 .\build\ctrl.o: applications\quar.h
 .\build\ctrl.o: applications\FastMath.h

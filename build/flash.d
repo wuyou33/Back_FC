@@ -37,6 +37,7 @@
 .\build\flash.o: applications\pos_ctrl.h
 .\build\flash.o: applications\dma.h
 .\build\flash.o: applications\eso.h
+.\build\flash.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\flash.o: applications\fly_mode.h
 .\build\flash.o: applications\include.h
 .\build\flash.o: .\drivers\ak8975.h

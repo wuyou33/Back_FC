@@ -248,8 +248,8 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
 	ctrl_1.err_d.y = ( ctrl_1.PID[PIDPITCH].kd *( -10 *ctrl_1.damp.y) *( 0.002f/T ) );
 	ctrl_1.err_d.z = ( ctrl_1.PID[PIDYAW].kd   *( -10 *ctrl_1.damp.z) *( 0.002f/T ) );
 	
-  ATT_CONTRL_INNER_ESO_3(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200);
-	ATT_CONTRL_INNER_ESO_3(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200);
+  OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200,ctrl_1.PID[PIDPITCH].kp,thr_view);
+	OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200,ctrl_1.PID[PIDROLL].kp,thr_view);
   
 	ctrl_1.err_i.z += ctrl_1.PID[PIDYAW].ki 	*(ctrl_1.err.z - ctrl_1.damp.z) *T;
   ctrl_1.eliminate_I.z = Thr_Weight *CTRL_1_INT_LIMIT ;	
@@ -308,7 +308,7 @@ if(eso_att_inner_c[PITr].b0==0){
 	g_old[A_Z] = -mpu6050_fc.Gyro_deg.z ;
 }
 
-
+float thr_view;
 float thr_value;
 u8 Thr_Low;
 float Thr_Weight;
@@ -363,6 +363,7 @@ void Thr_Ctrl(float T)
 		}
 		
 	}
+	  thr_view=thr;
 	  Height_Ctrl1(T,thr);   //实际使用值
 	  thr_value =height_ctrl_out;
 ////////////////////////////////////////////////////////////////

@@ -38,7 +38,7 @@
 ".\build\ctrl.o"
 ".\build\pos_ctrl.o"
 ".\build\height_ctrl1.o"
-".\build\eso.o"
+".\applications\ADRC.lib"
 ".\build\usart.o"
 ".\build\rc.o"
 ".\build\dma.o"

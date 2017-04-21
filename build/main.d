@@ -37,5 +37,6 @@
 .\build\main.o: applications\pos_ctrl.h
 .\build\main.o: applications\dma.h
 .\build\main.o: applications\eso.h
+.\build\main.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\main.o: applications\fly_mode.h
 .\build\main.o: applications\include.h

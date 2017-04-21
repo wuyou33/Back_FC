@@ -1,38 +1,44 @@
 #ifndef _ESO_H_
 #define	_ESO_H_
-
+#include "math.h"
 #include "stm32f4xx.h"
-
+/*ADRC controll designed by Golaced from ÔÆÒÝ´´ÐÂ
+*/
+#define ESO_PARA_USE_REAL_TIME 1
 typedef struct
-{ float eso_dead;
-  float beta0,beta1,beta2,beta3;
+{ //control para
+	float KP,KD,KI;
+	float b0,b01;
+	float err_limit;
+	float eso_dead;
+	//mode
+	 u8 init;
+	 u8 level;
+	 u8 not_use_px4;
+	 u8 auto_b0;
+	 u8 out_mode,use_td;
+	 u8 eso_for_z;
+	//adrc
+	u8 n; 
+	float h0;
+	float z[3],e;
 	float disturb,disturb_u,disturb_u_reg;
-	float alfa1,alfa2,alfa0,tao,KP,KD,KI,e;
-	float z[3];
+	float beta0,beta1,beta2,beta3;
+	float alfa1,alfa2,alfa0,tao;	
 	float h,integer;
-	u8 init,level;
-	u8 n,out_mode,use_td;
-  u8 not_use_px4;
-	u8 auto_b0;
-	float v1,v2,h0,r0,b0,b01,h1,r1,c,u;
+	float v1,v2,r0,h1,r1,c,u;
+	//safe
+	u8 Thr_Low;
+	float Thr_Weight;
 }ESO;
-extern ESO eso_pos_spd[3];
-extern ESO eso_pos[3];
-extern ESO eso_att_outter[4],eso_att_inner[4];
-extern ESO eso_att_outter_c[4],eso_att_inner_c[4],ESO_BMP;
-float fst(float x1,float x2,float w,float h);
-float fal(float e,float alfa,float delta);
-float fst2(float x1,float x2,float w, float h);
-float sign(float x);
-void ESO_BMP_INIT(ESO *eso_in);
-void SMOOTH_IN_ESO(ESO *eso_in,float in);
-float AUTO_B0(ESO *eso_in,float v,float y,float u,float T,float MAX);
-float ESO_3N(ESO *eso_in,float v,float y,float u,float T,float MAX);
-float ESO_2N(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4);
-float ATT_CONTRL_OUTER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4);
-float ATT_CONTRL_INNER_ESO_3(ESO *eso_in,float v,float y,float u,float T,float MAX);
-float ATT_CONTRL_INNER_ESO_3_Y(ESO *eso_in,float v,float y,float u,float T,float MAX);
-float HIGH_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in);
-float POS_CONTROL_SPD_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_i,float dead);
+
+extern ESO eso_pos[3],eso_pos_spd[3];
+extern ESO eso_att_outter_c[4],eso_att_inner_c[4];
+
+void OLDX_SMOOTH_IN_ESO(ESO *eso_in,float in);
+float OLDX_AUTO_B0(ESO *eso_in,float v,float y,float u,float T,float MAX);
+float OLDX_ATT_CONTRL_OUTER_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float ero_px4,float kp_in,u16 thr);
+float OLDX_ATT_CONTRL_INNER_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,u16 thr);
+float OLDX_POS_CONTROL_ESO(ESO *eso_in,float v,float y,float u,float T,float MAX,float kp_in,u16 thr);
 #endif
 

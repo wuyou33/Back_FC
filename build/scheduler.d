@@ -37,6 +37,7 @@
 .\build\scheduler.o: applications\pos_ctrl.h
 .\build\scheduler.o: applications\dma.h
 .\build\scheduler.o: applications\eso.h
+.\build\scheduler.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\scheduler.o: applications\fly_mode.h
 .\build\scheduler.o: applications\include.h
 .\build\scheduler.o: .\drivers\mpu6050.h
@@ -46,7 +47,6 @@
 .\build\scheduler.o: applications\rc.h
 .\build\scheduler.o: applications\imu.h
 .\build\scheduler.o: applications\mymath.h
-.\build\scheduler.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\scheduler.o: applications\ctrl.h
 .\build\scheduler.o: .\drivers\pwm_out.h
 .\build\scheduler.o: applications\bmp.h

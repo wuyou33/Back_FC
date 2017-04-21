@@ -37,5 +37,6 @@
 .\build\time.o: .\applications\pos_ctrl.h
 .\build\time.o: .\applications\dma.h
 .\build\time.o: .\applications\eso.h
+.\build\time.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\time.o: .\applications\fly_mode.h
 .\build\time.o: .\applications\include.h

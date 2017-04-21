@@ -171,7 +171,10 @@ void Positon_control(float T)//     光流定点
 		nav_pos_pid.ki=0.05;
 		nav_pos_pid.kd=0.0;
 		nav_pos_pid.dead=0.008;
-		eso_pos_spd[X].b0=eso_pos_spd[Y].b0=4.5;
+		//adrc
+		eso_pos[X].b0=eso_pos[Y].b0=4.5;
+		eso_pos[X].err_limit=eso_pos[Y].err_limit=1500;
+		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
 		nav_spd_pid.f_kp=0.2;
 		nav_spd_pid.kp=0.1;
@@ -301,19 +304,19 @@ head  |    1 PIT y-   90d in marker
 	
 	for (i=0;i<2;i++){ 
 		nav_pos_ctrl[i].now=pos[i];
-	  POS_CONTROL_SPD_ESO(&eso_pos_spd[i],nav_pos_ctrl[i].exp*1000,nav_pos_ctrl[i].now*1000,eso_pos_spd[i].u,out_timer_nav,1.5*1000,nav_pos_pid.kp,nav_pos_pid.dead*1000);//速度环自抗扰控制	
+	  OLDX_POS_CONTROL_ESO(&eso_pos[i],nav_pos_ctrl[i].exp*1000,nav_pos_ctrl[i].now*1000,eso_pos[i].u,out_timer_nav,1.5*1000,nav_pos_pid.kp,thr_view );//速度环自抗扰控制	
 		nav_pos_ctrl[i].err = ( nav_pos_pid.kp*LIMIT(my_deathzoom1(nav_pos_ctrl[i].exp - nav_pos_ctrl[i].now,nav_pos_pid.dead),-1.5,1.5)*1000 );
-    if(eso_pos_spd[i].b0==0&&nav_pos_pid.ki>0){
+    if(eso_pos[i].b0==0&&nav_pos_pid.ki>0){
 		nav_pos_ctrl[i].err_i += nav_pos_pid.ki *nav_pos_ctrl[i].err *out_timer_nav;
 		nav_pos_ctrl[i].err_i = LIMIT(nav_pos_ctrl[i].err_i,-Thr_Weight *NAV_POS_INT,Thr_Weight *NAV_POS_INT);
 		}
 		else
 		nav_pos_ctrl[i].err_i=0;
 		nav_pos_ctrl[i].err_d =  nav_pos_pid.kd *( 0.6f *(-(float)spd[i]*out_timer_nav) + 0.4f *(nav_pos_ctrl[i].err - nav_pos_ctrl[i].err_old) );
-if(eso_pos_spd[i].b0==0)
+if(eso_pos[i].b0==0)
 		nav_pos_ctrl[i].pid_out = nav_pos_ctrl[i].err +nav_pos_ctrl[i].err_i + nav_pos_ctrl[i].err_d;
 else
-	  nav_pos_ctrl[i].pid_out = nav_pos_ctrl[i].err_d +eso_pos_spd[i].u;
+	  nav_pos_ctrl[i].pid_out = nav_pos_ctrl[i].err_d +eso_pos[i].u;
 
 		nav_pos_ctrl[i].pid_out = LIMIT(nav_pos_ctrl[i].pid_out,-1.5*1000,1.5*1000);//m/s
 		nav_pos_ctrl[i].err_old = nav_pos_ctrl[i].err;
@@ -340,9 +343,9 @@ else
 	nav_spd_ctrl[X].exp=nav_pos_ctrl[X].pid_out;	
 	}		
 	
-  if(mode.flow_hold_position!=2)
-	 nav_spd_ctrl[Y].exp=nav_spd_ctrl[X].exp=0;
-	
+  if(mode.flow_hold_position!=2){
+	 nav_spd_ctrl[Y].exp*=0.5;
+	 nav_spd_ctrl[X].exp*=0.5;}
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;
