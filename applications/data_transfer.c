@@ -19,15 +19,8 @@
 #include "usbd_user_hid.h"
 #include "ultrasonic.h"
 #include "anotc_baro_ctrl.h"
-
-
-/////////////////////////////////////////////////////////////////////////////////////
-//数据拆分宏定义，在发送大于1字节的数据类型时，比如int16、float等，需要把数据拆分成单独字节进行发送
-#define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
-#define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
-#define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
-#define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
-
+#include "eso.h"
+#include "alt_fushion.h"
 dt_flag_t f;					//需要发送数据的标志
 u8 data_to_send[50];	//发送数据缓存
 u8 checkdata_to_send,checksum_to_send;
@@ -41,7 +34,7 @@ void ANO_DT_Send_Data(u8 *dataToSend , u8 length)
 //	Usb_Hid_Adddata(data_to_send,length);
 //#endif
 //#ifdef ANO_DT_USE_USART2
-//	Usart2_Send(data_to_send, length);
+	Usart1_Send_DMA(data_to_send, length);
 //#endif
 }
 static void ANO_DT_Send_Check(u8 head, u8 check_sum)
@@ -83,17 +76,18 @@ static void ANO_DT_Send_Msg(u8 id, u8 data)
 //此函数应由用户每1ms调用一次
 extern float ultra_dis_lpf;
 void ANO_DT_Data_Exchange(void)
-{
+{ 
+	#define rate 10
 	static u8 cnt = 0;
-	static u8 senser_cnt 	= 10;
-	static u8 senser2_cnt = 50;
-	static u8 user_cnt 	  = 10;
-	static u8 status_cnt 	= 15;
-	static u8 rcdata_cnt 	= 20;
-	static u8 motopwm_cnt	= 20;
-	static u8 power_cnt		=	50;
-	static u8 speed_cnt   = 50;
-	static u8 location_cnt   = 200;
+	static u8 senser_cnt 	= 10/rate;
+	static u8 senser2_cnt = 50/rate;
+	static u8 user_cnt 	  = 10/rate;
+	static u8 status_cnt 	= 15/rate;
+	static u8 rcdata_cnt 	= 20/rate;
+	static u8 motopwm_cnt	= 20/rate;
+	static u8 power_cnt		=	50/rate;
+	static u8 speed_cnt   = 50/rate;
+	static u8 location_cnt   = 200/rate;
 	
 	if((cnt % senser_cnt) == (senser_cnt-1))
 		f.send_senser = 1;
@@ -147,7 +141,7 @@ void ANO_DT_Data_Exchange(void)
 	else if(f.send_status)
 	{
 		f.send_status = 0;
-		ANO_DT_Send_Status(Roll,Pitch,Yaw,(0.1f *baro_fusion.fusion_displacement.out),0,fly_ready);	
+		ANO_DT_Send_Status(Rol_fc,Pit_fc,Yaw_fc,(0.1f *ALT_POS_BMP_UKF_OLDX*1000),0,fly_ready);	
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	else if(f.send_speed)
@@ -159,21 +153,21 @@ void ANO_DT_Data_Exchange(void)
 	else if(f.send_user)
 	{
 		f.send_user = 0;
-		ANO_DT_Send_User();
+		ANO_DT_Send_User();//调试数据
 	}
 /////////////////////////////////////////////////////////////////////////////////////
 	else if(f.send_senser)
 	{
 		f.send_senser = 0;
-		ANO_DT_Send_Senser(mpu6050.Acc.x,mpu6050.Acc.y,mpu6050.Acc.z,
-												mpu6050.Gyro.x,mpu6050.Gyro.y,mpu6050.Gyro.z,
-												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);
+		ANO_DT_Send_Senser(mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050.Acc.z,
+												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050.Gyro.z,
+												ak8975_fc.Mag_Val.x,ak8975_fc.Mag_Val.y,ak8975_fc.Mag_Val.z);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	else if(f.send_senser2)
 	{
 		f.send_senser2 = 0;
-		ANO_DT_Send_Senser2(baro.height,ultra.height);//原始数据
+		ANO_DT_Send_Senser2(baro.height,ALT_POS_SONAR2*1000);//原始数据
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	else if(f.send_rcdata)
@@ -202,35 +196,35 @@ void ANO_DT_Data_Exchange(void)
 		ANO_DT_Send_Power(123,456);
 	}
 /////////////////////////////////////////////////////////////////////////////////////
-	else if(f.send_pid1)
+	else if(f.send_pid1)//innner
 	{
 		f.send_pid1 = 0;
 		ANO_DT_Send_PID(1,ctrl_1.PID[PIDROLL].kp,ctrl_1.PID[PIDROLL].ki,ctrl_1.PID[PIDROLL].kd,
-											ctrl_1.PID[PIDPITCH].kp,ctrl_1.PID[PIDPITCH].ki,ctrl_1.PID[PIDPITCH].kd,
+											0,eso_att_inner_c[PITr].b0,eso_att_inner_c[PITr].eso_dead,
 											ctrl_1.PID[PIDYAW].kp,ctrl_1.PID[PIDYAW].ki,ctrl_1.PID[PIDYAW].kd);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
-	else if(f.send_pid2)
+	else if(f.send_pid2)//out
 	{
 		f.send_pid2 = 0;
 		ANO_DT_Send_PID(2,ctrl_2.PID[PIDROLL].kp,ctrl_2.PID[PIDROLL].ki,ctrl_2.PID[PIDROLL].kd,
-											ctrl_2.PID[PIDPITCH].kp,ctrl_2.PID[PIDPITCH].ki,ctrl_2.PID[PIDPITCH].kd,
+											0,0,0,
 											ctrl_2.PID[PIDYAW].kp,ctrl_2.PID[PIDYAW].ki,ctrl_2.PID[PIDYAW].kd);
 	}
 /////////////////////////////////////////////////////////////////////////////////////
 	else if(f.send_pid3)
 	{
 		f.send_pid3 = 0;
-		ANO_DT_Send_PID(3,pid_setup.groups.hc_sp.kp,pid_setup.groups.hc_sp.ki,pid_setup.groups.hc_sp.kd,
-											pid_setup.groups.hc_height.kp,pid_setup.groups.hc_height.ki,pid_setup.groups.hc_height.kd,
-											pid_setup.groups.ctrl3.kp,pid_setup.groups.ctrl3.ki,pid_setup.groups.ctrl3.kd);
+		ANO_DT_Send_PID(3,wz_speed_pid.kp,wz_speed_pid.ki,wz_speed_pid.kd,
+											ultra_pid.kp,ultra_pid.ki,ultra_pid.kd,
+											eso_pos[Zr].b0,eso_pos_spd[Zr].b0,eso_pos_spd[Zr].eso_dead);
 	}
 	else if(f.send_pid4)
 	{
 		f.send_pid4 = 0;
-		ANO_DT_Send_PID(4,pid_setup.groups.ctrl4.kp,pid_setup.groups.ctrl4.ki,pid_setup.groups.ctrl4.kd,
-											0						,0						,0						,
-											0						,0						,0						);
+		ANO_DT_Send_PID(4,nav_pos_pid.kp,nav_pos_pid.ki,nav_pos_pid.kd,
+											nav_spd_pid.kp,nav_spd_pid.ki,nav_spd_pid.kd,
+											nav_acc_pid.f_kp,eso_pos[X].b0,eso_pos[X].eso_dead);
 	}
 	else if(f.send_pid5)
 	{
@@ -253,7 +247,7 @@ void ANO_DT_Data_Exchange(void)
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-	Usb_Hid_Send();					
+	//Usb_Hid_Send();					
 /////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -312,7 +306,7 @@ void ANO_DT_Data_Receive_Prepare(u8 data)
 //校验通过后对数据进行解析，实现相应功能
 //此函数可以不用用户自行调用，由函数Data_Receive_Prepare自动调用
 u16 flash_save_en_cnt = 0;
-u16 RX_CH[CH_NUM];
+//u16 RX_CH[CH_NUM];
 
 void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 {
@@ -326,19 +320,19 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 	{
 		if(*(data_buf+4)==0X01)
 		{
-			mpu6050.Acc_CALIBRATE = 1;
+			mpu6050_fc.Acc_CALIBRATE = 1;
 			//mpu6050.Cali_3d = 1;
 		}
 		else if(*(data_buf+4)==0X02)
-			mpu6050.Gyro_CALIBRATE = 1;
+			mpu6050_fc.Gyro_CALIBRATE = 1;
 		else if(*(data_buf+4)==0X03)
 		{
-			mpu6050.Acc_CALIBRATE = 1;		
-			mpu6050.Gyro_CALIBRATE = 1;			
+			mpu6050_fc.Acc_CALIBRATE = 1;		
+			mpu6050_fc.Gyro_CALIBRATE = 1;			
 		}
 		else if(*(data_buf+4)==0X04)
 		{
-			Mag_CALIBRATED = 1;
+			ak8975_fc.Mag_CALIBRATED = 1;
 		}
 		else if((*(data_buf+4)>=0X021)&&(*(data_buf+4)<=0X26))
 		{
@@ -375,24 +369,24 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		}
 	}
 
-	if(*(data_buf+2)==0X03)
-	{
-		if( NS != 1 )
-		{
-			Feed_Rc_Dog(2);
-		}
+//	if(*(data_buf+2)==0X03)
+//	{
+//		if( NS != 1 )
+//		{
+//			Feed_Rc_Dog(2);
+//		}
 
-		RX_CH[THR] = (vs16)(*(data_buf+4)<<8)|*(data_buf+5) ;
-		RX_CH[YAW] = (vs16)(*(data_buf+6)<<8)|*(data_buf+7) ;
-		RX_CH[ROL] = (vs16)(*(data_buf+8)<<8)|*(data_buf+9) ;
-		RX_CH[PIT] = (vs16)(*(data_buf+10)<<8)|*(data_buf+11) ;
-		RX_CH[AUX1] = (vs16)(*(data_buf+12)<<8)|*(data_buf+13) ;
-		RX_CH[AUX2] = (vs16)(*(data_buf+14)<<8)|*(data_buf+15) ;
-		RX_CH[AUX3] = (vs16)(*(data_buf+16)<<8)|*(data_buf+17) ;
-		RX_CH[AUX4] = (vs16)(*(data_buf+18)<<8)|*(data_buf+19) ;
-	}
+//		RX_CH[THR] = (vs16)(*(data_buf+4)<<8)|*(data_buf+5) ;
+//		RX_CH[YAW] = (vs16)(*(data_buf+6)<<8)|*(data_buf+7) ;
+//		RX_CH[ROL] = (vs16)(*(data_buf+8)<<8)|*(data_buf+9) ;
+//		RX_CH[PIT] = (vs16)(*(data_buf+10)<<8)|*(data_buf+11) ;
+//		RX_CH[AUX1] = (vs16)(*(data_buf+12)<<8)|*(data_buf+13) ;
+//		RX_CH[AUX2] = (vs16)(*(data_buf+14)<<8)|*(data_buf+15) ;
+//		RX_CH[AUX3] = (vs16)(*(data_buf+16)<<8)|*(data_buf+17) ;
+//		RX_CH[AUX4] = (vs16)(*(data_buf+18)<<8)|*(data_buf+19) ;
+//	}
 
-	if(*(data_buf+2)==0X10)								//PID1
+	if(*(data_buf+2)==0X10)								//PID1 att in
     {
         ctrl_1.PID[PIDROLL].kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
         ctrl_1.PID[PIDROLL].ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
@@ -409,10 +403,10 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 					checkdata_to_send = *(data_buf+2);
 					checksum_to_send = sum;
 				}
-			  PID_Para_Init();
-				flash_save_en_cnt = 1;
+//			  PID_Para_Init();
+//				flash_save_en_cnt = 1;
     }
-    if(*(data_buf+2)==0X11)								//PID2
+    if(*(data_buf+2)==0X11)								//PID2  att out
     {
         ctrl_2.PID[PIDROLL].kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
         ctrl_2.PID[PIDROLL].ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
@@ -429,32 +423,32 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 					checkdata_to_send = *(data_buf+2);
 					checksum_to_send = sum;
 				}
-				PID_Para_Init();
-				flash_save_en_cnt = 1;
+//				PID_Para_Init();
+//				flash_save_en_cnt = 1;
     }
-    if(*(data_buf+2)==0X12)								//PID3
+    if(*(data_buf+2)==0X12)								//PID3 height
     {	
-        pid_setup.groups.hc_sp.kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
-        pid_setup.groups.hc_sp.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
-        pid_setup.groups.hc_sp.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
+        wz_speed_pid.kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
+        wz_speed_pid.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
+        wz_speed_pid.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
 			
-        pid_setup.groups.hc_height.kp = 0.001*( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
-        pid_setup.groups.hc_height.ki = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
-        pid_setup.groups.hc_height.kd = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
+        ultra_pid.kp = 0.001*( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
+        ultra_pid.ki = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
+        ultra_pid.kd = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 			
-        pid_setup.groups.ctrl3.kp 	= 0.001*( (vs16)(*(data_buf+16)<<8)|*(data_buf+17) );
-        pid_setup.groups.ctrl3.ki 	= 0.001*( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
-        pid_setup.groups.ctrl3.kd 	= 0.001*( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
+        eso_pos_spd[Zr].b0 	= 				( (vs16)(*(data_buf+16)<<8)|*(data_buf+17) );
+        //pid_setup.groups.ctrl3.ki 	= 0.001*( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
+        eso_pos_spd[Zr].eso_dead	=    ( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
         if(f.send_check == 0)
 				{
 					f.send_check = 1;
 					checkdata_to_send = *(data_buf+2);
 					checksum_to_send = sum;
 				}
-				PID_Para_Init();
-				flash_save_en_cnt = 1;
+//				PID_Para_Init();
+//				flash_save_en_cnt = 1;
     }
-	if(*(data_buf+2)==0X13)								//PID4
+	if(*(data_buf+2)==0X13)								//PID4  pos
 	{
 		    pid_setup.groups.ctrl4.kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
         pid_setup.groups.ctrl4.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
@@ -473,8 +467,8 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 			checkdata_to_send = *(data_buf+2);
 			checksum_to_send = sum;
 		}
-		PID_Para_Init();
-		flash_save_en_cnt = 1;
+//		PID_Para_Init();
+//		flash_save_en_cnt = 1;
 	}
 	if(*(data_buf+2)==0X14)								//PID5
 	{
@@ -875,7 +869,7 @@ extern float yaw_mag,airframe_x_sp,airframe_y_sp,wx_sp,wy_sp;
 extern float werr_x_gps,werr_y_gps,aerr_x_gps,aerr_y_gps;
 
 void ANO_DT_Send_User()
-{
+{ u8 i;
 	u8 _cnt=0;
 	vs16 _temp;
 	
@@ -884,34 +878,12 @@ void ANO_DT_Send_User()
 	data_to_send[_cnt++]=0xf1; //用户数据
 	data_to_send[_cnt++]=0;
 	
-	
-	_temp = (s16)baro_p.displacement;            //1
+	for(i=0;i<9;i++){
+	_temp = (s16)BLE_DEBUG[i+1];            //1
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
+  }
 
-	_temp = (s16)wz_speed;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (s16)baro_p.speed;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);	
-	
-	_temp = (s16)baro_fusion.fusion_acceleration.out;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-  _temp = (s16)baro_fusion.fusion_displacement.out;              //5
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (s16)(ultra.height *10);              //6
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-
-	_temp = (s16)(10000 * reference_v.z);              //7
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
 
 	
 	data_to_send[3] = _cnt-4;

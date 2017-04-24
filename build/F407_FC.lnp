@@ -42,6 +42,7 @@
 ".\build\usart.o"
 ".\build\rc.o"
 ".\build\dma.o"
+".\build\data_transfer.o"
 ".\build\mpu6050.o"
 ".\build\ak8975.o"
 ".\build\bmp.o"

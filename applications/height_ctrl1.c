@@ -3,7 +3,7 @@
 #include "filter.h"
 #include "ctrl.h"
 #include "alt_fushion.h"
-
+#include "ultrasonic.h"
 u8 height_ctrl_mode=0;
 int ultra_distance;
 int exp_height;
@@ -62,7 +62,7 @@ void Ultra_PID_Init()
 	ultra_pid_safe.ki = 0.0;
 	ultra_pid_safe.kd = 0.0;
 	//adrc
-	eso_pos[Zr].b0=15;
+	eso_pos[Zr].b0=0;
 	eso_pos[Zr].eso_dead=5;
 	eso_pos[Zr].eso_for_z=1;
 }
@@ -203,8 +203,8 @@ void Height_Ctrl1(float T,float thr)
 //							ultra_ctrl_out_use=	2.7f *rng_thr;
 //							}}
 						 
-					 if(ALT_POS_SONAR2<0.015&&thr_use<500&&!mode.height_safe)//智能起飞油门限制
-						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
+					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe)//智能起飞油门限制
+						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,0,1000);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
 			}//---end of speed control
 			static u8 cnt_100ms;

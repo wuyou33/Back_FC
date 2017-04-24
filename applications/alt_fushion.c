@@ -169,7 +169,7 @@ float acc_body_temp[3];
 		//temp_r += ( 1 / ( 1 + 1 / ( 10 *3.14f *T ) ) ) *my_deathzoom( (temp_r - acc_temp1),0 );
     static float acc_bais;
 		//acc_bais-=X_ukf_barob[3];//(ALT_POS_BMP_UKF_OLDX-posz)*k_acc_bais;
-	  acc_body[2]=acc_bmp=LIMIT(my_deathzoom1(wz_acc-acc_off_baro*0,dead_accz)*acc_scale_bmp,-3.6,3.6);//+LIMIT(acc_bais,-1.5,1.5);
+	  acc_body[2]=acc_bmp=LIMIT(my_deathzoom1(wz_acc-acc_off_baro*1,dead_accz)*acc_scale_bmp,-3.6,3.6);//+LIMIT(acc_bais,-1.5,1.5);
     // rotate acc to world frame
    	#if !DEBUG_WITHOUT_SB
 		#if USE_RECIVER_MINE==1

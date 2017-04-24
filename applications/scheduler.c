@@ -20,7 +20,7 @@
 u16 Rc_Pwm_In[8];
 s16 loop_cnt;
 loop_t loop;
-
+u8 yaw_use_fc=0;
 void Loop_check()  //TIME INTTERRUPT
 {
 	loop.time++; //u16
@@ -69,7 +69,7 @@ void Duty_2ms()
 
  	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
 	,&Rol_fc,&Pit_fc,&Yaw_fc1);
-	if(NAV_BOARD_CONNECT&&0)
+	if(NAV_BOARD_CONNECT&&!yaw_use_fc)
 		Yaw_fc=Yaw;
 	else
 		Yaw_fc=Yaw_fc1;
@@ -137,7 +137,10 @@ void Duty_10ms()
 								  SendBuff1_cnt=0;
 									#if USE_BLE_FOR_APP			  
 									APP_LINK();
-									#endif		  
+									#endif		 
+                  #if USE_ANO_GROUND								
+								  ANO_DT_Data_Exchange();												//数传通信定时调用
+								  #endif
 							if(cnt[2]++>1){cnt[2]=0;
 								    if(mode.att_pid_tune){//PID TUNING
 											{	
@@ -236,7 +239,7 @@ void Duty_10ms()
 										}
 									}
 							USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送     
-							MYDMA_Enable(DMA2_Stream7,SEND_BUF_SIZE1+2);     //开始一次DMA传输！	  
+							MYDMA_Enable(DMA2_Stream7,SendBuff1_cnt+2);     //开始一次DMA传输！	  
 							}	
 						
 				//To  SD卡
@@ -380,7 +383,7 @@ void Duty_50ms()
 	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 		
-  if(!NAV_BOARD_CONNECT||1)			
+  if(!NAV_BOARD_CONNECT||yaw_use_fc)			
 	ANO_AK8975_Read();
 	
 	#if SONAR_USE_FC

@@ -370,7 +370,8 @@ void data_per_uart4(u8 sel);
 
 void UsartSend_GPS(uint8_t ch);
 
-
+void Usart1_Send_DMA(u8 *dataToSend , u8 length);
+extern int16_t BLE_DEBUG[16];
 // pxy
 extern char USART1_Flag ;
 void Blocks_Receive_Data(void);

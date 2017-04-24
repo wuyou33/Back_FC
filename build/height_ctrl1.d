@@ -49,3 +49,6 @@
 .\build\height_ctrl1.o: .\applications\fly_mode.h
 .\build\height_ctrl1.o: .\applications\include.h
 .\build\height_ctrl1.o: applications\alt_fushion.h
+.\build\height_ctrl1.o: .\drivers\ultrasonic.h
+.\build\height_ctrl1.o: .\drivers\ms5611.h
+.\build\height_ctrl1.o: .\drivers\i2c_soft.h

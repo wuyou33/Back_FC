@@ -5,6 +5,7 @@
 #include "mymath.h"
 #include "filter.h"
 #include "quar.h"
+
 #define Kp 0.3f                	// proportional gain governs rate of convergence to accelerometer/magnetometer
 #define Ki 0.001f                	// 0.001  integral gain governs rate of convergence of gyroscope biases
 

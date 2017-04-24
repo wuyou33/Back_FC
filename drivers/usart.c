@@ -1691,8 +1691,11 @@ void USART1_IRQHandler(void)
 	if( USART_GetITStatus(USART1,USART_IT_RXNE) )
 	{
 		USART_ClearITPendingBit(USART1,USART_IT_RXNE);//清除中断标志
-
+   
 		com_data = USART1->DR;
+		#if USE_ANO_GROUND
+		ANO_DT_Data_Receive_Prepare(com_data);
+		#endif
 	 		if(RxState_app==0&&com_data==0xAA)
 		{
 			RxState_app=1;
@@ -1726,7 +1729,9 @@ void USART1_IRQHandler(void)
 		{
 			RxState_app = 0;
 			RxBuffer_app[4+_data_cnt_app]=com_data;
+			#if !USE_ANO_GROUND
 			Data_app(RxBuffer_app,_data_cnt_app+5);
+			#endif
 		}
 		else
 			RxState_app = 0;
@@ -1758,7 +1763,25 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 	if(Rc_Get_PWM.update&&Rc_Get_PWM.THROTTLE>600)
 	Feed_Rc_Dog(2);//通信看门狗喂狗
 	#endif
-  if(*(data_buf+2)==0x66)//RC_GET1
+  if(*(data_buf+2)==0x03)//RC_PWM
+  {
+		Rc_Get_PWM.PITCH=((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
+		Rc_Get_PWM.ROLL=((int16_t)(*(data_buf+6)<<8)|*(data_buf+7));
+		Rc_Get_PWM.THROTTLE=((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));
+		Rc_Get_PWM.YAW=((int16_t)(*(data_buf+10)<<8)|*(data_buf+11));
+		
+		Rc_Get_PWM.AUX1=((int16_t)(*(data_buf+12)<<8)|*(data_buf+13));
+		Rc_Get_PWM.AUX2=((int16_t)(*(data_buf+14)<<8)|*(data_buf+15));
+		Rc_Get_PWM.AUX3=((int16_t)(*(data_buf+16)<<8)|*(data_buf+17));
+		Rc_Get_PWM.AUX4=((int16_t)(*(data_buf+18)<<8)|*(data_buf+19));
+		Rc_Get_PWM.AUX5=((int16_t)(*(data_buf+20)<<8)|*(data_buf+21));
+		Rc_Get_PWM.update=*(data_buf+22);
+		Rc_Get_PWM.POS_MODE=Rc_Get_PWM.AUX3;
+		Rc_Get_PWM.HEIGHT_MODE=Rc_Get_PWM.AUX4;
+		Rc_Get_PWM.RST=Rc_Get_PWM.AUX2;
+			
+	}
+  else if(*(data_buf+2)==0x66)//RC_GET1
   {
 //		for(i=0;i<32;i++)
 //		NRF24L01_RXDATA[i]=*(data_buf+i+4);
@@ -1869,24 +1892,7 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 						}
 					}
 	}
-	else if(*(data_buf+2)==0x03)//RC_PWM
-  {
-		Rc_Get_PWM.PITCH=((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
-		Rc_Get_PWM.ROLL=((int16_t)(*(data_buf+6)<<8)|*(data_buf+7));
-		Rc_Get_PWM.THROTTLE=((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));
-		Rc_Get_PWM.YAW=((int16_t)(*(data_buf+10)<<8)|*(data_buf+11));
-		
-		Rc_Get_PWM.AUX1=((int16_t)(*(data_buf+12)<<8)|*(data_buf+13));
-		Rc_Get_PWM.AUX2=((int16_t)(*(data_buf+14)<<8)|*(data_buf+15));
-		Rc_Get_PWM.AUX3=((int16_t)(*(data_buf+16)<<8)|*(data_buf+17));
-		Rc_Get_PWM.AUX4=((int16_t)(*(data_buf+18)<<8)|*(data_buf+19));
-		Rc_Get_PWM.AUX5=((int16_t)(*(data_buf+20)<<8)|*(data_buf+21));
-		Rc_Get_PWM.update=*(data_buf+22);
-		Rc_Get_PWM.POS_MODE=Rc_Get_PWM.AUX3;
-		Rc_Get_PWM.HEIGHT_MODE=Rc_Get_PWM.AUX4;
-		Rc_Get_PWM.RST=Rc_Get_PWM.AUX2;
-			
-	}
+	
 }
 
 
@@ -2426,9 +2432,15 @@ void Send_IMU_NAV(void)
 	Send_Data_GOL_LINK_NAV(data_to_send, _cnt);
 }
 
-
 u8 SendBuff1[SEND_BUF_SIZE1];	//发送数据缓冲区
 u8 SendBuff1_cnt;
+void Usart1_Send_DMA(u8 *dataToSend , u8 length)
+{u8 i;
+for	(i=0;i<length;i++)
+SendBuff1[SendBuff1_cnt++]=dataToSend[i];
+}
+
+
 void data_per_uart1(int16_t ax,int16_t ay, int16_t az, int16_t gx,int16_t  gy, int16_t gz,int16_t hx, int16_t hy, int16_t hz,
 	int16_t yaw,int16_t pitch,int16_t roll,int16_t alt,int16_t tempr,int16_t press,int16_t IMUpersec)
 {
