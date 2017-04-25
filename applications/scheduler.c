@@ -135,7 +135,7 @@ void Duty_10ms()
 					if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
 							{ 	DMA_ClearFlag(DMA2_Stream7,DMA_FLAG_TCIF7);//清除DMA2_Steam7传输完成标志
 								  SendBuff1_cnt=0;
-									#if USE_BLE_FOR_APP			  
+									#if USE_BLE_FOR_APP&&!USE_ANO_GROUND			  
 									APP_LINK();
 									#endif		 
                   #if USE_ANO_GROUND								

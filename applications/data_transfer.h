@@ -27,7 +27,7 @@ typedef struct
     u8 send_user;
     u8 send_speed;
     u8 send_location;
-
+    u8 send_qr;
 } dt_flag_t;
 
 extern dt_flag_t f;
@@ -47,6 +47,7 @@ void ANO_DT_Send_PID(u8 group,float p1_p,float p1_i,float p1_d,float p2_p,float 
 void ANO_DT_Send_User(void);
 void ANO_DT_Send_Speed(float,float,float);
 void ANO_DT_Send_Location(u8 state,u8 sat_num,s32 lon,s32 lat,float back_home_angle);
-
+void ANO_DT_Send_QR1(float x,float y,float z);
+void ANO_DT_Send_QR2(float x,float y,float z);
 #endif
 

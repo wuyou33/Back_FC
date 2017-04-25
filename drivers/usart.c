@@ -2471,7 +2471,7 @@ SendBuff1[SendBuff1_cnt++]=0xa5;
 SendBuff1[SendBuff1_cnt++]=0x5a;
 SendBuff1[SendBuff1_cnt++]=14+8;
 SendBuff1[SendBuff1_cnt++]=0xA2;
-
+#if !USE_ANO_GROUND			
 if(ax<0)ax=32768-ax;
 ctemp=ax>>8;
 SendBuff1[SendBuff1_cnt++]=ctemp;
@@ -2611,6 +2611,7 @@ temp+=ctemp;
 
 SendBuff1[SendBuff1_cnt++]=(temp%256);
 SendBuff1[SendBuff1_cnt++]=(0xaa);
+#endif
 }
 
 

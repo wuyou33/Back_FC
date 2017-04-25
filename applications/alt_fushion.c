@@ -205,21 +205,21 @@ float acc_body_temp[3];
 		mode_reg=mode.test3;
    	#endif 
 	//#define BARO_UKF 
-	//#define BARO_KF	
+	#define BARO_KF	
 		
 	#if defined(BARO_UKF) //UKF
 
 	#elif  defined(BARO_KF) //KF
 	double Z_kf[3]={posz,0,0};
 	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh,  ga,  gwa,T);
-	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];//Moving_Median(21,5,X_ukf_baro[0]);
-	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];//Moving_Median(22,5,X_ukf_baro[1]);
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
+	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
 	#else  //EKF  
 	float Z_baro_ekf[2]={posz,acc_bmp};		
 	BARO_EKF_OLDX(X_apo_height,P_apo_k_height, X_apo_height, P_apo_k_height ,Z_baro_ekf,  r_baro,  r_acc, T);
-	ALT_POS_BMP_UKF_OLDX=X_apo_height[0];//Moving_Median(21,5,X_ukf_baro[0]);
-	ALT_VEL_BMP_UKF_OLDX=X_apo_height[1];//Moving_Median(22,5,X_ukf_baro[1]);
+	ALT_POS_BMP_UKF_OLDX=X_apo_height[0];
+	ALT_VEL_BMP_UKF_OLDX=X_apo_height[1];
 	#endif
 	
 	#if USE_RECIVER_MINE

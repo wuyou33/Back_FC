@@ -679,6 +679,11 @@
               <FilePath>.\drivers\usart.c</FilePath>
             </File>
             <File>
+              <FileName>data_transfer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\data_transfer.c</FilePath>
+            </File>
+            <File>
               <FileName>rc.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\rc.c</FilePath>

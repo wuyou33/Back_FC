@@ -928,8 +928,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\rc.c</PathWithFileName>
-      <FilenameWithoutPath>rc.c</FilenameWithoutPath>
+      <PathWithFileName>.\applications\data_transfer.c</PathWithFileName>
+      <FilenameWithoutPath>data_transfer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -940,8 +940,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\dma.c</PathWithFileName>
-      <FilenameWithoutPath>dma.c</FilenameWithoutPath>
+      <PathWithFileName>.\applications\rc.c</PathWithFileName>
+      <FilenameWithoutPath>rc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -952,8 +952,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\data_transfer.c</PathWithFileName>
-      <FilenameWithoutPath>data_transfer.c</FilenameWithoutPath>
+      <PathWithFileName>.\applications\dma.c</PathWithFileName>
+      <FilenameWithoutPath>dma.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
