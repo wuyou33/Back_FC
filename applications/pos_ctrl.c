@@ -347,8 +347,8 @@ else
 	}		
 	
   if(mode.flow_hold_position!=2){
-	 nav_spd_ctrl[Y].exp*=0.15;
-	 nav_spd_ctrl[X].exp*=0.15;}
+	 nav_spd_ctrl[Y].exp*=0.25;
+	 nav_spd_ctrl[X].exp*=0.25;}
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;

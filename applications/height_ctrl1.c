@@ -14,7 +14,7 @@ float	set_height_e,set_height_em,
 _hc_value_st hc_value;
 
 
-#define EXP_Z_SPEED  ( 5.26f *my_deathzoom1( (thr-500), 50 ) )//----------遥控对应期望速度
+#define EXP_Z_SPEED  ( 5.26f *my_deathzoom1( (thr-500), 75 ) )//----------遥控对应期望速度
 //#if defined(ZHOU_550)
 //	#define HOLD_THR 450+100 
 //#elif defined(ZHOU_330)
@@ -71,7 +71,7 @@ void Ultra_PID_Init()
 void WZ_Speed_PID_Init()
 {//use
 	  Ultra_PID_Init();
-	  wz_speed_pid.kp = 0.45;
+	  wz_speed_pid.kp = 0.5;
 		wz_speed_pid.ki = 0.2;
 		wz_speed_pid.kd = 1.68;
 	  wz_speed_pid.fp=0.2;
@@ -403,7 +403,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp/2*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) ); 
 	else
 	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) );
 	

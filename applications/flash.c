@@ -477,6 +477,8 @@ void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead)
 u8 FLASH_READ_BUF[SIZE_PARAM]={0};
 u8 FLASH_Buffer[SIZE_PARAM]={0};
 u32 FLASH_SIZE=16*1024*1024;	//FLASH 大小为16字节
+
+float SONAR_HEIGHT=0.054+0.015;
 void READ_PARM(void)
 {
 #if FLASH_USE_STM32
@@ -500,6 +502,7 @@ ak8975_fc.Mag_Gain.x =(float)((vs16)((FLASH_READ_BUF[19]<<8|FLASH_READ_BUF[18]))
 ak8975_fc.Mag_Gain.y=(float)((vs16)((FLASH_READ_BUF[21]<<8|FLASH_READ_BUF[20])))/100.;
 ak8975_fc.Mag_Gain.z =(float)((vs16)((FLASH_READ_BUF[23]<<8|FLASH_READ_BUF[22])))/100.;
 	
+SONAR_HEIGHT=(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/1000.;	
 //dj_angle_offset[0] =(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/100.;
 //dj_angle_offset[1] =(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])))/100.;
 //dj_angle_offset[2] =(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/100.;
@@ -552,6 +555,9 @@ _temp=(int16_t)(ak8975_fc.Mag_Gain.z*100);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 
+_temp=(int16_t)(SONAR_HEIGHT*1000);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
 
 //_temp=(int16_t)(dj_angle_offset[0]*100);
 //FLASH_Buffer[cnt++]=BYTE0(_temp);

@@ -300,9 +300,12 @@ void Duty_20ms()
 		RX_CH_PWM[AUX3r]=Rc_Get_PWM.POS_MODE;
 		RX_CH_PWM[AUX4r]=Rc_Get_PWM.HEIGHT_MODE;
 	  }
-		else
+		else 
 		{
+		if(!fly_ready)	
 	  RX_CH_PWM[THRr]=	1000;
+		else
+		RX_CH_PWM[THRr]=	1500;	
 	  RX_CH_PWM[ROLr]=  1500;
 	  RX_CH_PWM[PITr]=  1500;
 		RX_CH_PWM[YAWr]=  1500;

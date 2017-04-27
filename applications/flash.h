@@ -29,6 +29,7 @@ void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead);   		//´ÓÖ¸¶¨µØÖ·¿ªÊ
 extern void READ_PARM(void);
 extern void WRITE_PARM(void);
  
+ extern float SONAR_HEIGHT;
 //////////////////////////////////////////////////////////////////////////////////	 
 //±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
 //ALIENTEK STM32F407¿ª·¢°å

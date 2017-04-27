@@ -449,14 +449,14 @@
               <FilePath>.\applications\include.h</FilePath>
             </File>
             <File>
-              <FileName>init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\init.c</FilePath>
-            </File>
-            <File>
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\scheduler.c</FilePath>
+            </File>
+            <File>
+              <FileName>init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\init.c</FilePath>
             </File>
             <File>
               <FileName>parameter.c</FileName>
@@ -642,6 +642,11 @@
               <FileName>baro_ekf_oldx.lib</FileName>
               <FileType>4</FileType>
               <FilePath>.\applications\baro_ekf_oldx.lib</FilePath>
+            </File>
+            <File>
+              <FileName>KF_OLDX_NAV.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\KF_OLDX_NAV.c</FilePath>
             </File>
           </Files>
         </Group>

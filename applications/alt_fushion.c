@@ -10,6 +10,7 @@
 #include "rc.h"
 #include "ultrasonic.h"
 #include "baro_ekf_oldx.h"
+
 float ALT_POS_BMP,ALT_VEL_BMP;
 float ALT_POS_SONAR,ALT_VEL_SONAR,ALT_POS_SONAR2,ALT_POS_SONAR3;
 float ALT_POS_SONAR2,ALT_POS_SONAR3;
@@ -120,7 +121,7 @@ float posz_sonar=LIMIT(ultra.relative_height,0,5);
 #endif
 
 float posz;
-if(!mode.test3||mode.height_safe||height_ctrl_mode){
+if(!mode.test3||mode.height_safe||height_ctrl_mode==1){
 posz=(float)(baro.relative_height)/1000.;
 }
 else
@@ -204,11 +205,32 @@ float acc_body_temp[3];
 		}
 		mode_reg=mode.test3;
    	#endif 
-	//#define BARO_UKF 
-	#define BARO_KF	
+	#define BARO_KF_NEW 
+	//#define BARO_KF	
 		
-	#if defined(BARO_UKF) //UKF
-
+	#if defined(BARO_KF_NEW) //UKF
+	static float acc_bias_ukf;	
+  double Z_kf[3]={posz,0,acc_bias_ukf};
+	double A[9]=
+			 {1,       0,    0,
+				T,       1,    0,
+				-T*T/2, -T,    1};
+	double H[9]={
+			 1,0,0,
+			 0,0,0,
+			 0,0,0};
+	double B[3]={T*T/2,T,0}; 	
+	
+	if((fabs(Pit_fc)>6.666||fabs(Rol_fc)>6.666)&&fly_ready)
+	{
+		H[8]=1;
+	}
+	KF_OLDX_NAV( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, A,  B,  H,  ga,  gwa, gh,  gh,  T);	
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
+	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
+	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
+	if((fabs(Pit_fc)<8&&fabs(Rol_fc)<8)&&fabs(X_kf_baro[2])<1.666)
+	acc_bias_ukf=ALT_ACC_BMP_UKF_OLDX;
 	#elif  defined(BARO_KF) //KF
 	double Z_kf[3]={posz,0,0};
 	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh,  ga,  gwa,T);

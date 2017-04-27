@@ -1,6 +1,6 @@
 --cpu Cortex-M4.fp
-".\build\init.o"
 ".\build\scheduler.o"
+".\build\init.o"
 ".\build\parameter.o"
 ".\build\fly_mode.o"
 ".\build\main.o"
@@ -35,6 +35,7 @@
 ".\build\quar.o"
 ".\applications\kf_oldx.lib"
 ".\applications\baro_ekf_oldx.lib"
+".\build\kf_oldx_nav.o"
 ".\build\ctrl.o"
 ".\build\pos_ctrl.o"
 ".\build\height_ctrl1.o"
