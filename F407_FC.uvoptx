@@ -279,6 +279,31 @@
           <WinNumber>1</WinNumber>
           <ItemText>Rc_Get_PWM,0x0A</ItemText>
         </Ww>
+        <Ww>
+          <count>14</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Rol_fc</ItemText>
+        </Ww>
+        <Ww>
+          <count>15</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Pit_fc</ItemText>
+        </Ww>
+        <Ww>
+          <count>16</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ctrl_2</ItemText>
+        </Ww>
+        <Ww>
+          <count>17</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>time_rc</ItemText>
+        </Ww>
+        <Ww>
+          <count>18</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rc_board_connect,0x0A</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -340,6 +365,11 @@
           <count>11</count>
           <WinNumber>2</WinNumber>
           <ItemText>ALT_POS_SONAR2</ItemText>
+        </Ww>
+        <Ww>
+          <count>12</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>BEEP_RATE,0x0A</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

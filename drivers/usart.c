@@ -1748,7 +1748,9 @@ void USART1_IRQHandler(void)
 
 }
 //  NRF board 通讯
-
+float time_rc;
+u8 rc_board_connect=1;
+u16 rc_board_connect_lose_cnt=0;
 void Data_Receive_Anl4(u8 *data_buf,u8 num)
 {
 	vs16 rc_value_temp;
@@ -1764,7 +1766,9 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 	Feed_Rc_Dog(2);//通信看门狗喂狗
 	#endif
   if(*(data_buf+2)==0x03)//RC_PWM
-  {
+  { rc_board_connect=1;
+		rc_board_connect_lose_cnt=0;
+		time_rc=Get_Cycle_T(GET_T_RC)/1000000.0f; 	
 		Rc_Get_PWM.PITCH=((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
 		Rc_Get_PWM.ROLL=((int16_t)(*(data_buf+6)<<8)|*(data_buf+7));
 		Rc_Get_PWM.THROTTLE=((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));

@@ -292,6 +292,8 @@ void Duty_20ms()
 	  Positon_control(pos_time);
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
+		if(!rc_board_connect)
+			Rc_Get_PWM.ROLL=Rc_Get_PWM.PITCH=Rc_Get_PWM.YAW=1500;
 		RX_CH_PWM[THRr]=	LIMIT(Rc_Get_PWM.THROTTLE-RX_CH_FIX_PWM[THRr],1000,2000)	;
 		RX_CH_PWM[ROLr]=  my_deathzoom_rc(Rc_Get_PWM.ROLL-RX_CH_FIX_PWM[ROLr],2)	;
 		RX_CH_PWM[PITr]=  my_deathzoom_rc(Rc_Get_PWM.PITCH-RX_CH_FIX_PWM[PITr],2)	;
@@ -314,7 +316,7 @@ void Duty_20ms()
 
 void Duty_50ms()
 {
-		 //if(cnt_loss_nrf++>1500/50){cnt_loss_nrf=1500/50+1;loss_nrf=1;}
+		if(rc_board_connect_lose_cnt++>20*5/50){rc_board_connect=0;}
 		if(imu_loss_cnt++>1500/50){imu_loss_cnt=1500/50+1;NAV_BOARD_CONNECT=0;}
 		 
 		//---------------use now

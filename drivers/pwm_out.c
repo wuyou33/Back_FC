@@ -330,7 +330,7 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 	
 }
 
-
+u16 BEEP_RATE;
 u8 PMW_T=1;
 #if USE_MINI_BOARD
 u8 CH_out_Mapping[8] = {0,1,2,3,4,5,6,7};
@@ -369,6 +369,9 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 	TIM4->CCR2 = PWM_RADIO *( pwm_tem[5] ) + INIT_DUTY;				//4
 	TIM4->CCR3 = PWM_RADIO *( pwm_tem[6] ) + INIT_DUTY;				//3	
 	TIM4->CCR4 = PWM_RADIO *( pwm_tem[7] ) + INIT_DUTY;				//4
+	#if USE_BEEP
+	TIM4->CCR2 = PWM_RADIO *( BEEP_RATE ) + INIT_DUTY;				//4
+	#endif
 #else
 	TIM1->CCR4 = PWM_RADIO *( pwm_tem[0] ) + INIT_DUTY;				//1	
 	TIM1->CCR2 = PWM_RADIO *( pwm_tem[2] ) + INIT_DUTY;				//2

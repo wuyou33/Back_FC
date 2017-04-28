@@ -2,7 +2,8 @@
 #define _USART_H
 
 #include "stm32f4xx.h"
-
+extern u8 rc_board_connect;
+extern u16 rc_board_connect_lose_cnt;
 extern float Yaw_fc1;
 extern u8 Rx_Buf[], pos_kf_state[3];
 void Usart2_Init(u32 br_num);

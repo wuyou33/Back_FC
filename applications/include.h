@@ -26,11 +26,11 @@ extern u8 mcuID[3];
 #define USE_BLE_FOR_APP 1
 #define TUNING_X 1   //0->y 1->x 
 #define TUNING_Z 1   //higher than tuning x or y
-#define SONAR_USE_FC 0  //FC采集超声波
+#define SONAR_USE_FC 1  //FC采集超声波
 #define USE_US100           //使用us100型号超声波 
-
+#define USE_BEEP 1
 #define MAXMOTORS 		(4)		//电机数量
-#define GET_TIME_NUM 	(20)		//设置获取时间的数组数量
+#define GET_TIME_NUM 	(30)		//设置获取时间的数组数量
 #define CH_NUM 				(8) 	//接收机通道数量
 #define USE_TOE_IN_UNLOCK 1 // 0：默认解锁方式，1：外八解锁方式
 /***************中断优先级******************/

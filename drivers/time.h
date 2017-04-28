@@ -41,4 +41,5 @@ uint32_t GetSysTime_us(void);
 #define GET_T_IMU 17
 #define GET_T_IMU_UKF 18
 #define GET_T_IMU_YAW 19
+#define GET_T_RC 20
 #endif

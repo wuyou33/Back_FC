@@ -5,6 +5,5 @@
 
 u8 PWM_Out_Init(uint16_t hz);
 void SetPwm(int16_t pwm[],s16 min,s16 max);
-
 #endif
 
