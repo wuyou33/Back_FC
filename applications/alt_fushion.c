@@ -229,7 +229,7 @@ float acc_body_temp[3];
 	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
 	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
-	if((fabs(Pit_fc)<8&&fabs(Rol_fc)<8)&&fabs(X_kf_baro[2])<1.666)
+	if((fabs(Pit_fc)<6.666&&fabs(Rol_fc)<6.666)&&fabs(X_kf_baro[2])<1.666)
 	acc_bias_ukf=ALT_ACC_BMP_UKF_OLDX;
 	#elif  defined(BARO_KF) //KF
 	double Z_kf[3]={posz,0,0};

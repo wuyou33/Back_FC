@@ -494,14 +494,14 @@
               <FilePath>.\applications\iic_hml.c</FilePath>
             </File>
             <File>
-              <FileName>led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\drivers\led.c</FilePath>
-            </File>
-            <File>
               <FileName>i2c_soft.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\i2c_soft.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\drivers\led.c</FilePath>
             </File>
             <File>
               <FileName>flash.c</FileName>
@@ -634,6 +634,11 @@
               <FilePath>.\applications\quar.c</FilePath>
             </File>
             <File>
+              <FileName>KF_OLDX_NAV.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\KF_OLDX_NAV.c</FilePath>
+            </File>
+            <File>
               <FileName>kf_oldx.lib</FileName>
               <FileType>4</FileType>
               <FilePath>.\applications\kf_oldx.lib</FilePath>
@@ -642,11 +647,6 @@
               <FileName>baro_ekf_oldx.lib</FileName>
               <FileType>4</FileType>
               <FilePath>.\applications\baro_ekf_oldx.lib</FilePath>
-            </File>
-            <File>
-              <FileName>KF_OLDX_NAV.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\KF_OLDX_NAV.c</FilePath>
             </File>
           </Files>
         </Group>

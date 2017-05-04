@@ -321,7 +321,7 @@ void Thr_Ctrl(float T)
 	
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
-	if((fabs(Pit_fc)>1.5*MAX_CTRL_ANGLE||fabs(Rol_fc)>1.5*MAX_CTRL_ANGLE)&&fly_ready&&mode.att_pid_tune==0)
+	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&fly_ready&&mode.att_pid_tune==0)
 		force_Thr_low=1;
 //protect flag init	
 //	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)

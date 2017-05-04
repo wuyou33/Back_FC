@@ -104,6 +104,7 @@ u16 data_rate_gol_link;
 PID_STA HPID,SPID,FIX_PID,NAV_PID;
 PID_STA HPID_app,SPID_app,FIX_PID_app,NAV_PID_app;
 struct _PID_SET pid;
+struct SMART smart,smart_in;
 RC_GETDATA Rc_Get;
 RC_GETDATA Rc_Get_PWM;
 struct _plane plane;
@@ -670,6 +671,13 @@ void Send_PID(void)
 	
 	_temp=nav_pos_ctrl[X].mode;
 	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =  mpu6050_fc.Acc_CALIBRATE;
+	data_to_send[_cnt++]=BYTE0(_temp);	
+	_temp =  mpu6050_fc.Gyro_CALIBRATE;
+	data_to_send[_cnt++]=BYTE0(_temp);	
+	_temp =  ak8975_fc.Mag_CALIBRATED;
+	data_to_send[_cnt++]=BYTE0(_temp);	
+	
 	
 	data_to_send[3] = _cnt-4;
 
@@ -1785,6 +1793,21 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 		Rc_Get_PWM.RST=Rc_Get_PWM.AUX2;
 			
 	}
+	else if(*(data_buf+2)==0x81)//Smart_control
+	{
+	  smart_in.pos.x=(float)((int16_t)(*(data_buf+4)<<8)|*(data_buf+5))/100.;
+		smart_in.pos.y=(float)((int16_t)(*(data_buf+6)<<8)|*(data_buf+7))/100.;
+		smart_in.pos.z=(float)((int16_t)(*(data_buf+8)<<8)|*(data_buf+9))/100.;
+	  smart_in.spd.x=(float)((int16_t)(*(data_buf+10)<<8)|*(data_buf+11))/100.;
+		smart_in.spd.y=(float)((int16_t)(*(data_buf+12)<<8)|*(data_buf+13))/100.;
+		smart_in.spd.z=(float)((int16_t)(*(data_buf+14)<<8)|*(data_buf+15))/100.;
+		smart_in.rc.PITCH=((int16_t)(*(data_buf+16)<<8)|*(data_buf+17));
+		smart_in.rc.ROLL=((int16_t)(*(data_buf+18)<<8)|*(data_buf+19));
+		smart_in.rc.THROTTLE=((int16_t)(*(data_buf+20)<<8)|*(data_buf+21));
+		smart_in.rc.YAW=((int16_t)(*(data_buf+22)<<8)|*(data_buf+23));
+		smart_in.rc.POS_MODE=*(data_buf+24);//1 rc 2 spd 3 pos 
+		smart_in.rc.RST=*(data_buf+25);//1 idle  2 auto-take_off  3 auto-land
+	}	
   else if(*(data_buf+2)==0x66)//RC_GET1
   {
 //		for(i=0;i<32;i++)
@@ -2812,7 +2835,8 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=m100.GPS_STATUS;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-	
+	_temp=mode.en_sd_save;
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 		for( i=cnt_reg;i<nrf_uart_cnt;i++)
@@ -3061,6 +3085,8 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=HPID.OD;//filter
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	_temp=mode.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;

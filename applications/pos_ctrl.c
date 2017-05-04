@@ -197,7 +197,7 @@ void Positon_control(float T)//     光流定点
 	static u16 pos_reset_cnt[2];
 	if(NS==0||mode.rc_control_flow_pos_sel||Thr_Low)
 	Nav_pos_set_test(mode.rc_control_flow_pos_sel,T);
-	else {
+	else if(smart.rc.POS_MODE==0){
 	for(i=0;i<2;i++){
 			switch(pos_reset_state[i])
 			{
@@ -220,7 +220,7 @@ void Positon_control(float T)//     光流定点
 			}	
   }
 	if(!pos_exp_test){
-	if(ALT_POS_SONAR2*1000<SONAR_HEIGHT*1.5||!fly_ready||mode.flow_hold_position==0)
+	if(ALT_POS_SONAR2*1000<SONAR_HEIGHT*1.25||!fly_ready||mode.flow_hold_position==0)
 	{reset_nav_pos(Y);reset_nav_pos(X);}
 	}
 	
@@ -230,6 +230,7 @@ void Positon_control(float T)//     光流定点
 	  nav_pos_ctrl[X].err_i=nav_pos_ctrl[Y].err_i=nav_acc_ctrl[X].err_i=nav_acc_ctrl[Y].err_i=nav_spd_ctrl[X].err_i=nav_spd_ctrl[Y].err_i=0;
 	}
  }
+	
 	static u8 mode_flow_hold_position_reg;
 	if(mode_flow_hold_position_reg!=mode.flow_hold_position)
 	{reset_nav_pos(Y); reset_nav_pos(X);}
@@ -296,6 +297,13 @@ head  |    1 PIT y-   90d in marker
   acc_body[X]=acc[X]=acc_flt[X]*9800;//mm	
 		
 //位置
+	//smart
+	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.x)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==1&&fabs(smart.rc.ROLL-1500)>25))
+	nav_pos_ctrl[X].exp=smart.pos.x;
+	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.y)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==1&&fabs(smart.rc.ROLL-1500)>25))
+	nav_pos_ctrl[Y].exp=smart.pos.y;
+	
+	//
 	if(cnt[0]++>0){cnt[0]=0;
 	float temp1;
   temp1=(float)Get_Cycle_T(GET_T_OUT_NAV)/1000000.;
@@ -336,17 +344,33 @@ else
 	#else
 	float Yaw_qr=To_180_degrees(Yaw+yaw_qr_off);
 	#endif
+	
+	float temp_pos_out[2];
 	if(nav_pos_ctrl[X].mode==2){//global  Yaw from IMU
-	nav_spd_ctrl[Y].exp= nav_pos_ctrl[North].pid_out*cos(Yaw_qr*0.0173)+nav_pos_ctrl[East].pid_out*sin(Yaw_qr*0.0173); 
-	nav_spd_ctrl[X].exp=-nav_pos_ctrl[North].pid_out*sin(Yaw_qr*0.0173)+nav_pos_ctrl[East].pid_out*cos(Yaw_qr*0.0173);
+	temp_pos_out[Y]= nav_pos_ctrl[North].pid_out*cos(Yaw_qr*0.0173)+nav_pos_ctrl[East].pid_out*sin(Yaw_qr*0.0173); 
+	temp_pos_out[X]=-nav_pos_ctrl[North].pid_out*sin(Yaw_qr*0.0173)+nav_pos_ctrl[East].pid_out*cos(Yaw_qr*0.0173);
 	}
 	else
 	{
-	nav_spd_ctrl[Y].exp=nav_pos_ctrl[Y].pid_out;
-	nav_spd_ctrl[X].exp=nav_pos_ctrl[X].pid_out;	
+	temp_pos_out[Y]=nav_pos_ctrl[Y].pid_out;
+	temp_pos_out[X]=nav_pos_ctrl[X].pid_out;	
 	}		
 	
-  if(mode.flow_hold_position!=2){
+ if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
+	 {
+		 if(smart.spd.y==0)
+		 nav_spd_ctrl[Y].exp=temp_pos_out[Y]; 
+		 if(smart.spd.x==0)
+		 nav_spd_ctrl[X].exp=temp_pos_out[X]; 
+	 } 
+	 else
+	 {
+	 nav_spd_ctrl[Y].exp=temp_pos_out[Y];
+	 nav_spd_ctrl[X].exp=temp_pos_out[X];
+	 } 
+	
+	
+  if(mode.flow_hold_position!=2){//spd trig tunning
 	 nav_spd_ctrl[Y].exp*=0.25;
 	 nav_spd_ctrl[X].exp*=0.25;}
 	static u8 state_tune_spd;
@@ -502,49 +526,162 @@ else
 
 //--------------------------------------自动起飞降落 视觉导航状态机 未使用
 u8 mode_change;
+u8 state_v;
+u8 force_pass;
+static u16 cnt[10]={0};
 u16 AUTO_UP_CUARVE[]={1600,1660,1660,1655,1650,1650,1650,1650,1650};
 u16 AUTO_DOWN_CUARVE[]={1500,1500-50,1500-150,1500-150,1500-200,1500-200};
 u16 AUTO_DOWN_CUARVE1[]={1500-150,1500-150,1500-100,1500-100,1500-80,1500-80};
-float SONAR_SET_HIGHT =0.06;
-float AUTO_FLY_HEIGHT =2.5;
-float SONAR_CHECK_DEAD =0.05;
 
-float AUTO_LAND_HEIGHT_1= 2.5;// 3.5 //bmp check
-float AUTO_LAND_HEIGHT_2= 1.6;//1.8
-float AUTO_LAND_HEIGHT_3= 0.0925;
-
-float MINE_LAND_HIGH= 0.35;
-float AUTO_LAND_SPEED_DEAD =0.08;
-u8 state_v;u16 cnt[10]={0};
-float baro_ground_high;
-float nav_land[3];
-#define DEAD_NAV_RC 80
-//state
-#define SG_LOW_CHECK 0
-#define SG_MID_CHECK 1
-#define SU_UP1 2
-#define SU_HOLD 3
-#define SD_RETRY_UP 4
-#define SD_RETRY_UP_HOLD 5
-
-
-#define SD_HOLD 13
-#define SD_MISS_SEARCH 14
-#define SD_HOLD2 15
-#define SD_HIGH_FAST_DOWN 16
-#define SD_CIRCLE_SLOW_DOWN 17
-#define SD_CIRCLE_HOLD 18
-#define SD_CIRCLE_MID_DOWN  19
-#define SD_CHECK_G 20
-#define SD_SHUT_DOWN 21
-#define SD_SAFE 22
-
-#define RC_PITCH 0
-#define RC_ROLL  1
-#define RC_THR   2
-#define RC_YAW   3
-u16 Rc_Pwm_Inr_mine[8],Rc_Pwm_Out_mine[8];
-float angle_imu_dj[3];
 void AUTO_LAND_FLYUP(float T)
 {
+	switch(state_v)
+	{
+		case SG_LOW_CHECK:
+			if(mode.auto_fly_up&&CH_filter[THR]<-500+DEAD_NAV_RC)
+		    cnt[0]++;
+			else
+				cnt[0]=0;
+			if(cnt[0]>2/T)
+			{cnt[0]=0;state_v=SG_MID_CHECK;}
+			else if(mode.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready)
+			{cnt[0]=0;state_v=SD_HOLD1;}
+			
+			if(force_pass){force_pass=0;cnt[0]=0;state_v=SG_MID_CHECK;}
+		break;
+		case SG_MID_CHECK:
+	    if(mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
+		    cnt[0]++;
+			else
+				cnt[0]=0;
+			if(cnt[0]>1.5/T)
+			{cnt[0]=0;state_v=SU_UP1;}
+			else if(!mode.auto_fly_up||(ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&!mode.auto_fly_up)||fly_ready)
+			{cnt[0]=0;state_v=SG_LOW_CHECK;}	
+			
+			if(force_pass){force_pass=0;cnt[0]=0;state_v=SU_UP1;}
+	  break;
+		case SU_UP1:
+			if(cnt[0]++>5/T||ALT_POS_SONAR2>AUTO_UP_POS_Z)
+				{cnt[0]=0;state_v=SD_HOLD;}	
+			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+		break;
+		case SD_HOLD1:
+      if(mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
+		    cnt[0]++;
+			else
+				cnt[0]=0;
+			if(cnt[0]>0.25/T)
+			{cnt[0]=0;state_v=SD_HOLD;}
+		  
+     if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+    break;
+    case SD_HOLD:
+      if(!mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
+		    cnt[0]++;
+			else
+				cnt[0]=0;
+			if(cnt[0]>1.5/T)
+			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
+		 
+     if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+    break;				
+			
+		//--------------------------
+    case SD_HIGH_FAST_DOWN:
+			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
+				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
+				
+			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+    break;
+		case SD_CIRCLE_SLOW_DOWN:
+			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+				{cnt[0]=0;state_v=SD_CHECK_G;}	
+				
+			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+    break;
+		case SD_CHECK_G:
+			if(fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+		    cnt[0]++;
+			else
+				cnt[0]=0;
+			if(cnt[0]>2/T)
+			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
+			
+			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+    break;
+		case SD_SHUT_DOWN:
+		  if(!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+50))
+		  state_v=SG_LOW_CHECK;	
+    break;
+		
+		//------------------------------------SAFE------------------------------------------------
+		case SD_SAFE://safe out
+			if(!mode.auto_fly_up&&!fly_ready&&(CH_filter[THR]<-500+50)&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+			state_v=SG_LOW_CHECK;	
+		break;
+		
+	}//
+//output	
+	  if(state_v==SG_LOW_CHECK)
+		smart.rc.POS_MODE=0;	
+		else if(state_v==SG_MID_CHECK)
+	  smart.rc.POS_MODE=0;	 
+	  else if(state_v== SU_UP1){
+		fly_ready=1;
+		smart.rc.POS_MODE=SMART_MODE_SPD;
+    smart.rc.RST=2;		
+		smart.spd.x=smart.spd.y=0;
+		smart.spd.z=AUTO_FLY_SPD_Z;
+		}
+		else if(state_v==SD_HOLD1||state_v==SD_HOLD){//direct fly up
+    smart.pos.x=smart_in.pos.x;			
+		smart.pos.y=smart_in.pos.y;		
+		smart.pos.z=smart_in.pos.z;	
+
+		smart.spd.x=smart_in.spd.x;	
+		smart.spd.y=smart_in.spd.y;		
+		smart.spd.z=smart_in.spd.z;		
+		
+		smart.rc.PITCH=smart_in.rc.PITCH;
+		smart.rc.ROLL=smart_in.rc.ROLL;
+		smart.rc.THROTTLE =smart_in.rc.THROTTLE;
+		smart.rc.YAW=smart_in.rc.YAW;
+		if(mode.flow_hold_position==3){
+		smart.rc.RST=smart_in.rc.RST;		
+		smart.rc.POS_MODE=smart_in.rc.POS_MODE;}
+    else
+    {
+		smart.rc.RST=0;		
+		smart.rc.POS_MODE=0;
+		}	
+	 }		
+    else if(state_v==SD_HIGH_FAST_DOWN){
+		smart.pos.x=smart_in.pos.x;			
+		smart.pos.y=smart_in.pos.y;				
+		smart.pos.z=AUTO_DOWN_POS_Z;	
+	
+		smart.rc.RST=3;		
+		smart.rc.POS_MODE=SMART_MODE_POS;
+	  }
+    else if(state_v== SD_CIRCLE_SLOW_DOWN||state_v== SD_CHECK_G)
+		{
+		smart.spd.x=0;			
+		smart.spd.y=0;				
+		smart.spd.z=AUTO_DOWN_SPD_Z;	
+	
+		smart.rc.RST=3;		
+		smart.rc.POS_MODE=SMART_MODE_SPD;
+	  }
+    else if(state_v== SD_SHUT_DOWN){
+	  fly_ready =0;
+		smart.rc.RST=0;		
+		smart.rc.POS_MODE=0;
+		}			
+    else 
+		{
+		smart.rc.RST=0;		
+		smart.rc.POS_MODE=0;
+		}
+	
 }

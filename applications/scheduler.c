@@ -290,6 +290,9 @@ void Duty_20ms()
 		pos_time=baro_task_time;
 		
 	  Positon_control(pos_time);
+	
+		
+		
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
 		if(!rc_board_connect)
@@ -312,11 +315,32 @@ void Duty_20ms()
 	  RX_CH_PWM[PITr]=  1500;
 		RX_CH_PWM[YAWr]=  1500;
 		}	
+		//------------------------Smart UPDATE--------------------
+		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&Rc_Get_PWM.POS_MODE==3)
+				switch(smart.rc.POS_MODE)
+				{
+					case SMART_MODE_RC://rc
+						RX_CH_PWM[THRr]=	smart.rc.THROTTLE;
+						RX_CH_PWM[ROLr]=  smart.rc.ROLL;
+						RX_CH_PWM[PITr]=  smart.rc.PITCH;
+						RX_CH_PWM[YAWr]=  smart.rc.YAW;
+						break;
+					case SMART_MODE_SPD://spd
+						nav_spd_ctrl[X].exp=smart.spd.x*1000;
+						nav_spd_ctrl[Y].exp=smart.spd.y*1000;
+						ultra_ctrl_out=smart.spd.z*1000;
+						break;
+					case SMART_MODE_POS://pos
+						nav_pos_ctrl[X].exp=smart.pos.x;
+						nav_pos_ctrl[Y].exp=smart.pos.y;
+						ultra_ctrl.exp=smart.pos.z*1000;
+						break;
+				}
 }
 
 void Duty_50ms()
 {
-		if(rc_board_connect_lose_cnt++>20*5/50){rc_board_connect=0;}
+		if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
 		if(imu_loss_cnt++>1500/50){imu_loss_cnt=1500/50+1;NAV_BOARD_CONNECT=0;}
 		 
 		//---------------use now
@@ -353,32 +377,33 @@ void Duty_50ms()
 				#endif
 			#endif
 		#endif
-					
-	  //------------7 6 5 4  |  3 2 1 0  KEY
-		//mode.trig_flow_spd= KEY[7];//1
-		//mode.trig_h_spd=KEY[4];
-	  mode.imu_use_mid_down=1;//KEY_SEL[1];
-    //mode.baro_f_use_ukfm=KEY[7];//KEY[7];			
-		//mode.flow_f_use_ukfm=KEY[5];//
-		if(mode.flow_hold_position==2)
+		mode.en_eso_h_in=1;
+		mode.imu_use_mid_down=1;
+		mode.flow_f_use_ukfm=2;
+		mode.baro_f_use_ukfm=0;				
+		mode.yaw_use_eso=0;
+		if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
 		mode.h_is_fix=1;		
 		else
-		mode.h_is_fix=0;			
-		mode.en_eso_h_in=1;
-		mode.yaw_use_eso=0;//KEY[7];
-			if(Rc_Get_PWM.RST>1500)
-						mode.test4=1;//pos acc use
-						else
-						mode.test4=0;//pos acc use
-
-		mode.flow_f_use_ukfm=2;
-		mode.baro_f_use_ukfm=0;
-		if(mode.flow_hold_position==2&&circle.connect)	
+		mode.h_is_fix=0;	
+		
+		if(mode.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
 		mode.rc_control_flow_pos_sel=1;
-		else if(mode.flow_hold_position==2)	
+		else if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
 		mode.rc_control_flow_pos_sel=2;
 		else
 		mode.rc_control_flow_pos_sel=0; 
+									
+	  //------------7 6 5 4  |  3 2 1 0  KEY
+		if(Rc_Get_PWM.RST>1500)
+		mode.test4=1;//pos acc use
+		else
+		mode.test4=0;//pos acc use
+			
+	  if(Rc_Get_PWM.AUX1>1500)
+		mode.auto_fly_up=1;
+		else
+		mode.auto_fly_up=0;	
 		
 		#if !USE_RECIVER_MINE
 		//	if(Rc_Get_PWM.AUX1>1500&&ALT_POS_SONAR2<3)

@@ -86,8 +86,13 @@ struct _sensor{
 
 extern struct _sensor sensor;	
 
-	
-
+struct SMART{   
+	struct _float pos;
+	struct _float spd;
+  RC_GETDATA rc;
+              };	
+extern struct SMART smart,smart_in;
+							
 struct _speed{   
 	int altitude;
 	int bmp;

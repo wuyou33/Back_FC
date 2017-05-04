@@ -188,21 +188,22 @@ void Height_Ctrl1(float T,float thr)
 					
 						 int ultra_sp_tmp=my_deathzoom_21((hc_value.fusion_speed),0);
 						 ultra_speed=LIMIT(ultra_sp_tmp,-2.5*1000,2.5*1000);
+				
+				   if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
+					 {
+						 if(smart.spd.z==0)
+						 ultra_ctrl_out_use=ultra_ctrl_out; 
+					 } 
+					 else{
 				     if(!hold_alt_flag||mode.en_hinf_height_spd||mode.height_safe||
 							 (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
-             static u16 cnt_rng;			
+           }
 						 
-//						 if(mode.en_ident1&&!mode.height_safe){//辨识用
-//							if(cnt_rng++>20){
-//							rng_time1=Get_Cycle_T(GET_T_RNG); 	
-//							cnt_rng=0;
-//							rng_thr=RNG_Get_RandomRange(-160,160);
-//							ultra_ctrl_out_use=	2.7f *rng_thr;
-//							}}
 						 
+
 					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe)//智能起飞油门限制
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,0,1000);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
@@ -323,14 +324,9 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	static u16 cnt_in_mid;
 	static u8 state_high_set=0;
 	
-	if(!mode.use_dji)
-		exp_height_speed=EXP_Z_SPEED;
-	else
-	  exp_height_speed= ( 2.7f *my_deathzoom1(CH_filter[THRr], 80 )) ;
-	
 	 #define CHECK_CNT_MID 0.25
 
-  if(EXP_Z_SPEED!=0)
+  if(EXP_Z_SPEED!=0&&smart.rc.POS_MODE==0)
 	{  hold_alt_flag=0;
 	if(height_ctrl_mode==1)
 		{
@@ -346,14 +342,14 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else
 		hold_alt_flag=1;
 	
-	if(height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25))
+	if(height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)&&smart.rc.POS_MODE==0)
 	#if EN_ATT_CAL_FC		
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
 	#else
 	exp_height=ALT_POS_BMP_EKF*1000;
 	#endif
 	
-	if(mode_change){mode_change=0;
+	if(mode_change&&smart.rc.POS_MODE==0){mode_change=0;
 	if(height_ctrl_mode==1)
 	#if EN_ATT_CAL_FC	
 	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
@@ -372,13 +368,13 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
   #endif
 	mode_safe_reg=mode.height_safe;
 	
-	
+	if(smart.rc.POS_MODE==0){
 	if(height_ctrl_mode==2&&!mode.height_safe&&ALT_POS_SONAR2*1000>SONAR_HEIGHT*1.5&&mode.h_is_fix){//超声波模式期望高度固定为1.2m
 	if(circle.connect)
 	exp_height=900;
 	else
 	exp_height=900;	
-  }
+  }}
 	
 	if(height_ctrl_mode==1||mode.height_safe)
 	#if EN_ATT_CAL_FC	
@@ -390,15 +386,19 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	float tilted_fix_sonar;	
 	#if EN_ATT_CAL_FC
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
-									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_SONAR2),0,2);
+									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
-							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,2);
+							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
 	#endif		
 	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
 		
 	}	
-  ultra_ctrl.exp=exp_height;
+ 
+	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.THROTTLE-1500)>25))
+	exp_height=ultra_dis_lpf;
+		
+	ultra_ctrl.exp=exp_height;
 	ultra_ctrl.now=ultra_dis_lpf=  ultra_dis_tmp;
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;

@@ -91,4 +91,37 @@ void AUTO_LAND_FLYUP(float T);
 extern float nav_land[3], nav[2];;
 extern u8 state_v;
 extern u8 mode_change;
+//state
+#define SG_LOW_CHECK 0
+#define SG_MID_CHECK 1
+#define SU_UP1 2
+#define SU_HOLD 3
+#define SD_RETRY_UP 4
+#define SD_RETRY_UP_HOLD 5
+
+
+#define SD_HOLD 13
+#define SD_MISS_SEARCH 14
+#define SD_HOLD1 15
+#define SD_HIGH_FAST_DOWN 16
+#define SD_CIRCLE_SLOW_DOWN 17
+#define SD_CIRCLE_HOLD 18
+#define SD_CIRCLE_MID_DOWN  19
+#define SD_CHECK_G 20
+#define SD_SHUT_DOWN 21
+#define SD_SAFE 22
+
+//------------parameter
+#define DEAD_NAV_RC 50
+#define AUTO_FLY_SPD_Z 0.125 //m/s
+#define AUTO_UP_POS_Z 1.5  //m
+#define AUTO_DOWN_POS_Z LIMIT(SONAR_HEIGHT*2,0.35,1) //m
+#define AUTO_DOWN_SPD_Z 0.125 //m/s
+#define GROUND_SPEED_CHECK 0.05  //m/s
+//------------
+#define SMART_MODE_POS 3
+#define SMART_MODE_SPD 2
+#define SMART_MODE_RC 1
+
+
 #endif
