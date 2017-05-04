@@ -47,36 +47,30 @@ static void  Param_SetSettingToFC(void)
 	memcpy(&ctrl_2.PID[PIDYAW],&pid_setup.groups.ctrl2.yaw,sizeof(pid_t));
 
 }
-
+float k_pid=1;
+float k_sensitivity=1;//感度
 void Para_ResetToFactorySetup(void)
 {
-// 	/* 加速计默认校准值 */
-// 	sensor_setup.Offset.Accel.x = 0;
-// 	sensor_setup.Offset.Accel.y = 0;
-// 	sensor_setup.Offset.Accel.z = 0;
-// 	/* 陀螺仪默认校准值 */
-// 	sensor_setup.Offset.Gyro.x = 0;
-// 	sensor_setup.Offset.Gyro.y = 0;
-// 	sensor_setup.Offset.Gyro.z = 0;
-// 	/* 罗盘默认校准值 */
-// 	sensor_setup.Offset.Mag.x = 0;		
-// 	sensor_setup.Offset.Mag.y = 0;		
-// 	sensor_setup.Offset.Mag.z = 0;	
-// 	/* 气压计默认校准值 */	
-// 	sensor_setup.Offset.Baro = 0;
-//    /* 温度默认校准值 */	
-// 	sensor_setup.Offset.Acc_Temperature = 0;
-// 	sensor_setup.Offset.Gyro_Temperature = 0;
  float pid_att_out[3]={0.7,0.0,0.0};
  float pid_att_in[3]={0.7,0.2,2.2};
  
  float pid_att_out_yaw[3]={0.8,0.05,0.3};
  float pid_att_in_yaw[3]={1.2,0.1,1.2};
+ 
  //adrc
  eso_att_inner_c[PITr].eso_dead=eso_att_inner_c[ROLr].eso_dead=1;
  eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=20;
  eso_att_inner_c[PITr].not_use_px4=eso_att_inner_c[ROLr].not_use_px4=1;
-  /* PID 默认值 */
+ 
+ k_pid=LIMIT(LENGTH_OF_DRONE/320.,0.25,2)*k_sensitivity;
+ pid_att_in[0]*=LIMIT(k_pid,0.5,1.5);
+ pid_att_in_yaw[0]*=LIMIT(k_pid,0.65,1.35);
+//  if(mcuID[0]== TUNNING_DRONE_CHIP_ID)//250
+// {
+// pid_att_in[0]=0.568;
+// pid_att_in_yaw[0]=1;	 
+// k_pid=/330.;
+// }	 
 	pid_setup.groups.ctrl1.pitch.kp = pid_att_in[0];//0.6;
 	pid_setup.groups.ctrl1.roll.kp  = pid_setup.groups.ctrl1.pitch.kp;	
 	pid_setup.groups.ctrl1.yaw.kp   = pid_att_in_yaw[0];	
@@ -84,7 +78,6 @@ void Para_ResetToFactorySetup(void)
 	pid_setup.groups.ctrl1.pitch.ki = pid_att_in[1];
 	pid_setup.groups.ctrl1.roll.ki  = pid_setup.groups.ctrl1.pitch.ki;	
 	pid_setup.groups.ctrl1.yaw.ki   = pid_att_in_yaw[1];	
-	
 	
 	pid_setup.groups.ctrl1.pitch.kd = pid_att_in[2];
 	pid_setup.groups.ctrl1.roll.kd  = pid_setup.groups.ctrl1.pitch.kd ;	
@@ -114,7 +107,7 @@ void Para_ResetToFactorySetup(void)
 	pid_setup.groups.ctrl4.ki = 1.0f;
 	pid_setup.groups.ctrl4.kd = 1.0;
 	
-	pid_setup.groups.hc_sp.kp = 2.0f;//
+	pid_setup.groups.hc_sp.kp = 2.0f;
 	pid_setup.groups.hc_sp.ki = 1.0f;
 	pid_setup.groups.hc_sp.kd = 1.0f;
 	
@@ -129,13 +122,10 @@ void Para_ResetToFactorySetup(void)
 void PID_Para_Init()
 {
 	Ctrl_Para_Init();
-	//h_pid_init();
-
 }
 
 void Para_Init()
 {
-	
 	Para_ResetToFactorySetup();
 	flash_init_error = 1;
 

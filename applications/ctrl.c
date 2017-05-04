@@ -313,6 +313,7 @@ float thr_value;
 u8 Thr_Low;
 float Thr_Weight;
 u8 force_Thr_low;
+u16 cnt_for_low=0;
 void Thr_Ctrl(float T)
 { static u8 fly_ready_r;
 	static float thr;
@@ -322,6 +323,11 @@ void Thr_Ctrl(float T)
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
 	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&fly_ready&&mode.att_pid_tune==0)
+		cnt_for_low++;
+	else
+		cnt_for_low=0;
+	
+	if(cnt_for_low>0.888/T)
 		force_Thr_low=1;
 //protect flag init	
 //	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)

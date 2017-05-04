@@ -19,6 +19,7 @@ typedef struct
 	float fusion_height;
 
 }_hc_value_st;
+extern float ultra_ctrl_out_use;
 extern _hc_value_st hc_value;
 extern u8 height_ctrl_mode;
 float auto_take_off_land(float dT,u8 ready);

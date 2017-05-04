@@ -144,7 +144,7 @@ u8 pos_kf_state[3];
 		temp_pos[LAT]=(float)(int16_t)((*(data_buf+15)<<8)|*(data_buf+16))/100.;//m  lat->1 Y
 		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+17)<<8)|*(data_buf+18))/1000.;//m
 		float temp=(float)(int16_t)((*(data_buf+19)<<8)|*(data_buf+20))/1000.;//m
-		#if !SONAR_USE_FC
+		#if !SONAR_USE_FC&&!SONAR_USE_FC1
 		if(temp<4.5){ultra.measure_ok=1;
 	  m100.H_G=ALT_POS_SONAR2 = temp;}
 		#endif
@@ -885,6 +885,9 @@ void UART5_IRQHandler(void)
 		USART_ClearITPendingBit(UART5,USART_IT_RXNE);//清除中断标志
 
 		com_data = UART5->DR;
+		#if SONAR_USE_FC1
+		Ultra_Get(com_data);
+		#endif
 				if(RxState5==0&&com_data==0xAA)
 		{
 			RxState5=1;

@@ -132,6 +132,7 @@ void Duty_10ms()
 							}					
 							
 				//BLE UPLOAD《----------------------蓝牙调试
+							
 					if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
 							{ 	DMA_ClearFlag(DMA2_Stream7,DMA_FLAG_TCIF7);//清除DMA2_Steam7传输完成标志
 								  SendBuff1_cnt=0;
@@ -286,13 +287,14 @@ void Duty_20ms()
 		else
 		baro_task_time=temp;
     
+		
 	  baro_ctrl(baro_task_time,&hc_value);			
 		pos_time=baro_task_time;
 		
+		AUTO_LAND_FLYUP(pos_time);
 	  Positon_control(pos_time);
 	
-		
-		
+
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
 		if(!rc_board_connect)
@@ -316,7 +318,7 @@ void Duty_20ms()
 		RX_CH_PWM[YAWr]=  1500;
 		}	
 		//------------------------Smart UPDATE--------------------
-		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&Rc_Get_PWM.POS_MODE==3)
+		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&mode.flow_hold_position==2)
 				switch(smart.rc.POS_MODE)
 				{
 					case SMART_MODE_RC://rc
@@ -328,12 +330,12 @@ void Duty_20ms()
 					case SMART_MODE_SPD://spd
 						nav_spd_ctrl[X].exp=smart.spd.x*1000;
 						nav_spd_ctrl[Y].exp=smart.spd.y*1000;
-						ultra_ctrl_out=smart.spd.z*1000;
+						ultra_ctrl_out_use=smart.spd.z*1000;
 						break;
 					case SMART_MODE_POS://pos
 						nav_pos_ctrl[X].exp=smart.pos.x;
 						nav_pos_ctrl[Y].exp=smart.pos.y;
-						ultra_ctrl.exp=smart.pos.z*1000;
+						exp_height=smart.pos.z*1000;
 						break;
 				}
 }
@@ -416,7 +418,7 @@ void Duty_50ms()
   if(!NAV_BOARD_CONNECT||yaw_use_fc)			
 	ANO_AK8975_Read();
 	
-	#if SONAR_USE_FC
+	#if SONAR_USE_FC||SONAR_USE_FC1
 	if(!Thr_Low||NS==0)
 	Ultra_Duty();
 	#endif

@@ -18,7 +18,12 @@ void Ultra_Duty()
 	#if defined(USE_KS103)
 
 	#elif defined(USE_US100)
+	#if SONAR_USE_FC1
+	  temp[0]=0x55;
+	  USART_SendData(UART5, 0x55); 
+	#else
 		Uart3_Send(0x55);
+	#endif
 	#endif
 ///////////////////////////////////////////////
 		ultra_start_f = 1;

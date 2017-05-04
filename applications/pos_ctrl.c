@@ -542,10 +542,15 @@ void AUTO_LAND_FLYUP(float T)
 		    cnt[0]++;
 			else
 				cnt[0]=0;
-			if(cnt[0]>2/T)
+			if(cnt[0]>1/T)
 			{cnt[0]=0;state_v=SG_MID_CHECK;}
 			else if(mode.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready)
-			{cnt[0]=0;state_v=SD_HOLD1;}
+			{cnt[0]=0;
+			if(mode.flow_hold_position==2)
+			state_v=SD_HOLD;
+			else
+			state_v=SD_HOLD1;	
+			}
 			
 			if(force_pass){force_pass=0;cnt[0]=0;state_v=SG_MID_CHECK;}
 		break;
@@ -564,7 +569,7 @@ void AUTO_LAND_FLYUP(float T)
 		case SU_UP1:
 			if(cnt[0]++>5/T||ALT_POS_SONAR2>AUTO_UP_POS_Z)
 				{cnt[0]=0;state_v=SD_HOLD;}	
-			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
 		break;
 		case SD_HOLD1:
       if(mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -574,7 +579,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.25/T)
 			{cnt[0]=0;state_v=SD_HOLD;}
 		  
-     if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;
     case SD_HOLD:
       if(!mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -584,7 +589,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>1.5/T)
 			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
 		 
-     if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;				
 			
 		//--------------------------
@@ -592,23 +597,23 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
 				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
 				
-			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CIRCLE_SLOW_DOWN:
 			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
 				{cnt[0]=0;state_v=SD_CHECK_G;}	
 				
-			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CHECK_G:
-			if(fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+			if(fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
 		    cnt[0]++;
 			else
 				cnt[0]=0;
-			if(cnt[0]>2/T)
+			if(cnt[0]>1/T)
 			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
 			
-			if(mode.flow_hold_position!=3){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
     break;
 		case SD_SHUT_DOWN:
 		  if(!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+50))
@@ -621,8 +626,11 @@ void AUTO_LAND_FLYUP(float T)
 			state_v=SG_LOW_CHECK;	
 		break;
 		
-	}//
-//output	
+	}
+//-------------------------------------------------------------
+	
+	
+//----------------------------output---------------------------
 	  if(state_v==SG_LOW_CHECK)
 		smart.rc.POS_MODE=0;	
 		else if(state_v==SG_MID_CHECK)
@@ -647,7 +655,7 @@ void AUTO_LAND_FLYUP(float T)
 		smart.rc.ROLL=smart_in.rc.ROLL;
 		smart.rc.THROTTLE =smart_in.rc.THROTTLE;
 		smart.rc.YAW=smart_in.rc.YAW;
-		if(mode.flow_hold_position==3){
+		if(mode.flow_hold_position==2){
 		smart.rc.RST=smart_in.rc.RST;		
 		smart.rc.POS_MODE=smart_in.rc.POS_MODE;}
     else
@@ -657,8 +665,8 @@ void AUTO_LAND_FLYUP(float T)
 		}	
 	 }		
     else if(state_v==SD_HIGH_FAST_DOWN){
-		smart.pos.x=smart_in.pos.x;			
-		smart.pos.y=smart_in.pos.y;				
+		smart.pos.x=POS_UKF_X;			
+		smart.pos.y=POS_UKF_Y;				
 		smart.pos.z=AUTO_DOWN_POS_Z;	
 	
 		smart.rc.RST=3;		
@@ -668,7 +676,7 @@ void AUTO_LAND_FLYUP(float T)
 		{
 		smart.spd.x=0;			
 		smart.spd.y=0;				
-		smart.spd.z=AUTO_DOWN_SPD_Z;	
+		smart.spd.z=-AUTO_DOWN_SPD_Z;	
 	
 		smart.rc.RST=3;		
 		smart.rc.POS_MODE=SMART_MODE_SPD;

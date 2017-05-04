@@ -99,7 +99,7 @@ if(!init)
 {
 
 }	
-#if SONAR_USE_FC
+#if SONAR_USE_FC||SONAR_USE_FC1
 float dt=T;
 float posz_sonar=LIMIT(ultra.relative_height,0,5);
 		if( fabs(posz_sonar - ALT_POS_SONAR2) < 0.1 )

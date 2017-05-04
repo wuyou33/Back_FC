@@ -15,19 +15,9 @@ _hc_value_st hc_value;
 
 
 #define EXP_Z_SPEED  ( 5.26f *my_deathzoom1( (thr-500), 75 ) )//----------遥控对应期望速度
-//#if defined(ZHOU_550)
-//	#define HOLD_THR 450+100 
-//#elif defined(ZHOU_330)
-//	#define HOLD_THR 500 
-//#elif defined(ZHOU_300)
-//	#define 
-//#endif
-
 float rng_time1;
 float HOLD_THR =450+100; //悬停油门
 float ALT_HOLD_THR_RANGE_SCALE=2;
-
-
 float exp_spd_zv,thr_use,thr_in_view;
 _st_height_pid_v wz_speed_pid_v;
 _st_height_pid_v wz_speed_pid_v_safe;
@@ -202,10 +192,8 @@ void Height_Ctrl1(float T,float thr)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
            }
 						 
-						 
-
 					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe)//智能起飞油门限制
-						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,0,1000);
+						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
 			}//---end of speed control
 			static u8 cnt_100ms;

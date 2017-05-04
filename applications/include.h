@@ -17,7 +17,7 @@
 #include "fly_mode.h"
 
 extern u8 mcuID[3];
-#define TUNNING_DRONE_CHIP_ID 0x0101
+#define TUNNING_DRONE_CHIP_ID 0x2F
 //================系统===================
 #define USE_ANO_GROUND 1
 #define USE_RECIVER_MINE 0
@@ -27,6 +27,7 @@ extern u8 mcuID[3];
 #define TUNING_X 1   //0->y 1->x 
 #define TUNING_Z 1   //higher than tuning x or y
 #define SONAR_USE_FC 0  //FC采集超声波
+#define SONAR_USE_FC1 1  //FC采集超声波USE UART1
 #define USE_US100           //使用us100型号超声波 
 #define USE_BEEP 0
 #define MAXMOTORS 		(4)		//电机数量
@@ -101,7 +102,7 @@ extern u8 mcuID[3];
 #define CTRL_2_INT_LIMIT 		0.5f *MAX_CTRL_ANGLE		//外环积分幅度
 
 #define MAX_CTRL_ASPEED 	 	300.0f									//ROL,PIT允许的最大控制角速度
-#define MAX_CTRL_YAW_SPEED 	150.0f									//YAW允许的最大控制角速度
+#define MAX_CTRL_YAW_SPEED 	225.0f									//YAW允许的最大控制角速度
 #define CTRL_1_INT_LIMIT 		0.5f *MAX_CTRL_ASPEED		//内环积分幅度
 
 #define MAX_PWM				100			///%	最大PWM输出为100%油门

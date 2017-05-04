@@ -11,12 +11,19 @@
 #include "bmp.h"
 
 u8 mcuID[3];
+void cpuidGetId(void)
+{
+    mcuID[0] = *(__IO u32*)(0x1FFF7A10);
+    mcuID[1] = *(__IO u32*)(0x1FFF7A14);
+    mcuID[2] = *(__IO u32*)(0x1FFF7A18);
+}
+
 u8 All_Init()
 {
 	NVIC_PriorityGroupConfig(NVIC_GROUP);		//中断优先级组别设置
 	
 	SysTick_Configuration(); 	//滴答时钟
-	
+	cpuidGetId();
 	I2c_Soft_Init();					//初始化模拟I2C
 	Delay_ms(100);						//延时
 	PWM_Out_Init(400);				//初始化电调输出功能	
@@ -24,7 +31,7 @@ u8 All_Init()
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
 	#endif
 	LED_Init();								//LED功能初始
-	Para_Init();							//参数初始
+	
 	Delay_ms(100);						//延时
 	
 	#if EN_ATT_CAL_FC
@@ -54,7 +61,11 @@ u8 All_Init()
 	#if EN_DMA_UART3
 	MYDMA_Config(DMA1_Stream3,DMA_Channel_4,(u32)&USART3->DR,(u32)SendBuff3,SEND_BUF_SIZE3+2,2);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
   #endif
+	#if !SONAR_USE_FC1
   Uart5_Init(115200L);      // 图像Odroid
+	#else
+	Uart5_Init(9600);      // 图像Odroid
+	#endif
 	Delay_ms(100);
 	#if EN_DMA_UART4 
 	USART_DMACmd(UART4,USART_DMAReq_Tx,ENABLE);       
@@ -81,6 +92,7 @@ u8 All_Init()
 	Delay_ms(100);
 	#endif
 	READ_PARM();//读取参数
+	Para_Init();//参数初始
  	return (1);
 }
 /******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
