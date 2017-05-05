@@ -188,7 +188,7 @@ void ANO_DT_Data_Exchange(void)
 		if(f.send_pid1){
 		 if(sel[3]==0){sel[3]=1;
 		ANO_DT_Send_PID(1,ctrl_1.PID[PIDROLL].kp,ctrl_1.PID[PIDROLL].ki,ctrl_1.PID[PIDROLL].kd,
-											(float)eso_att_inner_c[PITr].b0/1000.,0,(float)eso_att_inner_c[PITr].eso_dead/1000.,
+											(float)eso_att_inner_c[PITr].b0/1000.,0,(float)eso_att_inner_c[PITr].eso_dead,
 											ctrl_1.PID[PIDYAW].kp,ctrl_1.PID[PIDYAW].ki,ctrl_1.PID[PIDYAW].kd);}
     else if(sel[3]==1){sel[3]=2;
 		ANO_DT_Send_PID(2,ctrl_2.PID[PIDROLL].kp,ctrl_2.PID[PIDROLL].ki,ctrl_2.PID[PIDROLL].kd,
@@ -199,10 +199,22 @@ void ANO_DT_Data_Exchange(void)
 											ultra_pid.kp,ultra_pid.ki,ultra_pid.kd,
 											nav_spd_pid.kp,nav_spd_pid.ki,nav_spd_pid.kd);
 	  }
-    else {sel[3]=0;
+    else if(sel[3]==3){sel[3]=4;
 		ANO_DT_Send_PID(4,nav_pos_pid.kp,nav_pos_pid.ki,nav_pos_pid.kd,
-											(float)eso_pos[X].b0/1000.,0,(float)eso_pos[X].eso_dead*1000.,
+											(float)eso_pos[X].b0/1000.,0,(float)eso_pos[X].eso_dead/1000.,
 											(float)eso_pos_spd[Zr].b0/1000.,0,(float)eso_pos_spd[Zr].eso_dead/1000.);
+		}
+		else {sel[3]=0;
+		float temp1,temp2;
+    temp1=	LIMIT(imu_board.flow_module_offset_x,-0.99,0.99);
+    if(temp1<0)
+    temp1=-temp1+1;
+    temp2=	LIMIT(imu_board.flow_module_offset_y,-0.99,0.99);
+    if(temp2<0)
+    temp2=-temp2+1;			
+		ANO_DT_Send_PID(5,imu_board.k_flow_sel,temp1,temp2,
+											0,0,0,
+											0,0,0);
 		f.send_pid1=0;
 		}
 	 }
@@ -338,7 +350,7 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
         ctrl_1.PID[PIDPITCH].kd= ctrl_1.PID[PIDROLL].kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
         eso_att_inner_c[ROLr].b0=eso_att_inner_c[PITr].b0= 				( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
         //ki = ( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
-        eso_att_inner_c[ROLr].eso_dead=eso_att_inner_c[PITr].eso_dead=   ( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
+        eso_att_inner_c[ROLr].eso_dead=eso_att_inner_c[PITr].eso_dead=   ( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) )*0.001;
         ctrl_1.PID[PIDYAW].kp 	= 0.001*( (vs16)(*(data_buf+16)<<8)|*(data_buf+17) );
         ctrl_1.PID[PIDYAW].ki 	= 0.001*( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
         ctrl_1.PID[PIDYAW].kd 	= 0.001*( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
@@ -393,9 +405,9 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
         nav_pos_pid.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
         nav_pos_pid.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
 			
-				eso_pos[X].b0=eso_pos[X].b0 = ( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
+				eso_pos[Y].b0=eso_pos[X].b0 = ( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
 				//         pid_setup.groups.hc_height.ki = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
-				eso_pos[X].eso_dead=eso_pos[X].eso_dead = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
+				eso_pos[Y].eso_dead=eso_pos[X].eso_dead = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 		
 				eso_pos_spd[Zr].b0 	= 				( (vs16)(*(data_buf+16)<<8)|*(data_buf+17) );
         //pid_setup.groups.ctrl3.ki 	= 0.001*( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
@@ -409,8 +421,18 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 //		PID_Para_Init();
 //		flash_save_en_cnt = 1;
 	}
-	if(*(data_buf+2)==0X14)								//PID5
+	if(*(data_buf+2)==0X14)								//PID5 for imu set
 	{
+		imu_board.k_flow_sel  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
+		int temp1,temp2;
+		temp1=( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
+		if(temp1>1000)imu_board.flow_module_offset_x=-(temp1-1000)*0.001;
+		else
+		imu_board.flow_module_offset_x=(temp1)*0.001;	
+		temp2=( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
+		if(temp2>1000)imu_board.flow_module_offset_y=-(temp2-1000)*0.001;
+		else imu_board.flow_module_offset_y=(temp2)*0.001;
+		
 		if(f.send_check == 0)
 		{
 			f.send_check = 1;

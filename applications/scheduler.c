@@ -379,11 +379,7 @@ void Duty_50ms()
 				#endif
 			#endif
 		#endif
-		mode.en_eso_h_in=1;
-		mode.imu_use_mid_down=1;
-		mode.flow_f_use_ukfm=2;
-		mode.baro_f_use_ukfm=0;				
-		mode.yaw_use_eso=0;
+	
 		if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
 		mode.h_is_fix=1;		
 		else
@@ -401,7 +397,7 @@ void Duty_50ms()
 		mode.test4=1;//pos acc use
 		else
 		mode.test4=0;//pos acc use
-			
+
 	  if(Rc_Get_PWM.AUX1>1500)
 		mode.auto_fly_up=1;
 		else

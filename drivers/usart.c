@@ -469,8 +469,14 @@ void Send_IMU_TO_FLOW(void)
 	_temp =(vs16)( circle.use_spd);//ultra_distance;
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
-//	_temp =  mode.save_video;
-//	data_to_send[_cnt++]=BYTE0(_temp);	
+	#if SONAR_USE_FC||SONAR_USE_FC1
+	_temp =(vs16)(ALT_POS_SONAR2*1000);//ultra_distance;
+	#else
+	_temp=0;
+	#endif
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	
 	data_to_send[3] = _cnt-4;
 
 	for( i=0;i<_cnt;i++)
@@ -688,6 +694,37 @@ void Send_PID(void)
 	Send_Data_GOL_LINK(data_to_send, _cnt);
 }  
 
+struct IMU_PAR imu_board;
+void Send_IMU_PARM(void)
+{u8 i;	u8 sum = 0;
+	u8 data_to_send[50];
+	u8 _cnt=0;
+	vs16 _temp;
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0xAF;
+	data_to_send[_cnt++]=0x83;//功能字
+	data_to_send[_cnt++]=0;//数据量
+	
+	_temp = imu_board.k_flow_sel*1000;
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = imu_board.flow_module_offset_x*1000;
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = imu_board.flow_module_offset_y*1000;
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+ 
+	
+	data_to_send[3] = _cnt-4;
+
+	for( i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	data_to_send[_cnt++] = sum;
+	
+	Send_Data_GOL_LINK(data_to_send, _cnt);
+}  
+
 //send to imu board
 void GOL_LINK_TASK(void)
 {
@@ -697,9 +734,12 @@ if(cnt[1]++>4)
 {cnt[1]=0;
 Send_IMU_TO_FLOW();
 }
-if(cnt[2]++>20)
+if(cnt[2]++>10)
 {cnt[2]=0;
-Send_PID();
+if(cnt[3]){cnt[3]=0;
+Send_IMU_PARM();}
+else{cnt[3]=1;
+Send_PID();}
 }
 }
 

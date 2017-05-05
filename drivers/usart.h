@@ -92,6 +92,15 @@ struct SMART{
   RC_GETDATA rc;
               };	
 extern struct SMART smart,smart_in;
+	
+
+struct IMU_PAR{   
+    float k_flow_sel;
+	  float flow_set_yaw;
+	  u8 flow_out_invert[2];
+	  float flow_module_offset_x,flow_module_offset_y;
+              };	
+extern struct IMU_PAR imu_board;
 							
 struct _speed{   
 	int altitude;

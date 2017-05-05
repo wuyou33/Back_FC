@@ -504,6 +504,10 @@ ak8975_fc.Mag_Gain.z =(float)((vs16)((FLASH_READ_BUF[23]<<8|FLASH_READ_BUF[22]))
 	
 SONAR_HEIGHT=(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/1000.;	
 LENGTH_OF_DRONE=(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])));
+
+imu_board.flow_module_offset_x=(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/1000.;	
+imu_board.flow_module_offset_y=(float)((vs16)((FLASH_READ_BUF[31]<<8|FLASH_READ_BUF[30])))/1000.;	
+imu_board.k_flow_sel=(float)((vs16)((FLASH_READ_BUF[33]<<8|FLASH_READ_BUF[32])))/1000.;	
 //dj_angle_offset[0] =(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/100.;
 //dj_angle_offset[1] =(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])))/100.;
 //dj_angle_offset[2] =(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/100.;
@@ -564,15 +568,18 @@ _temp=LENGTH_OF_DRONE;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 
-//_temp=(int16_t)(dj_angle_offset[0]*100);
-//FLASH_Buffer[cnt++]=BYTE0(_temp);
-//FLASH_Buffer[cnt++]=BYTE1(_temp);
-//_temp=(int16_t)(dj_angle_offset[1]*100);
-//FLASH_Buffer[cnt++]=BYTE0(_temp);
-//FLASH_Buffer[cnt++]=BYTE1(_temp);
-//_temp=(int16_t)(dj_angle_offset[2]*100);
-//FLASH_Buffer[cnt++]=BYTE0(_temp);
-//FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+//-----------imu para
+_temp=imu_board.flow_module_offset_x*1000;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=imu_board.flow_module_offset_y*1000;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=imu_board.k_flow_sel*1000;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
 #if FLASH_USE_STM32
 STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);
 #else

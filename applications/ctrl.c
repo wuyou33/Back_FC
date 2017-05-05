@@ -327,7 +327,7 @@ void Thr_Ctrl(float T)
 	else
 		cnt_for_low=0;
 	
-	if(cnt_for_low>0.888/T)
+	if(cnt_for_low>0.68/T)
 		force_Thr_low=1;
 //protect flag init	
 //	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)

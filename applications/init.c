@@ -93,6 +93,16 @@ u8 All_Init()
 	#endif
 	READ_PARM();//读取参数
 	Para_Init();//参数初始
+	
+	mode.en_eso_h_in=1;
+	mode.imu_use_mid_down=1;
+	mode.flow_f_use_ukfm=2;
+	mode.baro_f_use_ukfm=0;				
+	mode.yaw_use_eso=0;
+	
+//	imu_board.k_flow_sel=1;
+//	imu_board.flow_module_offset_x=-0.05;
+//	imu_board.flow_module_offset_y=0;
  	return (1);
 }
 /******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/

@@ -547,10 +547,12 @@ void AUTO_LAND_FLYUP(float T)
 			else if(mode.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready)
 			{cnt[0]=0;
 			if(mode.flow_hold_position==2)
-			state_v=SD_HOLD;
+			state_v=SD_HOLD1;
 			else
-			state_v=SD_HOLD1;	
+			state_v=SD_HOLD;	
 			}
+			if((mode.flow_hold_position!=0)&&(mode.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready))
+			state_v=SD_HOLD1;	
 			
 			if(force_pass){force_pass=0;cnt[0]=0;state_v=SG_MID_CHECK;}
 		break;
@@ -569,7 +571,7 @@ void AUTO_LAND_FLYUP(float T)
 		case SU_UP1:
 			if(cnt[0]++>5/T||ALT_POS_SONAR2>AUTO_UP_POS_Z)
 				{cnt[0]=0;state_v=SD_HOLD;}	
-			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
 		break;
 		case SD_HOLD1:
       if(mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -579,7 +581,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.25/T)
 			{cnt[0]=0;state_v=SD_HOLD;}
 		  
-     if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;
     case SD_HOLD:
       if(!mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -589,7 +591,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>1.5/T)
 			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
 		 
-     if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+      if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;				
 			
 		//--------------------------
@@ -597,32 +599,32 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
 				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
 				
-			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CIRCLE_SLOW_DOWN:
-			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
 				{cnt[0]=0;state_v=SD_CHECK_G;}	
 				
-			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CHECK_G:
-			if(fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
+			if((fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.35))
 		    cnt[0]++;
 			else
 				cnt[0]=0;
-			if(cnt[0]>1/T)
+			if(cnt[0]>0.5/T||fabs(acc_3d_hg.z)>2222)
 			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
 			
-			if(mode.flow_hold_position!=2){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
     break;
 		case SD_SHUT_DOWN:
-		  if(!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+50))
+		  if(!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+100))
 		  state_v=SG_LOW_CHECK;	
     break;
 		
 		//------------------------------------SAFE------------------------------------------------
 		case SD_SAFE://safe out
-			if(!mode.auto_fly_up&&!fly_ready&&(CH_filter[THR]<-500+50)&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+			if(!mode.auto_fly_up&&!fly_ready&&(CH_filter[THR]<-500+100)&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
 			state_v=SG_LOW_CHECK;	
 		break;
 		
