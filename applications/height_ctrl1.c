@@ -194,6 +194,8 @@ void Height_Ctrl1(float T,float thr)
 						 
 					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe)//智能起飞油门限制
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
+					 if(ALT_POS_BMP_UKF_OLDX>4&&height_ctrl_mode==2)
+						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-1000,0);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
 			}//---end of speed control
 			static u8 cnt_100ms;
@@ -375,11 +377,12 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
+	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
-	#endif		
 	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
+	#endif		
 		
 	}	
  
@@ -391,9 +394,9 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp/2*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp/2*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,10),-800,800) ); 
 	else
-	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,25),-800,800) );
+	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,10),-800,800) );
 	
 	ultra_ctrl.err_d = ultra_pid.kd *( 0.0f *(-wz_speed*T) + 1.0f *(ultra_ctrl.err - ultra_ctrl.err_old) );
 	

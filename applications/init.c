@@ -9,7 +9,7 @@
 #include "ak8975.h"
 #include "ultrasonic.h"
 #include "bmp.h"
-
+#include "spi.h"
 u8 mcuID[3];
 void cpuidGetId(void)
 {
@@ -46,6 +46,7 @@ u8 All_Init()
 	MYDMA_Config(DMA2_Stream7,DMA_Channel_4,(u32)&USART1->DR,(u32)SendBuff1,SEND_BUF_SIZE1+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
 	Usart2_Init(576000L);			//IMU_LINK
+	//SPI2_Init();
 	#if EN_DMA_UART2
 	MYDMA_Config(DMA1_Stream6,DMA_Channel_4,(u32)&USART2->DR,(u32)SendBuff2,SEND_BUF_SIZE2+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif

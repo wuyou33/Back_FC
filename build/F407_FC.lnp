@@ -11,6 +11,7 @@
 ".\build\led.o"
 ".\build\flash.o"
 ".\build\time.o"
+".\build\spi.o"
 ".\build\misc.o"
 ".\build\stm32f4xx_adc.o"
 ".\build\stm32f4xx_dbgmcu.o"

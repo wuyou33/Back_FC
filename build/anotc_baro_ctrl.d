@@ -49,5 +49,6 @@
 .\build\anotc_baro_ctrl.o: .\applications\eso.h
 .\build\anotc_baro_ctrl.o: .\applications\fly_mode.h
 .\build\anotc_baro_ctrl.o: .\applications\include.h
+.\build\anotc_baro_ctrl.o: applications\ms5611.h
 .\build\anotc_baro_ctrl.o: applications\alt_fushion.h
 .\build\anotc_baro_ctrl.o: applications\bmp.h

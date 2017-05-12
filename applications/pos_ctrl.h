@@ -29,7 +29,7 @@ typedef struct
 
 #define SPD_TO_MAX_AS 		2000.0f										//角度误差N时，期望角速度达到最大（可以通过调整CTRL_2的P值调整）
 #define ACC_TO_MAX_AS     1000.0f
-#define MAX_CTRL_POS_SPEED 	 	2000.0f									//ROL,PIT允许的最大控制角速度
+#define MAX_CTRL_POS_SPEED 	 	666.0f									//ROL,PIT允许的最大控制角速度
 #define MAX_CTRL_POS_ACC 	 	9800.0f									//ROL,PIT允许的最大控制角速度
 #define NAV_POS_INT        500//mm/s  
 #define NAV_SPD_INT 		0.5f *MAX_CTRL_POS_SPEED		//内环积分幅度
@@ -60,6 +60,7 @@ float forward_end_dj_pwm;
 u8 dj_fly_line;
 float pit,rol,yaw;
 u8 use_spd;
+float yaw_off;
 }CIRCLE;
 
 
@@ -117,7 +118,7 @@ extern u8 mode_change;
 #define AUTO_UP_POS_Z 0.68  //m
 #define AUTO_DOWN_POS_Z LIMIT(SONAR_HEIGHT*1.5,0.25,1) //m
 #define AUTO_DOWN_SPD_Z 0.4 //m/s
-#define GROUND_SPEED_CHECK 0.2  //m/s
+#define GROUND_SPEED_CHECK 0.3  //m/s
 //------------
 #define SMART_MODE_POS 3
 #define SMART_MODE_SPD 2

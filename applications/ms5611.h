@@ -28,15 +28,11 @@ typedef struct
 	float relative_height;	
 	float h_delta;
 	float h_dt;
-	float h_origin;
-	float h_flt;
-	float v_flt;
-	float acc_flt;
-	float h_old;
-	float v_old;
-	float acc_old;
+	
 	u8 measure_ok;
 	u8 measure_ot_cnt;
+	float h_origin,h_flt;
+	float v_flt,acc_flt;
 }_height_st;
 
 extern _height_st baro;

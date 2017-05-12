@@ -124,7 +124,7 @@ static void ESO_Safe(ESO *eso_in,u16 thr)
 	}
 }
 
-void SMOOTH_IN_ESO(ESO *eso_in,float in)
+void OLDX_SMOOTH_IN_ESO(ESO *eso_in,float in)
 {
 eso_in->v1+=eso_in->h0*eso_in->v2;                        //td_x1=v1;
 eso_in->v2+=eso_in->h0*fst2(eso_in->v1-in,eso_in->v2,eso_in->r0,eso_in->h0);           //td_x2=v2;
@@ -235,7 +235,7 @@ float OLDX_ATT_CONTRL_INNER_ESO(ESO *eso_in,float v,float y,float u,float T,floa
 	#endif
 	eso_in->KP=kp_in ;
 	if(eso_in->use_td)
-	SMOOTH_IN_ESO(eso_in,v);
+	OLDX_SMOOTH_IN_ESO(eso_in,v);
 	switch(eso_in->level){
 		case 1:ESO_2N(eso_in,v, y, u, T, MAX,0);break;
 		case 2:ESO_3N(eso_in,v, y, u, T, MAX);break;

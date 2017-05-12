@@ -43,5 +43,6 @@ double To_180_degrees_db(double x);
 float linear_interpolation_5(float range[5],float interpolation[5],float in);//range 必须从小到大
 float my_deathzoom_rc(float x,float zoom);
 float my_deathzoom_21(float x,float zoom);
+float IIR_LP(float x,float *xBuf1,float *yBuf1,float *a,float *b,u8 n);
 #endif
 

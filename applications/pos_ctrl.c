@@ -78,15 +78,15 @@ float r_circle=0.25;
 float d_angle=0.4;
 float circle_angle;
 
-#define Mark_Size 0.2
-#define Mark_Dis  0.45
+#define Mark_Size 0.18
+#define Mark_Dis  0.36
 #define NUM_HAN 10
 #define NUM_LIE 10
 #define WAY_POINT_DEAD 0.125
 
 float exp_center_cycle[5]={1.50,1.50,0.78,0,20};
-u8 line_test_num[2]={1,6};
-u8 tan_test_num[4]={1,6,21,15};
+u8 line_test_num[2]={12,34};
+u8 tan_test_num[4]={12,34,12,34};
 void Nav_pos_set_test(u8 mode_in,float T)
 {
 u8 i;	
@@ -130,7 +130,7 @@ switch(mode_in){
 	for(i=0;i<4;i++)
  {
 	  exp_tan[i][X] = (tan_test_num[i]%NUM_LIE-1+(tan_test_num[i]%NUM_LIE==0?NUM_LIE:0))*Mark_Dis;
-	  exp_tan[i][Y] = (tan_test_num[i]/NUM_LIE-(tan_test_num[i]%NUM_LIE==0?1:0))*Mark_Dis; 
+	  exp_tan[i][Y] = -(tan_test_num[i]/NUM_LIE-(tan_test_num[i]%NUM_LIE==0?1:0))*Mark_Dis; 
  }	
 	
 	nav_pos_ctrl[X].exp=exp_tan[tangle_flag][X];
@@ -169,28 +169,28 @@ void Positon_control(float T)//     光流定点
 	if(!init){init=1;
 		//pos
 		nav_pos_ctrl[X].mode=2;
-		nav_pos_pid.kp=0.2;
-		nav_pos_pid.ki=0.05;
+		nav_pos_pid.kp=0.45;
+		nav_pos_pid.ki=0.00;
 		nav_pos_pid.kd=0.0;
-		nav_pos_pid.dead=0.005;
+		nav_pos_pid.dead=0.01;
 		//adrc
 		eso_pos[X].b0=eso_pos[Y].b0=4.5;
 		eso_pos[X].err_limit=eso_pos[Y].err_limit=8000;
 		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
 		nav_spd_pid.f_kp=0.2;
-		nav_spd_pid.kp=0.1;
-		nav_spd_pid.ki=0.05;
-		nav_spd_pid.kd=0.3;
-		nav_spd_pid.flt_nav_kd=0.5;
-		nav_spd_pid.dead=0.01*1000;
-		nav_spd_pid.flt_nav=1;//决定刹车手感
+		nav_spd_pid.kp=0.125;
+		nav_spd_pid.ki=0.150;
+		nav_spd_pid.kd=0.15;
+		nav_spd_pid.flt_nav_kd=0.0;
+		nav_spd_pid.dead=0.0125*1000;
+		nav_spd_pid.flt_nav=0.75;//决定刹车手感
 		//acc
 		nav_acc_pid.f_kp=0.2;
-		nav_acc_pid.kp=0.1;
+		nav_acc_pid.kp=0.15;
 		nav_acc_pid.ki=0.00;
 		nav_acc_pid.kd=0.0;	
-		nav_acc_pid.dead=0.005*1000;
+		nav_acc_pid.dead=0.01*1000;
 		nav_acc_pid.flt_nav_kd=15;
 	}
 	static u8 pos_reset_state[2];
@@ -203,7 +203,9 @@ void Positon_control(float T)//     光流定点
 			{
 				case 0:
 				 if(fabs(CH_filter[i])>25)
-				 {pos_reset_state[i]=0;pos_reset_cnt[i]=0;}
+				 {pos_reset_state[i]=0;pos_reset_cnt[i]=0;
+				  reset_nav_pos(X);reset_nav_pos(Y);
+				 }
 				break;
 				case 1:
 				 reset_nav_pos(i);
@@ -220,7 +222,7 @@ void Positon_control(float T)//     光流定点
 			}	
   }
 	if(!pos_exp_test){
-	if(ALT_POS_SONAR2*1000<SONAR_HEIGHT*1.25||!fly_ready||mode.flow_hold_position==0)
+	if(ALT_POS_SONAR2<SONAR_HEIGHT*1.45||!fly_ready||mode.flow_hold_position==0)
 	{reset_nav_pos(Y);reset_nav_pos(X);}
 	}
 	
@@ -241,10 +243,10 @@ void Positon_control(float T)//     光流定点
 	else if(mode.flow_f_use_ukfm==0)
 		nav_pos_ctrl[X].mode=1;
 	
-	if(mode.flow_hold_position==2)
-		nav_spd_pid.flt_nav=1;
-	else
-		nav_spd_pid.flt_nav=0.3;
+//	if(mode.flow_hold_position==2)
+//		nav_spd_pid.flt_nav=1;
+//	else
+//		nav_spd_pid.flt_nav=0.3;
 /*
 		north    LAT=1     V_West+                             __________
 		|   Y+  y                                              P- R- GPS-
@@ -287,20 +289,29 @@ head  |    1 PIT y-   90d in marker
 	k_acc_flt=15;	
 	acc_flt[0] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[0] - acc_flt[0] ),0);
 	acc_flt[1] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[1] - acc_flt[1] ),0);
+	float b[3] = {0.8122  ,  1.6244  ,  0.8122};
+	float a[3] = {1.0000  ,  1.5888  ,  0.6600};
+	float xBuf1[3];
+	float yBuf1[3];
+	float xBuf2[3];
+	float yBuf2[3];
+	
+	
 //输入数据	
 	pos[Y]=POS_UKF_Y;//mm
   pos[X]=POS_UKF_X;//mm
 	
 	spd[Y]=VEL_UKF_Y*1000;//mm
   spd[X]=VEL_UKF_X*1000;//mm
-	acc_body[Y]=acc[Y]=acc_flt[Y]*9800;//mm
-  acc_body[X]=acc[X]=acc_flt[X]*9800;//mm	
+	acc_body[Y]=acc[Y]=acc_flt[Y]*9800;//IIR_LP(acc_flt[Y]*9800,xBuf1,yBuf1,a,b,2);
+  acc_body[X]=acc[X]=acc_flt[X]*9800;//IIR_LP(acc_flt[X]*9800,xBuf2,yBuf2,a,b,2);
+
 		
 //位置
 	//smart
-	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.x)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==1&&fabs(smart.rc.ROLL-1500)>25))
+	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.x)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.ROLL-1500)>25))
 	nav_pos_ctrl[X].exp=smart.pos.x;
-	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.y)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==1&&fabs(smart.rc.ROLL-1500)>25))
+	if((smart.rc.POS_MODE==SMART_MODE_POS&&fabs(smart.spd.y)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.PITCH-1500)>25)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.ROLL-1500)>25))
 	nav_pos_ctrl[Y].exp=smart.pos.y;
 	
 	//
@@ -336,9 +347,9 @@ else
 	
 	
 	if(circle.check&&circle.connect)
-	#if EN_ATT_CAL_FC
-		yaw_qr_off=circle.yaw-Yaw_fc;
-	#endif
+	yaw_qr_off=circle.yaw-Yaw_fc;
+  else if(circle.connect==0)
+	yaw_qr_off=0;
 	#if EN_ATT_CAL_FC
 	float Yaw_qr=To_180_degrees(Yaw_fc+yaw_qr_off);
 	#else
@@ -371,8 +382,8 @@ else
 	
 	
   if(mode.flow_hold_position!=2){//spd trig tunning
-	 nav_spd_ctrl[Y].exp*=0.25;
-	 nav_spd_ctrl[X].exp*=0.25;}
+	 nav_spd_ctrl[Y].exp*=0.0;
+	 nav_spd_ctrl[X].exp*=0.0;}
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;
@@ -412,13 +423,22 @@ else
 	else
 		in_timer_nav=0.02;
 	
+	if(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)
+	{ nav_spd_ctrl[X].exp=nav_spd_ctrl[X].now;
+	  nav_spd_ctrl[Y].exp=nav_spd_ctrl[Y].now;
+	}
+	
 	for (i=0;i<2;i++){	
-	nav_spd_ctrl[i].now=my_deathzoom1(spd[i],nav_spd_pid.dead);
+	nav_spd_ctrl[i].now=(spd[i]);
 	nav_spd_ctrl[i].exp = LIMIT(nav_spd_ctrl[i].exp, -MAX_CTRL_POS_SPEED,MAX_CTRL_POS_SPEED );
 	nav_spd_ctrl[i].damp = ( nav_spd_ctrl[i].now - spd_old[i]) *( 0.02f/in_timer_nav );
-	nav_spd_ctrl[i].err =  ( nav_spd_ctrl[i].exp - nav_spd_ctrl[i].now );
+	nav_spd_ctrl[i].err =  my_deathzoom1( nav_spd_ctrl[i].exp - nav_spd_ctrl[i].now ,nav_spd_pid.dead);
 	nav_spd_ctrl[i].err_weight = (float)ABS(nav_spd_ctrl[i].err)/MAX_CTRL_POS_SPEED;
-	nav_spd_ctrl[i].err_d = (!mode.test4)*( nav_spd_pid.kd  *( -10 *nav_spd_ctrl[i].damp*nav_spd_pid.flt_nav_kd+my_deathzoom1(-acc[i] ,50)*(1-nav_spd_pid.flt_nav_kd)) *( 0.02f/in_timer_nav ) );
+	if(!mode.test4)
+		nav_spd_ctrl[i].err_d = ( nav_spd_pid.kd  *( -10 *nav_spd_ctrl[i].damp*(1-nav_spd_pid.flt_nav_kd)+my_deathzoom1(-acc[i] ,50)*(nav_spd_pid.flt_nav_kd)) *( 0.02f/in_timer_nav ) );
+	else 
+		nav_spd_ctrl[i].err_d=0;
+	
 	if((fabs(nav_spd_ctrl[i].err)<eso_pos_spd[i].eso_dead||eso_pos_spd[i].b0==0||1)&&nav_spd_pid.ki>0){
 	nav_spd_ctrl[i].err_i += nav_spd_pid.ki  *(nav_spd_ctrl[i].err) *in_timer_nav;
 	nav_spd_ctrl[i].err_i = LIMIT( nav_spd_ctrl[i].err_i, -NAV_SPD_INT,NAV_SPD_INT );
@@ -444,11 +464,11 @@ else
 // acc loop	
 		if(mode.test4)
 		{ 
-			nav_acc_ctrl[i].now=my_deathzoom1(acc_body[i],nav_acc_pid.dead);
+			nav_acc_ctrl[i].now=acc_body[i];
 			nav_acc_ctrl[i].exp=nav_spd_ctrl[i].pid_out*10*(8./12.);
 			nav_acc_ctrl[i].exp = LIMIT(nav_acc_ctrl[i].exp, -MAX_CTRL_POS_ACC,MAX_CTRL_POS_ACC );
 			nav_acc_ctrl[i].damp = ( nav_acc_ctrl[i].now - acc_old[i]) *( 0.02f/in_timer_nav );
-			nav_acc_ctrl[i].err =  ( nav_acc_ctrl[i].exp - nav_acc_ctrl[i].now ) *(1000.0f/MAX_CTRL_POS_ACC);
+			nav_acc_ctrl[i].err =  my_deathzoom1(( nav_acc_ctrl[i].exp - nav_acc_ctrl[i].now ),nav_acc_pid.dead) *(1000.0f/MAX_CTRL_POS_ACC);
 			nav_acc_ctrl[i].err_d = ( nav_acc_pid.kd  *( -10 *nav_acc_ctrl[i].damp) *( 0.02f/in_timer_nav ) );
 			if((fabs(nav_acc_ctrl[i].err)<eso_pos_spd[i].eso_dead||eso_pos_spd[i].b0==0)&&nav_acc_pid.ki>0){
 			nav_acc_ctrl[i].err_i += nav_acc_pid.ki  *(nav_acc_ctrl[i].err) *in_timer_nav;
@@ -534,7 +554,7 @@ u16 AUTO_DOWN_CUARVE[]={1500,1500-50,1500-150,1500-150,1500-200,1500-200};
 u16 AUTO_DOWN_CUARVE1[]={1500-150,1500-150,1500-100,1500-100,1500-80,1500-80};
 
 void AUTO_LAND_FLYUP(float T)
-{
+{ 
 	switch(state_v)
 	{
 		case SG_LOW_CHECK:
@@ -546,7 +566,7 @@ void AUTO_LAND_FLYUP(float T)
 			{cnt[0]=0;state_v=SG_MID_CHECK;}
 			else if(mode.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready)
 			{cnt[0]=0;
-			if(mode.flow_hold_position==2)
+			if(mode.flow_hold_position!=0)
 			state_v=SD_HOLD1;
 			else
 			state_v=SD_HOLD;	
@@ -571,7 +591,7 @@ void AUTO_LAND_FLYUP(float T)
 		case SU_UP1:
 			if(cnt[0]++>5/T||ALT_POS_SONAR2>AUTO_UP_POS_Z)
 				{cnt[0]=0;state_v=SD_HOLD;}	
-			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
 		break;
 		case SD_HOLD1:
       if(mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -581,7 +601,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.25/T)
 			{cnt[0]=0;state_v=SD_HOLD;}
 		  
-     if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;
     case SD_HOLD:
       if(!mode.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -591,7 +611,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>1.5/T)
 			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
 		 
-      if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+      if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
     break;				
 			
 		//--------------------------
@@ -599,39 +619,41 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
 				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
 				
-			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CIRCLE_SLOW_DOWN:
 			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
 				{cnt[0]=0;state_v=SD_CHECK_G;}	
 				
-			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
     break;
 		case SD_CHECK_G:
 			if((fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.35))
 		    cnt[0]++;
 			else
 				cnt[0]=0;
-			if(cnt[0]>0.5/T||fabs(acc_3d_hg.z)>2222)
+			if(cnt[0]>0.5/T||fabs(acc_3d_hg.z)>1234)
 			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
 			
-			 if(mode.flow_hold_position==0){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 if(mode.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
     break;
 		case SD_SHUT_DOWN:
-		  if(!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+100))
+		  if((!mode.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+100))||!fly_ready )
 		  state_v=SG_LOW_CHECK;	
     break;
 		
 		//------------------------------------SAFE------------------------------------------------
 		case SD_SAFE://safe out
-			if(!mode.auto_fly_up&&!fly_ready&&(CH_filter[THR]<-500+100)&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)
+			if((!mode.auto_fly_up&&(CH_filter[THR]<-500+100)&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25)||!fly_ready )
 			state_v=SG_LOW_CHECK;	
 		break;
 		
 	}
 //-------------------------------------------------------------
-	
-	
+	 if(Rc_Get_PWM.AUX1>1500)
+	  state_v=SD_HOLD;
+	 else
+		state_v=SD_SAFE;
 //----------------------------output---------------------------
 	  if(state_v==SG_LOW_CHECK)
 		smart.rc.POS_MODE=0;	

@@ -46,14 +46,12 @@ void CTRL_2(float T)
 	except_A.z = To_180_degrees(except_A.z);
 	
 	
-	if(mode.flow_hold_position>0&&except_A.y==0)
+	if(mode.flow_hold_position>0&&except_A.y==0&&except_A.x==0)
 	{
 	except_A.y=LIMIT(nav[PITr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
-	}
-	if(mode.flow_hold_position>0&&except_A.x==0)
-	{
 	except_A.x=LIMIT(nav[ROLr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
-	}	
+	}
+	
 	
 
 	static u8 yaw_trig;
@@ -322,7 +320,8 @@ void Thr_Ctrl(float T)
 	
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
-	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&fly_ready&&mode.att_pid_tune==0)
+	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
+    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode.att_pid_tune==0)
 		cnt_for_low++;
 	else
 		cnt_for_low=0;

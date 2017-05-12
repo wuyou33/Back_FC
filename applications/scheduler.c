@@ -95,7 +95,8 @@ void Duty_5ms()
 
 float pos_time;
 float baro_task_time;
-u8 UART_UP_LOAD_SEL=4;//<------------------------------上传数据选择
+u8 UART_UP_LOAD_SEL=0;//<------------------------------上传数据选择
+u8 UART_UP_LOAD_SEL_FORCE=0;
 u8 force_flow_ble_debug;
 void Duty_10ms()
 {
@@ -132,11 +133,12 @@ void Duty_10ms()
 							}					
 							
 				//BLE UPLOAD《----------------------蓝牙调试
-							
+			 if(UART_UP_LOAD_SEL_FORCE!=0)
+          UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
 					if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
 							{ 	DMA_ClearFlag(DMA2_Stream7,DMA_FLAG_TCIF7);//清除DMA2_Steam7传输完成标志
 								  SendBuff1_cnt=0;
-									#if USE_BLE_FOR_APP&&!USE_ANO_GROUND			  
+									#if USE_BLE_FOR_APP		  
 									APP_LINK();
 									#endif		 
                   #if USE_ANO_GROUND								
@@ -206,7 +208,7 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											baroAlt/10,baro.relative_height/10,hc_value.fusion_height/10,
+											baro.h_flt*100,baro.relative_height/10,hc_value.fusion_height/10,
 											ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,ultra_speed/10,
 											ALT_POS_SONAR2*100,0*100,hc_value.fusion_acc*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
@@ -224,9 +226,9 @@ void Duty_10ms()
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 3://BMP UKF
 											data_per_uart1(
-											0,circle.spdx/10,circle.spdy/10,
-											0, flow_matlab_data[2]*100,flow_matlab_data[3]*100,
-											VEL_UKF_Y*100,VEL_UKF_X*100,0,
+											0,flow_matlab_data[0]*100,flow_matlab_data[1]*100,
+											nav_spd_ctrl[X].now,nav_spd_ctrl[X].exp,0,
+											nav_spd_ctrl[Y].now,nav_spd_ctrl[Y].exp,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 4://BMP UKF
 											data_per_uart1(
@@ -234,6 +236,12 @@ void Duty_10ms()
 											Rc_Get_PWM.THROTTLE, flow_matlab_data[2]*100,flow_matlab_data[3]*100,
 											VEL_UKF_Y*100,VEL_UKF_X*100,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
+											case 5:
+											data_per_uart1(
+											baro.h_flt*1000,0,hc_value.fusion_height,
+											baro.v_flt*100,hc_value.fusion_speed/10,ultra_speed/10,
+											baro.acc_flt*100,0*100,hc_value.fusion_acc*100,
+											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;		
 											default:break;
 											
 											}
@@ -343,7 +351,7 @@ void Duty_20ms()
 void Duty_50ms()
 {
 		if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
-		if(imu_loss_cnt++>1500/50){imu_loss_cnt=1500/50+1;NAV_BOARD_CONNECT=0;}
+		if(imu_loss_cnt++>1500/50){NAV_BOARD_CONNECT=0;}
 		 
 		//---------------use now
 		//------------0 1   |   2 3       KEY_SEL
@@ -379,14 +387,18 @@ void Duty_50ms()
 				#endif
 			#endif
 		#endif
-	
+		if(ALT_POS_SONAR2<4.5&&height_ctrl_mode==2 )
+		mode.test3=1;
+		else
+		mode.test3=0;
+		
 		if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
 		mode.h_is_fix=1;		
 		else
 		mode.h_is_fix=0;	
 		
 		if(mode.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
-		mode.rc_control_flow_pos_sel=1;
+		mode.rc_control_flow_pos_sel=3;
 		else if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
 		mode.rc_control_flow_pos_sel=2;
 		else
@@ -394,14 +406,15 @@ void Duty_50ms()
 									
 	  //------------7 6 5 4  |  3 2 1 0  KEY
 		if(Rc_Get_PWM.RST>1500)
-		mode.test4=1;//pos acc use
+		mode.flow_f_use_ukfm=2;
 		else
-		mode.test4=0;//pos acc use
-
-	  if(Rc_Get_PWM.AUX1>1500)
-		mode.auto_fly_up=1;
-		else
-		mode.auto_fly_up=0;	
+		mode.flow_f_use_ukfm=1;
+		
+    mode.test4=0;//2 -> origin
+//	  if(Rc_Get_PWM.AUX1>1500)
+//		mode.trig_flow_spd=1;//mode.auto_fly_up=1;
+//		else
+//		mode.trig_flow_spd=0;	
 		
 		#if !USE_RECIVER_MINE
 		//	if(Rc_Get_PWM.AUX1>1500&&ALT_POS_SONAR2<3)
@@ -411,12 +424,15 @@ void Duty_50ms()
 	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 		
-  if(!NAV_BOARD_CONNECT||yaw_use_fc)			
+  if(!NAV_BOARD_CONNECT||yaw_use_fc||0)			
 	ANO_AK8975_Read();
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
+	static u16 cnt_sonar_idle;
 	if(!Thr_Low||NS==0)
-	Ultra_Duty();
+	Ultra_Duty();	
+	else if(cnt_sonar_idle++>2/0.05){cnt_sonar_idle=0;
+	Ultra_Duty();}
 	#endif
 	if(circle.lose_cnt++>4/0.05)
 	circle.connect=0;

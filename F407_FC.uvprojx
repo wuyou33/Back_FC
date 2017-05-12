@@ -513,6 +513,11 @@
               <FileType>1</FileType>
               <FilePath>.\drivers\time.c</FilePath>
             </File>
+            <File>
+              <FileName>spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\spi.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

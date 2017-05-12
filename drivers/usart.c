@@ -1,4 +1,4 @@
-
+#include "alt_fushion.h"
 #include "usart.h"
 #include "data_transfer.h"
 #include "ultrasonic.h"
@@ -470,7 +470,10 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
-	_temp =(vs16)(ALT_POS_SONAR2*1000);//ultra_distance;
+	if(height_ctrl_mode==2&&0)
+	_temp =(vs16)(ALT_VEL_BMP_UKF_OLDX*1000);	
+	else
+	_temp =(vs16)(ALT_POS_SONAR2*1000);
 	#else
 	_temp=0;
 	#endif
@@ -730,7 +733,7 @@ void GOL_LINK_TASK(void)
 {
 static u8 cnt[4];
 
-if(cnt[1]++>4)
+if(cnt[1]++>2)
 {cnt[1]=0;
 Send_IMU_TO_FLOW();
 }
@@ -859,7 +862,7 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	circle.z=(int16_t)((*(data_buf+9)<<8)|*(data_buf+10));
 	circle.pit=(int16_t)((*(data_buf+11)<<8)|*(data_buf+12));
 	circle.rol=(int16_t)((*(data_buf+13)<<8)|*(data_buf+14));
-	circle.yaw=To_180_degrees((int16_t)((*(data_buf+15)<<8)|*(data_buf+16))-90);	
+	circle.yaw=To_180_degrees((int16_t)((*(data_buf+15)<<8)|*(data_buf+16))-90+circle.yaw_off);	
 	circle.spdx=(int16_t)((*(data_buf+17)<<8)|*(data_buf+18));
 	circle.spdy=(int16_t)((*(data_buf+19)<<8)|*(data_buf+20));
 	//map	
@@ -1189,10 +1192,10 @@ void Send_Status(void)
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
 	//kf
-	_temp = (int)(POS_UKF_X*1000);
+	_temp = (int)(nav_pos_ctrl[0].now*1000);
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
-	_temp = (int)(POS_UKF_Y*1000);
+	_temp = (int)(nav_pos_ctrl[1].now*1000);
 	SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
 	SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
 	_temp = (int)(ALT_POS_SONAR2*1000);
@@ -1520,6 +1523,7 @@ void Send_DEBUG1(void)
 void APP_LINK(void)
 { static u8 flag1=0;
 	static u8 cnt = 0;
+	#if !USE_ANO_GROUND	
 	switch(cnt)
 	{
 		case 1: 
@@ -1551,6 +1555,9 @@ void APP_LINK(void)
 			break;
 		default:cnt = 0;break;		
 	}
+	#else
+	Send_Status();
+	#endif
 	if(app_connect_fc)
 	cnt++;	
 	else

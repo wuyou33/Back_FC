@@ -445,3 +445,23 @@ float linear_interpolation_5(float range[5],float interpolation[5],float in) //r
 		return (0);
 	}
 }
+
+
+
+float IIR_LP(float x,float *xBuf1,float *yBuf1,float *a,float *b,u8 n)
+{
+int i;
+for(i=n; i>0; i--)
+{
+yBuf1[i] = yBuf1[i-1]; xBuf1[i] = xBuf1[i-1];
+}
+xBuf1[0] = x;
+yBuf1[0] = 0;
+for(i=1;i<n+1;i++)
+{
+yBuf1[0] = yBuf1[0] + b[i]*xBuf1[i];
+yBuf1[0] = yBuf1[0] - a[i]*yBuf1[i];
+}
+yBuf1[0] =  yBuf1[0] + b[0]*xBuf1[0];
+return yBuf1[0];
+}
