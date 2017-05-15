@@ -14,8 +14,8 @@ _height_st baro;
 
 #undef ALTI_SPEED
 
-#define MS5611Press_OSR  MS561101BA_OSR_2048  //气压采样精度
-#define MS5611Temp_OSR   MS561101BA_OSR_2048  //温度采样精度
+#define MS5611Press_OSR  MS561101BA_OSR_4096  //气压采样精度
+#define MS5611Temp_OSR   MS561101BA_OSR_4096  //温度采样精度
 
 // 气压计状态机
 #define SCTemperature  0x01	  //开始 温度转换

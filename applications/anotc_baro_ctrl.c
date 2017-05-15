@@ -138,16 +138,19 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 	}
 
 	dtime += dT;
+	MS5611_ThreadNew();
+	baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
+	baro.height=MS5611_Pressure;//
+	
 	if(dtime > 0.01f) //10 ms
 	{
 		dtime = 0;
-			baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
-			baro.height=MS5611_Pressure;//
+			
 			if(step==0)
 			{
 			 step = 1;//20ms
 			}
-			MS5611_ThreadNew();
+			
 	}		
 
 			baro.h_dt = 0.02f; //气压计读取间隔时间20ms

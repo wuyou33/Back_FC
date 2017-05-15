@@ -82,11 +82,11 @@ float circle_angle;
 #define Mark_Dis  0.36
 #define NUM_HAN 10
 #define NUM_LIE 10
-#define WAY_POINT_DEAD 0.125
+#define WAY_POINT_DEAD 0.1
 
 float exp_center_cycle[5]={1.50,1.50,0.78,0,20};
 u8 line_test_num[2]={12,34};
-u8 tan_test_num[4]={12,34,12,34};
+u8 tan_test_num[4]={12,32,34,14};
 void Nav_pos_set_test(u8 mode_in,float T)
 {
 u8 i;	
@@ -111,19 +111,18 @@ switch(mode_in){
 					nav_pos_ctrl[Y].exp=sin(exp_center_cycle[3]*0.0173)*exp_center_cycle[2]-exp_center_cycle[2]*0+init_pos[Y];
 	break;
 	case 1://line
-  exp_ling[0][X]=Mark_Dis*line_test_num[0];exp_ling[0][Y]=Mark_Size;
-	exp_ling[1][X]=Mark_Dis*line_test_num[1];exp_ling[1][Y]=Mark_Size;
-	if(line_flag){
-	nav_pos_ctrl[X].exp=exp_ling[0][X];
-	nav_pos_ctrl[Y].exp=exp_ling[0][Y];
-	}
-	else
-	{
-	nav_pos_ctrl[X].exp=exp_ling[1][X];
-	nav_pos_ctrl[Y].exp=exp_ling[1][Y];
-	}	
+  	for(i=0;i<2;i++)
+ {
+	  exp_tan[i][X] = (line_test_num[i]%NUM_LIE-1+(line_test_num[i]%NUM_LIE==0?NUM_LIE:0))*Mark_Dis;
+	  exp_tan[i][Y] = -(line_test_num[i]/NUM_LIE-(line_test_num[i]%NUM_LIE==0?1:0))*Mark_Dis; 
+ }	
+	
+	nav_pos_ctrl[X].exp=exp_tan[tangle_flag][X];
+	nav_pos_ctrl[Y].exp=exp_tan[tangle_flag][Y];
+    
 	if(fabs(nav_pos_ctrl[X].exp - nav_pos_ctrl[X].now)<WAY_POINT_DEAD&&fabs(nav_pos_ctrl[Y].exp - nav_pos_ctrl[Y].now)<WAY_POINT_DEAD)
-	  line_flag=!line_flag;
+	 { if(tangle_flag<1)tangle_flag+=1;
+	   else tangle_flag=0;}
 	
 	break;
 	case 3://way_point

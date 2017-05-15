@@ -101,7 +101,7 @@ static u8 init,mode_reg;
 if(!init)
 {   init=1;
 		eso_h_spd.h0=eso_h_acc.h0=0.02;
-    eso_h_spd.r0=eso_h_acc.r0=1;
+    eso_h_spd.r0=eso_h_acc.r0=4;
 }	
 
 #if SONAR_USE_FC||SONAR_USE_FC1
@@ -174,7 +174,7 @@ float acc_body_temp[3];
     
 		static float xBuf2[3];
 		static float yBuf2[3];
-		#define BARO_AV_NUM_FU 88
+		#define BARO_AV_NUM_FU 66
 		static float baro_av_arr_fu[BARO_AV_NUM_FU];
 		static  u16 baro_av_cnt_fu;
 		baro.h_origin=((float)(baro.relative_height)/1000.);//,xBuf2,yBuf2,a,b,2);

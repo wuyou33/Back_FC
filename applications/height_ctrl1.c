@@ -377,7 +377,7 @@ void Ultra_Ctrl1(float T,float thr)//Œª÷√ª∑PID
 	#if EN_ATT_CAL_FC
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
-	ultra_dis_tmp=  (ALT_POS_SONAR2+tilted_fix_sonar*1)*1000;
+	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*1)*1000;
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
