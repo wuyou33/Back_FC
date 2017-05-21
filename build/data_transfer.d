@@ -45,13 +45,12 @@
 .\build\data_transfer.o: .\applications\include.h
 .\build\data_transfer.o: .\drivers\ak8975.h
 .\build\data_transfer.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
-.\build\data_transfer.o: applications\ms5611.h
+.\build\data_transfer.o: .\drivers\ms5611.h
 .\build\data_transfer.o: .\drivers\i2c_soft.h
 .\build\data_transfer.o: applications\rc.h
 .\build\data_transfer.o: applications\ctrl.h
 .\build\data_transfer.o: .\drivers\pwm_out.h
 .\build\data_transfer.o: .\drivers\ultrasonic.h
-.\build\data_transfer.o: .\drivers\ms5611.h
 .\build\data_transfer.o: applications\anotc_baro_ctrl.h
 .\build\data_transfer.o: applications\filter.h
 .\build\data_transfer.o: applications\mymath.h

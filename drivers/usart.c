@@ -11,6 +11,78 @@
 #include "height_ctrl.h"
 #include "mymath.h"
 #include "led.h"
+///TX
+void Uart5_Send(unsigned char *DataToSend ,u8 data_num)
+{
+
+while(USART_GetFlagStatus(UART5, USART_FLAG_TXE) == RESET);
+USART_SendData(UART5, data_num); ;//USART1, ch); 
+
+}
+
+void Uart3_Send(u8 data_num)
+{
+while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+USART_SendData(USART3, data_num); ;//USART1, ch); 
+}
+
+void UsartSend_UP_LINK(uint8_t ch)
+{
+
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+USART_SendData(USART1, ch); 
+}
+
+static void Send_Data_UP_LINK(u8 *dataToSend , u8 length)
+{
+u16 i;
+  for(i=0;i<length;i++)
+     UsartSend_UP_LINK(dataToSend[i]);
+}
+
+
+int DEBUG[35];
+void UsartSend_APP(uint8_t ch)
+{
+	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+USART_SendData(USART1, ch); 
+}
+
+static void Send_Data_APP(u8 *dataToSend , u8 length)
+{
+u16 i;
+  for(i=0;i<length;i++)
+     UsartSend_APP(dataToSend[i]);
+}
+
+
+void UsartSend_SD(uint8_t ch)
+{
+
+while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET);
+USART_SendData(UART4, ch); ;//USART1, ch); 
+}
+
+static void Send_Data_SD(u8 *dataToSend , u8 length)
+{
+u16 i;
+  for(i=0;i<length;i++)
+     UsartSend_SD(dataToSend[i]);
+}
+
+void UART2_Put_Char(unsigned char DataToSend)
+{
+
+while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+USART_SendData(USART1, DataToSend); 
+
+}
+
+
+
+
+
+//  INIT 
 int16_t BLE_DEBUG[16];
  M100 m100;
 void Usart2_Init(u32 br_num)//--GOL-link
@@ -183,7 +255,6 @@ u8 pos_kf_state[3];
 		static u8 reg;
 		if(mode.flow_f_use_ukfm!=reg)
 		{
-		//integrator[0]=integrator[1]=0;
 		target_position[LON]=now_position[LON];//m
 		target_position[LAT]=now_position[LAT];//m
 		}
@@ -489,144 +560,6 @@ void Send_IMU_TO_FLOW(void)
 	Send_Data_GOL_LINK(data_to_send, _cnt);
 }
 
-void Send_IMU_TO_FLOW2(void)
-{u8 i;	u8 sum = 0;
-	u8 data_to_send[50];
-	u8 _cnt=0;
-	vs16 _temp;
-  data_to_send[_cnt++]=0xAA;
-	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x14;//功能字
-	data_to_send[_cnt++]=0;//数据量
-	
-
-	_temp =(vs16)( mpu6050.Acc_I16.x);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
- 	_temp = (vs16)(mpu6050.Acc_I16.y);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(mpu6050.Acc_I16.z);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)(mpu6050.Gyro_I16.x);//q_nav[0]*1000;//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
- 	_temp = (vs16)(mpu6050.Gyro_I16.y);//q_nav[1]*1000;//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(mpu6050.Gyro_I16.z);// q_nav[2]*1000;//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)(ak8975.Mag_Adc.x);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
- 	_temp = (vs16)(ak8975.Mag_Adc.y);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(ak8975.Mag_Adc.z);//mode.save_video;//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp =  mpu6050.Acc_CALIBRATE;
-	data_to_send[_cnt++]=BYTE0(_temp);	
-	_temp =  mpu6050.Gyro_CALIBRATE;
-	data_to_send[_cnt++]=BYTE0(_temp);	
-	_temp =  ak8975.Mag_CALIBRATED;
-	data_to_send[_cnt++]=BYTE0(_temp);	
-
-	data_to_send[3] = _cnt-4;
-
-	for( i=0;i<_cnt;i++)
-		sum += data_to_send[i];
-	data_to_send[_cnt++] = sum;
-	
-		Send_Data_GOL_LINK(data_to_send, _cnt);
-}
-
-void Send_IMU(void)
-{u8 i;	u8 sum = 0;
-	u8 data_to_send[50];
-	u8 _cnt=0;
-	vs16 _temp;
-	data_to_send[_cnt++]=0xAA;
-	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x80;//功能字
-	data_to_send[_cnt++]=0;//数据量
-	
-	_temp = (vs16)(Pitch*10);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(Roll*10);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(Yaw*10);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)(mpu6050.Gyro_deg.x*100);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
- 	_temp = (vs16)(mpu6050.Gyro_deg.y*100);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(mpu6050.Gyro_deg.z*100);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)( mpu6050.Acc.x);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
- 	_temp = (vs16)( mpu6050.Acc.y);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)( mpu6050.Acc.z);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)LIMIT(ALT_POS_SONAR*1000,0,2500);//ultra_distance;(baro_to_ground);//
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-		
-	_temp = (vs16)(-ALT_VEL_SONAR*1000);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-	_temp = (vs16)(-ALT_VEL_BMP*1000);//ultra_distance;
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
-	data_to_send[3] = _cnt-4;
-
-	for( i=0;i<_cnt;i++)
-		sum += data_to_send[i];
-	data_to_send[_cnt++] = sum;
-	
-	Send_Data_GOL_LINK(data_to_send, _cnt);
-}  
-
-void Send_FLOW_MODE(void)
-{u8 i;	u8 sum = 0;
-	u8 data_to_send[50];
-	u8 _cnt=0;
-	vs16 _temp;
-	data_to_send[_cnt++]=0xAA;
-	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x81;//功能字
-	data_to_send[_cnt++]=0;//数据量
-	_temp = mode.en_flow_gro_fix;
-	data_to_send[_cnt++]=BYTE0(_temp);
-	
-		_temp = mode.flow_size;
-	data_to_send[_cnt++]=BYTE0(_temp);
-	data_to_send[3] = _cnt-4;
-
-	for( i=0;i<_cnt;i++)
-		sum += data_to_send[i];
-	data_to_send[_cnt++] = sum;
-	
-	Send_Data_GOL_LINK(data_to_send, _cnt);
-}
 
 void Send_PID(void)
 {u8 i;	u8 sum = 0;
@@ -809,50 +742,7 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 		sum += *(data_buf+i);
 	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
 	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
-  if(*(data_buf+2)==0x01)//FLOW_MINE_frame
-  {
-	PWM_DJI[0]= ((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
-	PWM_DJI[1]= ((int16_t)(*(data_buf+6)<<8)|*(data_buf+7)); 
-	PWM_DJI[2]= ((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));
-	PWM_DJI[3]= ((int16_t)(*(data_buf+10)<<8)|*(data_buf+11));
-	circle.x=((int16_t)(*(data_buf+12)<<8)|*(data_buf+13));
-	circle.y=((int16_t)(*(data_buf+14)<<8)|*(data_buf+15));
-	circle.control[0]=((int16_t)(*(data_buf+16)<<8)|*(data_buf+17));
-	circle.control[1]=((int16_t)(*(data_buf+18)<<8)|*(data_buf+19));
-	circle.r=((int16_t)(*(data_buf+20)<<8)|*(data_buf+21));
-	circle.check=(*(data_buf+22))&0x01;
-	circle.connect=(*(data_buf+22)>>1)&0x01;
-  track.check=(*(data_buf+22)>>2)&0x01;
-	}
-	else if(*(data_buf+2)==0x03)//Num
-  {
-	circle.connect=1;
-	circle.lose_cnt=0;
-	track.check=circle.check=(*(data_buf+4));///10.;
-	rc_value_temp=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6));
-	if(rc_value_temp<320)
-	circle.x=rc_value_temp;//Moving_Median(16,3,rc_value_temp);
-	circle.y=(int16_t)(*(data_buf+7));//Moving_Median(17,3,((int16_t)(*(data_buf+7))));
-	circle.control[0]=(int8_t)(*(data_buf+8));
-	circle.control[1]=(int8_t)(*(data_buf+9));
-	circle.r=(int8_t)(*(data_buf+10));
-	//track.check=(int8_t)(*(data_buf+11));
-	}	
-	else if(*(data_buf+2)==0x2)//track
-  {
-	circle.connect=1;
-	circle.lose_cnt=0;
-	track.check=circle.check=(*(data_buf+4));///10.;
-	rc_value_temp=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6));
-	if(rc_value_temp<320)
-	circle.x=rc_value_temp;//Moving_Median(16,3,rc_value_temp);
-	circle.y=(int16_t)(*(data_buf+7));//Moving_Median(17,3,((int16_t)(*(data_buf+7))));
-	circle.control[0]=(int8_t)(*(data_buf+8));
-	circle.control[1]=(int8_t)(*(data_buf+9));
-	circle.r=(int8_t)(*(data_buf+10));
-		
-	}	
-	else if(*(data_buf+2)==0x21)//QR
+  if(*(data_buf+2)==0x21)//QR
   {
 	circle.connect=1;
 	circle.lose_cnt=0;
@@ -984,33 +874,7 @@ void UART5_IRQHandler(void)
 //   OSIntExit(); 
 
 }
-void Uart5_Send(unsigned char *DataToSend ,u8 data_num)
-{
 
-while(USART_GetFlagStatus(UART5, USART_FLAG_TXE) == RESET);
-USART_SendData(UART5, data_num); ;//USART1, ch); 
-
-}
-
-void Uart3_Send(u8 data_num)
-{
-while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
-USART_SendData(USART3, data_num); ;//USART1, ch); 
-}
-
-void UsartSend_UP_LINK(uint8_t ch)
-{
-
-	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-USART_SendData(USART1, ch); 
-}
-
-static void Send_Data_UP_LINK(u8 *dataToSend , u8 length)
-{
-u16 i;
-  for(i=0;i<length;i++)
-     UsartSend_UP_LINK(dataToSend[i]);
-}
 u8 BLE_UP1[20]={"A1231123"};
 u8 BLE_TEST[20]={"AT+"};
 u8 BLE_BAUD[20]={"AT+BAUD[G]"};//C 9600 F 57600 G 115200
@@ -1107,21 +971,6 @@ Send_Data_UP_LINK(SET_PIN,20);
 GPIO_ResetBits(GPIOA,GPIO_Pin_3);//透传模式
 #endif
 }
-
-int DEBUG[35];
-void UsartSend_APP(uint8_t ch)
-{
-	while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-USART_SendData(USART1, ch); 
-}
-
-static void Send_Data_APP(u8 *dataToSend , u8 length)
-{
-u16 i;
-  for(i=0;i<length;i++)
-     UsartSend_APP(dataToSend[i]);
-}
-
 
 void Send_Status(void)
 { u8 i;	u8 sum = 0,_temp3;	vs32 _temp2 = 0;	vs16 _temp;//u8 data_to_send[50];
@@ -2099,28 +1948,6 @@ void Usart4_Init(u32 br_num)//-------SD_board
   USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
 	//使能USART2
 	USART_Cmd(UART4, ENABLE); 
-
-}
-
-void UsartSend_SD(uint8_t ch)
-{
-
-while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET);
-USART_SendData(UART4, ch); ;//USART1, ch); 
-}
-
-static void Send_Data_SD(u8 *dataToSend , u8 length)
-{
-u16 i;
-  for(i=0;i<length;i++)
-     UsartSend_SD(dataToSend[i]);
-}
-
-void UART2_Put_Char(unsigned char DataToSend)
-{
-
-while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-USART_SendData(USART1, DataToSend); 
 
 }
 

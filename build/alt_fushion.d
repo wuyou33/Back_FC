@@ -48,12 +48,11 @@
 .\build\alt_fushion.o: applications\quar.h
 .\build\alt_fushion.o: applications\FastMath.h
 .\build\alt_fushion.o: applications\Double.h
-.\build\alt_fushion.o: applications\ms5611.h
-.\build\alt_fushion.o: .\drivers\i2c_soft.h
 .\build\alt_fushion.o: .\drivers\mpu6050.h
 .\build\alt_fushion.o: applications\rc.h
 .\build\alt_fushion.o: .\drivers\ultrasonic.h
 .\build\alt_fushion.o: .\drivers\ms5611.h
+.\build\alt_fushion.o: .\drivers\i2c_soft.h
 .\build\alt_fushion.o: applications\baro_ekf_oldx.h
 .\build\alt_fushion.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\build\alt_fushion.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

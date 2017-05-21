@@ -44,5 +44,3 @@ GPIO_SetBits(GPIOD,GPIO_Pin_12);}
 }
 
 
-/******************* (C) COPYRIGHT 2016 ANO TECH *****END OF FILE************/
-

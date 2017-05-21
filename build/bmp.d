@@ -41,7 +41,7 @@
 .\build\bmp.o: applications\fly_mode.h
 .\build\bmp.o: applications\include.h
 .\build\bmp.o: applications\bmp.h
-.\build\bmp.o: applications\ms5611.h
+.\build\bmp.o: .\drivers\ms5611.h
 .\build\bmp.o: .\drivers\i2c_soft.h
 .\build\bmp.o: .\drivers\mpu6050.h
 .\build\bmp.o: applications\iic_hml.h

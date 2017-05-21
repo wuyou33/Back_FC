@@ -72,7 +72,7 @@ void mode_check(float *ch_in,u8 *mode_value)
 		mode_state = 1;
 	}
 	
-	//=========== GPS、气压定高 ===========
+	//=========== GPS、气压定高 未使用 ===========
 	if(mode_state == 0 )
 	{
 		*(mode_value+GPS) = *(mode_value+BARO) = 0;

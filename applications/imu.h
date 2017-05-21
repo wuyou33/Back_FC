@@ -27,5 +27,11 @@ void MadgwickAHRSupdateIMU(float dt,float gx, float gy, float gz, float ax, floa
 extern float Yaw_fc_q;
 extern float ref_q_imd_down_fc[4] ;
 extern float reference_vr_imd_down_fc[3];
+
+
+void MargAHRSupdate(float gx, float gy, float gz,
+                    float ax, float ay, float az,
+                    float mx, float my, float mz,
+                    float accelCutoff, uint8_t magDataUpdate, float dt);
 #endif
 

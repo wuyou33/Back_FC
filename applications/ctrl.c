@@ -81,7 +81,7 @@ void CTRL_2(float T)
   }
 
   if(mode.use_px4_err){
-	cal_ero_outter_px4(); 
+	cal_ero_outter_so3(); 
   ctrl_2.err.x =  my_deathzoom_21(ero_angle_px4[0],0.0);
 	ctrl_2.err.y =  my_deathzoom_21(ero_angle_px4[1],0.0);
 	#if EN_ATT_CAL_FC
@@ -98,9 +98,9 @@ void CTRL_2(float T)
 	ctrl_2.err.z =  my_deathzoom_21(LIMIT(To_180_degrees( ctrl_angle_offset.z + except_A.z - Yaw	 ),-YAW_ERO_MAX,YAW_ERO_MAX),0.5);//*LIMIT(ero_angle_px4[3],0.5,1);
 	#endif	
 	}//normal 
-	else{	
+	else{	//使用SO3下误差计算
 	
-	cal_ero_outter_px4(); 
+	cal_ero_outter_so3(); 
   /* 得到角度误差 */
 	if(mode.use_px4_err){
   ctrl_2.err.x =  my_deathzoom_21(ero_angle_px4[0],0.0);
@@ -183,7 +183,7 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
  float ctrl_angle_out[3]={0},ctrl_angle_weight[3]={0};
 	xyz_f_t EXP_LPF_TMP;
 	
-	if(ctrl_2.PID[PIDROLL].kp==0||inner_set){
+	if(ctrl_2.PID[PIDROLL].kp==0||inner_set){//速度环调参给定
 	#if !TUNING_Z	
 		#if TUNING_X
 		if(fabs(Rol_fc)<40)
@@ -216,22 +216,22 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
 	ctrl_1.err_i.x =ctrl_1.err_i.y =ctrl_1.err_i.z =0;
 	ctrl_2.err_i.x =ctrl_2.err_i.y =ctrl_2.err_i.z =0;
 	}
-	EXP_LPF_TMP.x = MAX_CTRL_ASPEED *(ctrl_angle_out[0]/ANGLE_TO_MAX_AS);//*( (CH_filter[0])/500.0f );//
-	EXP_LPF_TMP.y = MAX_CTRL_ASPEED *(ctrl_angle_out[1]/ANGLE_TO_MAX_AS);//*( (CH_filter[1])/500.0f );//
+	EXP_LPF_TMP.x = MAX_CTRL_ASPEED *(ctrl_angle_out[0]/ANGLE_TO_MAX_AS);
+	EXP_LPF_TMP.y = MAX_CTRL_ASPEED *(ctrl_angle_out[1]/ANGLE_TO_MAX_AS);
 	EXP_LPF_TMP.z = MAX_CTRL_YAW_SPEED *(ctrl_angle_out[2]/ANGLE_TO_MAX_AS);
 	
-	except_AS.x = EXP_LPF_TMP.x;//20 *3.14 *T *( EXP_LPF_TMP.x - except_AS.x );//
-	except_AS.y = EXP_LPF_TMP.y;//20 *3.14 *T *( EXP_LPF_TMP.y - except_AS.y );//
-	except_AS.z = EXP_LPF_TMP.z;//20 *3.14 *T *( EXP_LPF_TMP.z - except_AS.z );//
+	except_AS.x = EXP_LPF_TMP.x;
+	except_AS.y = EXP_LPF_TMP.y;
+	except_AS.z = EXP_LPF_TMP.z;
 	/* 期望角速度限幅 */
 	except_AS.x = LIMIT(except_AS.x, -MAX_CTRL_ASPEED,MAX_CTRL_ASPEED );
 	except_AS.y = LIMIT(except_AS.y, -MAX_CTRL_ASPEED,MAX_CTRL_ASPEED );
 	except_AS.z = LIMIT(except_AS.z, -MAX_CTRL_YAW_SPEED,MAX_CTRL_YAW_SPEED );
 
 	/* 角速度直接微分（角加速度），负反馈可形成角速度的阻尼（阻碍角速度的变化）*/
-	ctrl_1.damp.x = ( mpu6050_fc.Gyro_deg.x - g_old[A_X]) *( 0.002f/T );//ctrl_1.PID[PIDROLL].kdamp
-	ctrl_1.damp.y = (-mpu6050_fc.Gyro_deg.y - g_old[A_Y]) *( 0.002f/T );//ctrl_1.PID[PIDPITCH].kdamp *
-	ctrl_1.damp.z = (-mpu6050_fc.Gyro_deg.z - g_old[A_Z]) *( 0.002f/T );//ctrl_1.PID[PIDYAW].kdamp	 *
+	ctrl_1.damp.x = ( mpu6050_fc.Gyro_deg.x - g_old[A_X]) *( 0.002f/T );
+	ctrl_1.damp.y = (-mpu6050_fc.Gyro_deg.y - g_old[A_Y]) *( 0.002f/T );
+	ctrl_1.damp.z = (-mpu6050_fc.Gyro_deg.z - g_old[A_Z]) *( 0.002f/T );
 	/* 角速度误差 */
 	ctrl_1.err.x =  ( except_AS.x - mpu6050_fc.Gyro_deg.x ) *(300.0f/MAX_CTRL_ASPEED);
 	ctrl_1.err.y =  ( except_AS.y + mpu6050_fc.Gyro_deg.y ) *(300.0f/MAX_CTRL_ASPEED);  //-y
@@ -245,7 +245,7 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
 	ctrl_1.err_d.x = ( ctrl_1.PID[PIDROLL].kd  *( -10 *ctrl_1.damp.x) *( 0.002f/T ) );
 	ctrl_1.err_d.y = ( ctrl_1.PID[PIDPITCH].kd *( -10 *ctrl_1.damp.y) *( 0.002f/T ) );
 	ctrl_1.err_d.z = ( ctrl_1.PID[PIDYAW].kd   *( -10 *ctrl_1.damp.z) *( 0.002f/T ) );
-	
+	//自抗扰
   OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200,ctrl_1.PID[PIDPITCH].kp,thr_view);
 	OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200,ctrl_1.PID[PIDROLL].kp,thr_view);
   
@@ -267,23 +267,18 @@ if(eso_att_inner_c[PITr].b0==0){
 }
 
 
-	if(eso_att_inner_c[PITr].b0!=0){//eso
+	if(eso_att_inner_c[PITr].b0!=0){//ADRC
 	ctrl_1.err_i.x=ctrl_1.err_i.y=0;	
 	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp  *( ctrl_1.err_d.x +eso_att_inner_c[ROLr].u ) );
-										//*(MAX_CTRL_ASPEED/300.0f);
 	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp *( ctrl_1.err_d.y +eso_att_inner_c[PITr].u ) );
-										//*(MAX_CTRL_ASPEED/300.0f);
 	}else{	/* 角速度PID输出 */
 	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp  *( ctrl_1.err.x + ctrl_1.err_d.x + ctrl_1.err_i.x ) );
-										//*(MAX_CTRL_ASPEED/300.0f);
 	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp *( ctrl_1.err.y + ctrl_1.err_d.y + ctrl_1.err_i.y ) );
-										//*(MAX_CTRL_ASPEED/300.0f);
-	}	
-	
+	}		
 	ctrl_1.out.z = 3 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.z),0,1)*except_AS.z + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDYAW].kp   *( ctrl_1.err.z + ctrl_1.err_d.z + ctrl_1.err_i.z  ) );
-										//*(MAX_CTRL_ASPEED/300.0f);
+
 	
-	Thr_Ctrl(T);// 油门控制
+	Thr_Ctrl(T);// 高度控制
 	if(mode.att_pid_tune)
 	{	
 	#if !TUNING_Z		
@@ -369,7 +364,7 @@ void Thr_Ctrl(float T)
 		
 	}
 	  thr_view=thr;
-	  Height_Ctrl1(T,thr);   //实际使用值
+	  Height_Ctrl1(T,thr);   //高度控制
 	  thr_value =height_ctrl_out;
 ////////////////////////////////////////////////////////////////
 	
@@ -421,7 +416,7 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 
 #endif	
 
-  float tilted_fix;
+  float tilted_fix;//补偿油门
 	#if EN_ATT_CAL_FC
 	tilted_fix=LIMIT((thr_value/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-thr_value),0,200);
@@ -491,7 +486,5 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 	SetPwm(motor_out,0,1000); //1000
 	
 }
-
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
 
 

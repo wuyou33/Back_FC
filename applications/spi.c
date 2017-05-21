@@ -1,16 +1,5 @@
 #include "spi.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32F407开发板
-//SPI 驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//创建日期:2014/5/6
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2014-2024
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 	 
+
 
 
 //以下是SPI模块的初始化代码，配置成主机模式 						  
@@ -24,7 +13,6 @@ void SPI2_Init(void)
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIOA时钟
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);//使能SPI1时钟
  
-		//???????
 	NVIC_InitStructure.NVIC_IRQChannel = SPI2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -81,36 +69,36 @@ void SPI2_SetSpeed(u8 SPI_BaudRatePrescaler)
 u8 SPI2_ReadWriteByte(u8 TxData)
 {		 			 
         u8 retry=0;                                         
-        while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET) //?????SPI???????:????????
+        while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET) 
                 {
                 retry++;
                 if(retry>200)
                         return 0;
                 }                          
         
-        SPI_I2S_SendData(SPI2, TxData); //????SPIx??????
+        SPI_I2S_SendData(SPI2, TxData); 
         retry=0;
 
-        while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) == RESET)//?????SPI???????:?????????
+        while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) == RESET)
                 {
                 retry++;
                 if(retry>200)
                         return 0;
                 }                                                              
-                return SPI_I2S_ReceiveData(SPI2); //????SPIx???????            
+                return SPI_I2S_ReceiveData(SPI2);        
  		    
 }
 
 u8 SPI2_ReadByte(u8 TxData)
 {		 			 
 u8 retry=0;                                         
-while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) == RESET)//?????SPI???????:?????????
+while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) == RESET)
 		{
 		retry++;
 		if(retry>200)
 						return 0;
 		}                                                              
-		return SPI_I2S_ReceiveData(SPI2); //????SPIx???????            
+		return SPI_I2S_ReceiveData(SPI2);       
  		    
 }
 u8 buf1[10];
@@ -127,9 +115,3 @@ void SPI2_IRQHandler(void)
     }  
 
 }  
-
-
-
-
-
-

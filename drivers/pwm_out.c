@@ -173,7 +173,7 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 		TIM_ARRPreloadConfig(TIM4, ENABLE);
 		TIM_Cmd(TIM4, ENABLE);	
 
-		if(motor_cal)//《---------------在此处加断点
+		if(motor_cal)//《---------------在此处加断点 校准电调
 		MOTOR_SET();
 		TIM3->CCR1 = PWM_RADIO *( 0 ) + INIT_DUTY;				//5	
 		TIM3->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//6	
@@ -382,5 +382,3 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 #endif
 }
 
-
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/

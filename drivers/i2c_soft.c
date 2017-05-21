@@ -243,5 +243,3 @@ u8 IIC_Read_nByte(u8 SlaveAddress, u8 REG_Address, u8 len, u8 *buf)
 }
 
 
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
-

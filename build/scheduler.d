@@ -50,10 +50,9 @@
 .\build\scheduler.o: applications\ctrl.h
 .\build\scheduler.o: .\drivers\pwm_out.h
 .\build\scheduler.o: applications\bmp.h
-.\build\scheduler.o: applications\ms5611.h
+.\build\scheduler.o: .\drivers\ms5611.h
 .\build\scheduler.o: .\drivers\i2c_soft.h
 .\build\scheduler.o: .\drivers\ultrasonic.h
-.\build\scheduler.o: .\drivers\ms5611.h
 .\build\scheduler.o: applications\anotc_baro_ctrl.h
 .\build\scheduler.o: applications\filter.h
 .\build\scheduler.o: applications\mymath.h

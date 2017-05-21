@@ -21,7 +21,6 @@ void cpuidGetId(void)
 u8 All_Init()
 {
 	NVIC_PriorityGroupConfig(NVIC_GROUP);		//中断优先级组别设置
-	
 	SysTick_Configuration(); 	//滴答时钟
 	cpuidGetId();
 	I2c_Soft_Init();					//初始化模拟I2C
@@ -31,9 +30,7 @@ u8 All_Init()
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
 	#endif
 	LED_Init();								//LED功能初始
-	
 	Delay_ms(100);						//延时
-	
 	#if EN_ATT_CAL_FC
 	HMC5883L_SetUp();
 	Delay_ms(100);						//延时
@@ -57,7 +54,7 @@ u8 All_Init()
 	#if USE_PXY										
 	Usart3_Init(115200L);  
 	#else
-	Usart3_Init(230400L);     // 未使用
+	Usart3_Init(230400L);     // 未使用 或者 超声波
 	#endif
 	#if EN_DMA_UART3
 	MYDMA_Config(DMA1_Stream3,DMA_Channel_4,(u32)&USART3->DR,(u32)SendBuff3,SEND_BUF_SIZE3+2,2);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
@@ -65,7 +62,7 @@ u8 All_Init()
 	#if !SONAR_USE_FC1
   Uart5_Init(115200L);      // 图像Odroid
 	#else
-	Uart5_Init(9600);      // 图像Odroid
+	Uart5_Init(9600);      // 超声波
 	#endif
 	Delay_ms(100);
 	#if EN_DMA_UART4 
@@ -94,16 +91,19 @@ u8 All_Init()
 	#endif
 	READ_PARM();//读取参数
 	Para_Init();//参数初始
-	
+	//-------------系统默认参数
 	mode.en_eso_h_in=1;
 	mode.imu_use_mid_down=1;
 	mode.flow_f_use_ukfm=2;
 	mode.baro_f_use_ukfm=0;				
 	mode.yaw_use_eso=0;
 	
-//	imu_board.k_flow_sel=1;
-//	imu_board.flow_module_offset_x=-0.05;
-//	imu_board.flow_module_offset_y=0;
+	
+// Need init for First use mpu6050_fc ak8975_fc	
+//  LENGTH_OF_DRONE=330;//飞行器轴距
+//  SONAR_HEIGHT=0.054+0.015;//超声波安装高度
+//	imu_board.k_flow_sel=1;//光流增益
+//	imu_board.flow_module_offset_x=-0.05;//光流安装位置
+//	imu_board.flow_module_offset_y=0;//光流安装位置
  	return (1);
 }
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/

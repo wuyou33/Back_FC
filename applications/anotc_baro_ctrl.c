@@ -1,6 +1,5 @@
 
 #include "anotc_baro_ctrl.h"
-#include "ms5611.h"
 #include "filter.h"
 #include "alt_fushion.h"
 #include "bmp.h"
@@ -97,61 +96,10 @@ float sonar_weight;
 float wz_speed,baro_com_val;				
 void baro_ctrl(float dT,_hc_value_st *height_value)
 {
-	static u8 step;
-	static float dtime;
 
-		switch(step)
-	{
-		case 0:
-		{
-			
-			step = 1;
-			break;
-		}
-		case 1:
-		{
-
-			
-			step = 2;
-			break;
-		}
-		case 2:
-		{
-			
-			step = 3;
-			break;
-		}
-		case 3:
-		{
-			
-			step = 4;
-			break;
-		}	
-		case 4:
-		{
-			
-			step = 0;
-			break;
-		}	
-		default:break;	
-	
-	}
-
-	dtime += dT;
 	MS5611_ThreadNew();
 	baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
 	baro.height=MS5611_Pressure;//
-	
-	if(dtime > 0.01f) //10 ms
-	{
-		dtime = 0;
-			
-			if(step==0)
-			{
-			 step = 1;//20ms
-			}
-			
-	}		
 
 			baro.h_dt = 0.02f; //气压计读取间隔时间20ms
 			#if EN_ATT_CAL_FC
@@ -162,24 +110,7 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 		
 	    ukf_baro_task1(dT)	;
 //////////////////////////////////////////				
-			if(ultra.measure_ok == 1)
-			{
-				
-				sonar_weight += 0.5f *dtime;
-			}
-			else
-			{ 
-				sonar_weight -= 2.0f *dtime;
-			}
-			sonar_weight = LIMIT(sonar_weight,0,1);
-			
-			//中位不使用超声波
-			if(mode_state == 1)
-			{
-				sonar_weight = 0;
-			}
-      static float wz_acc;		
-//////////////////////////////////////////
+
 			wz_speed = baro_fusion.fusion_speed_m.out - baro_fusion.fusion_speed_me.out;
 			sonar_weight=0;
 			float m_speed,f_speed;

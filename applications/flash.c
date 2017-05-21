@@ -4,7 +4,7 @@
 #include "ak8975.h"
 #include "mpu6050.h"	
  
-u16 W25QXX_TYPE=W25Q32;	//默认是W25Q128
+u16 W25QXX_TYPE=W25Q32;	
 
 //4Kbytes为一个Sector
 //16个扇区为1个Block

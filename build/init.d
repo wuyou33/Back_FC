@@ -48,10 +48,9 @@
 .\build\init.o: applications\rc.h
 .\build\init.o: applications\imu.h
 .\build\init.o: applications\mymath.h
-.\build\init.o: applications\ms5611.h
+.\build\init.o: .\drivers\ms5611.h
 .\build\init.o: .\drivers\ak8975.h
 .\build\init.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\build\init.o: .\drivers\ultrasonic.h
-.\build\init.o: .\drivers\ms5611.h
 .\build\init.o: applications\bmp.h
 .\build\init.o: applications\spi.h

@@ -75,9 +75,9 @@ void Duty_2ms()
 		Yaw_fc=Yaw_fc1;
   }	
 	#endif
-	CTRL_1( inner_loop_time ); 										//内环角速度控制。输入：执行周期，期望角速度，测量角速度，角度前馈；输出：电机PWM占空比。<函数未封装>
+	CTRL_1( inner_loop_time ); 							//内环角速度控制
 	
-	RC_Duty( inner_loop_time , Rc_Pwm_In );				// 遥控器通道数据处理 ，输入：执行周期，接收机pwm捕获的数据。
+	RC_Duty( inner_loop_time , Rc_Pwm_In );		// 遥控器通道数据处理 ，输入：执行周期，接收机pwm捕获的数据。
 }
 
 float outer_loop_time;
@@ -90,13 +90,13 @@ void Duty_5ms()
 	else
 		outer_loop_time=temp;
 	
- 	CTRL_2( outer_loop_time ); 											// 外环角度控制。输入：执行周期，期望角度（摇杆量），姿态角度；输出：期望角速度。<函数未封装>
+ 	CTRL_2( outer_loop_time ); // 外环角度控制
 }
 
 float pos_time;
 float baro_task_time;
 u8 UART_UP_LOAD_SEL=0;//<------------------------------上传数据选择
-u8 UART_UP_LOAD_SEL_FORCE=0;
+u8 UART_UP_LOAD_SEL_FORCE=0;//<--上位机强制选择
 u8 force_flow_ble_debug;
 void Duty_10ms()
 {
@@ -252,7 +252,7 @@ void Duty_10ms()
 							}	
 						
 				//To  SD卡
-						static u8 sd_sel;
+				static u8 sd_sel;
 				if(cnt[3]++>0){cnt[3]=0;
 				
 			     #if EN_DMA_UART4 			
@@ -263,7 +263,7 @@ void Duty_10ms()
 							clear_nrf_uart();		
 							nrf_uart_cnt=0;
 								
-							switch(sd_sel){
+							switch(sd_sel){//SD卡存储
 							case 0:sd_sel=1;		
 						  sd_publish();		
 							data_per_uart4(SEND_SD_SAVE1);	
@@ -296,11 +296,11 @@ void Duty_20ms()
 		baro_task_time=temp;
     
 		
-	  baro_ctrl(baro_task_time,&hc_value);			
+	  baro_ctrl(baro_task_time,&hc_value);//高度融合			
 		pos_time=baro_task_time;
 		
-		AUTO_LAND_FLYUP(pos_time);
-	  Positon_control(pos_time);
+		AUTO_LAND_FLYUP(pos_time);//自动降落
+	  Positon_control(pos_time);//位置控制
 	
 
 		//------------------------RC UPDATE-----------------------  	
@@ -348,11 +348,8 @@ void Duty_20ms()
 				}
 }
 
-void Duty_50ms()
+void Duty_50ms()//遥控 模式设置
 {
-		if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
-		if(imu_loss_cnt++>1500/50){NAV_BOARD_CONNECT=0;}
-		 
 		//---------------use now
 		//------------0 1   |   2 3       KEY_SEL
 		#if USE_RECIVER_MINE		
@@ -363,7 +360,7 @@ void Duty_50ms()
     mode.en_sd_save=KEY_SEL[1];		
     #endif
 		
-		mode.en_pid_sb_set=KEY_SEL[2];//使能PID设置	
+		mode.en_pid_sb_set=KEY_SEL[2];
 //-------------------------------------------------	
 		#if !USE_RECIVER_MINE
 			#if !USE_TOE_IN_UNLOCK
@@ -416,15 +413,11 @@ void Duty_50ms()
 //		else
 //		mode.trig_flow_spd=0;	
 		
-		#if !USE_RECIVER_MINE
-		//	if(Rc_Get_PWM.AUX1>1500&&ALT_POS_SONAR2<3)
-	
-		#endif	
  
 	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
-		
-  if(!NAV_BOARD_CONNECT||yaw_use_fc||0)			
+//------------------------磁力计 超声波 采集
+  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)			
 	ANO_AK8975_Read();
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
@@ -434,6 +427,11 @@ void Duty_50ms()
 	else if(cnt_sonar_idle++>2/0.05){cnt_sonar_idle=0;
 	Ultra_Duty();}
 	#endif
+	
+//-------------------------超时判断	
+	if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
+	if(imu_loss_cnt++>1500/50){NAV_BOARD_CONNECT=0;}
+		
 	if(circle.lose_cnt++>4/0.05)
 	circle.connect=0;
 	if(marker.lose_cnt++>4/0.05)
@@ -482,10 +480,3 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 		loop.check_flag = 0;		//循环运行完毕标志
 	}
 }
-
-
-
-
-	/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
-	
-

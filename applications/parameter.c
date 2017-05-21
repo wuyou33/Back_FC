@@ -47,6 +47,7 @@ static void  Param_SetSettingToFC(void)
 	memcpy(&ctrl_2.PID[PIDYAW],&pid_setup.groups.ctrl2.yaw,sizeof(pid_t));
 
 }
+
 float k_pid=1;
 float k_sensitivity=1;//感度
 void Para_ResetToFactorySetup(void)
@@ -186,5 +187,3 @@ void Parameter_Save()
 {
 }
 
-
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/

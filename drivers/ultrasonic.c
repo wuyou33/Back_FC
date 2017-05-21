@@ -5,7 +5,7 @@
 
 void Ultrasonic_Init()
 {
-  Usart3_Init(9600);			//串口5初始化，函数参数为波特率
+  Usart3_Init(9600);	
 }
 
 s8 ultra_start_f;
@@ -71,36 +71,80 @@ float sonar_filter_oldx(float in)
                     Distance[j+1] = Distance1; 
                 }
             }
-
         }
         MAX_error1 = Distance[1] - Distance[0];
         for(i = 1 ; i < measure_num-1 ; i++)
         {
-            if(MAX_error1 < Distance[i+1] - Distance[i] )//Èç£º1 2 3 4 5    8 9 10    MAX_error_targe=4;
+            if(MAX_error1 < Distance[i+1] - Distance[i] )
             {
-                MAX_error1 =  Distance[i+1] - Distance[i];//×î´ó²î¾à
-                MAX_error_targe = i;  //¼ÇÏÂ×î´ó²î¾àÖµµÄÎ»ÖÃ£¨Õâ×éÊýÖÐµÄÎ»ÖÃ£©
+                MAX_error1 =  Distance[i+1] - Distance[i];
+                MAX_error_targe = i;  
             }
         }
         float UltrasonicWave_Distance1=0;
-        if(MAX_error_targe+1 > (measure_num+1)/2) //Ç°²¿·ÖÓÐÐ§  1 2 3 4 5    8 9 10  (Èç¹ûÎ»ÓÚÖÐ¼ä£¬ºó°ë²¿ÓÅÏÈ)
+        if(MAX_error_targe+1 > (measure_num+1)/2)
         {
             for(i = 0 ; i <= MAX_error_targe ; i++)
             {
                 UltrasonicWave_Distance1 += Distance[i];
             }
-            UltrasonicWave_Distance1 /= (MAX_error_targe+1);//È¡Æ½¾ù
+            UltrasonicWave_Distance1 /= (MAX_error_targe+1);
         }
-        else  //ºó²¿·ÖÓÐÐ§  1 2 3   7 8 9 10
+        else  
         {
              for(i = MAX_error_targe + 1 ; i < measure_num ; i++)
             {
                 UltrasonicWave_Distance1 += Distance[i];
             }
-            UltrasonicWave_Distance1 /= (measure_num - MAX_error_targe -1);//È¡Æ½¾ù
+            UltrasonicWave_Distance1 /= (measure_num - MAX_error_targe -1);
         }
-    return  (float)UltrasonicWave_Distance1/1000.; //×ª»¯ÎªÃ×Îªµ¥Î»µÄ¸¡µãÊý
+    return  (float)UltrasonicWave_Distance1/1000.;
 }
+
+
+static float sonar_values[3] = { 0.0f };
+static unsigned insert_index = 0;
+
+static void sonar_bubble_sort(float sonar_values[], unsigned n);
+
+void sonar_bubble_sort(float sonar_values[], unsigned n)
+{
+	float t;
+
+	for (unsigned i = 0; i < (n - 1); i++) {
+		for (unsigned j = 0; j < (n - i - 1); j++) {
+			if (sonar_values[j] > sonar_values[j+1]) {
+				/* swap two values */
+				t = sonar_values[j];
+				sonar_values[j] = sonar_values[j + 1];
+				sonar_values[j + 1] = t;
+			}
+		}
+	}
+}
+
+float insert_sonar_value_and_get_mode_value(float insert)
+{
+	const unsigned sonar_count = sizeof(sonar_values) / sizeof(sonar_values[0]);
+
+	sonar_values[insert_index] = insert;
+	insert_index++;
+	if (insert_index == sonar_count) {
+		insert_index = 0;
+	}
+
+	/* sort and return mode */
+
+	/* copy ring buffer */
+	float sonar_temp[sonar_count];
+	memcpy(sonar_temp, sonar_values, sizeof(sonar_values));
+
+	sonar_bubble_sort(sonar_temp, sonar_count);
+
+	/* the center element represents the mode after sorting */
+	return sonar_temp[sonar_count / 2];
+}
+
 
 void Ultra_Get(u8 com_data)
 {
@@ -117,7 +161,8 @@ void Ultra_Get(u8 com_data)
 		
 		if(ultra.height < 5000) // 5米范围内认为有效，跳变值约10米.
 		{
-			ultra.relative_height =sonar_filter_oldx(ultra.height);
+			//ultra.relative_height =sonar_filter_oldx(ultra.height);
+			ultra.relative_height =insert_sonar_value_and_get_mode_value((float)ultra.height/1000.);
 			ultra.measure_ok = 1;		
 		}
 		else

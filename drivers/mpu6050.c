@@ -249,9 +249,7 @@ void MPU6050_Data_Offset()
             mpu6050_fc.Acc_Temprea_Offset = sum_temp[TEM]/OFFSET_AV_NUM;
             acc_sum_cnt =0;
             mpu6050_fc.Acc_CALIBRATE = 0;
-			//f.msg_id = 1;
-		///	f.msg_data = 1;
-            WRITE_PARM();// Param_SaveAccelOffset(&mpu6050_fc.Acc_Offset);
+            WRITE_PARM();
             sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
         }
     }
@@ -275,9 +273,7 @@ void MPU6050_Data_Offset()
             gyro_sum_cnt =0;
             if(mpu6050_fc.Gyro_CALIBRATE == 1)
 			{
-               WRITE_PARM();// Param_SaveGyroOffset(&mpu6050_fc.Gyro_Offset);
-				//f.msg_id = 2;
-				//f.msg_data = 1;
+               WRITE_PARM();
 			}
             mpu6050_fc.Gyro_CALIBRATE = 0;
             sum_temp[G_X] = sum_temp[G_Y] = sum_temp[G_Z] = sum_temp[TEM] = 0;
@@ -394,10 +390,4 @@ void MPU6050_Data_Prepare(float T)
     mpu6050_fc.Gyro_deg.y = mpu6050_fc.Gyro.y *TO_ANGLE;
     mpu6050_fc.Gyro_deg.z = mpu6050_fc.Gyro.z *TO_ANGLE;
 
-
-
-//======================================================================
 }
-
-
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/

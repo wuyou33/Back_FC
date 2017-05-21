@@ -639,11 +639,6 @@
               <FilePath>.\applications\quar.c</FilePath>
             </File>
             <File>
-              <FileName>KF_OLDX_NAV.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\KF_OLDX_NAV.c</FilePath>
-            </File>
-            <File>
               <FileName>kf_oldx.lib</FileName>
               <FileType>4</FileType>
               <FilePath>.\applications\kf_oldx.lib</FilePath>
@@ -664,19 +659,19 @@
               <FilePath>.\applications\ctrl.c</FilePath>
             </File>
             <File>
+              <FileName>height_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\height_ctrl.c</FilePath>
+            </File>
+            <File>
               <FileName>pos_ctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\pos_ctrl.c</FilePath>
             </File>
             <File>
-              <FileName>height_ctrl1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\height_ctrl1.c</FilePath>
-            </File>
-            <File>
-              <FileName>eso.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\eso.c</FilePath>
+              <FileName>eso.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\applications\eso.lib</FilePath>
             </File>
           </Files>
         </Group>

@@ -173,7 +173,6 @@ void Cycle_Time_Init()
 
 }
 
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
 
 
 

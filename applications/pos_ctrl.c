@@ -23,7 +23,7 @@ void circle_control(float T)//对圆自动降落 未使用
 {
 }
 
-float data_d(float in,float *reg,float T,float max)
+float data_d(float in,float *reg,float T,float max)//微分函数
 {
 float temp;
 	temp=(in-*reg)/T;
@@ -33,7 +33,7 @@ return LIMIT(temp,-max,max);
 
 float out_back_step[3];
 float k_back_step=1;//1~2.5;
-void backstep_pos(float T,float mess,float exp_x,float exp_y)
+void backstep_pos(float T,float mess,float exp_x,float exp_y)//反步法控制器  未测试
 {
 float alfa[6]={1};	
 alfa[0]=alfa[1]=alfa[2]=alfa[3]=alfa[4]=alfa[5]=k_back_step;
@@ -87,7 +87,7 @@ float circle_angle;
 float exp_center_cycle[5]={1.50,1.50,0.78,0,20};
 u8 line_test_num[2]={12,34};
 u8 tan_test_num[4]={12,32,34,14};
-void Nav_pos_set_test(u8 mode_in,float T)
+void Nav_pos_set_test(u8 mode_in,float T)//轨迹规划
 {
 u8 i;	
 static float init_pos[2];	
@@ -162,7 +162,9 @@ nav_pos_ctrl[Y].exp=POS_UKF_Y;//mm
 if(sel==X)
 nav_pos_ctrl[X].exp=POS_UKF_X;//mm
 }
-void Positon_control(float T)//     光流定点 
+
+
+void Positon_control(float T)// 位置控制 
 { u8 i;
 	static u8 cnt[2],init;
 	if(!init){init=1;
@@ -380,7 +382,7 @@ else
 	 } 
 	
 	
-  if(mode.flow_hold_position!=2){//spd trig tunning
+  if(mode.flow_hold_position!=2){//速度阶越测试
 	 nav_spd_ctrl[Y].exp*=0.0;
 	 nav_spd_ctrl[X].exp*=0.0;}
 	static u8 state_tune_spd;
@@ -529,7 +531,6 @@ else
 	else
 	flt_use[Y]=flt_use[X]=nav_spd_pid.flt_nav;
 	
-	//flt_use[Y]=flt_use[X]=1;
 	if(mode.test4){
   nav[PITr]=flt_use[Y]*nav_acc_ctrl[Y].pid_out+(1-flt_use[Y])*nav[PITr];
 	nav[ROLr]=flt_use[X]*nav_acc_ctrl[X].pid_out+(1-flt_use[X])*nav[ROLr];
@@ -543,7 +544,7 @@ else
 }
 
 
-//--------------------------------------自动起飞降落 视觉导航状态机 未使用
+//--------------------------------------自动起飞降落 视觉导航状态机
 u8 mode_change;
 u8 state_v;
 u8 force_pass;

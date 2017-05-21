@@ -8,11 +8,6 @@
 ak8975_t ak8975 = { {0,0,0},{124,-449,369},{1,0.532,0.486},{0,0,0} };
 ak8975_t ak8975_fc = { {0,0,0},{232,-221,-119},{1.17,1.339,1},{0,0,0} };
 
-bool ANO_AK8975_Run(void)
-{
-	return IIC_Write_1Byte(AK8975_ADDRESS,AK8975_CNTL,0x01);	
-}
-
 xyz_f_t XYZ_STRUCT_COPY(float x,float y, float z)
 {
 	xyz_f_t m ;
@@ -31,12 +26,8 @@ u8 hml_fix=1;
 void ANO_AK8975_Read_Mag_Data(void)
 {
 	int16_t mag_temp[3];
-//u8 ak8975_buffer[6]; //接收数据缓存
 	
-	//I2C_FastMode = 0;
-
 	HMC58X3_getRaw(&mag_temp[0], &mag_temp[1],&mag_temp[2]);
-
 	ak8975_fc.Mag_Adc.x= IIR_I_Filter(mag_temp[0], InPut_IIR_hml[0], OutPut_IIR_hml[0], b_IIR_hml, IIR_ORDER+1, a_IIR_hml, IIR_ORDER+1);
   ak8975_fc.Mag_Adc.y= IIR_I_Filter(mag_temp[1], InPut_IIR_hml[1], OutPut_IIR_hml[1], b_IIR_hml, IIR_ORDER+1, a_IIR_hml, IIR_ORDER+1);
 	#if IMU_HML_ADD_500
@@ -80,7 +71,7 @@ void ANO_AK8975_CalOffset_Mag(void)
   static u8 state_cal_hml;
   float t_h=(float)Get_Cycle_T(GET_T_HML_CAL)/1000000.+0.0001;	
 	
-	
+	//椭球校准
 	//HML_SAMPLE(ak8975_fc.Mag_CALIBRATED,ak8975_fc.Mag_Adc.x,ak8975_fc.Mag_Adc.y,ak8975_fc.Mag_Adc.z,Pit_fc ,Rol_fc,mpu6050.Gyro_deg.x,mpu6050.Gyro_deg.y,mpu6050.Gyro_deg.z,t_h);
 	if(ak8975_fc.Mag_CALIBRATED)
 	{	
@@ -97,10 +88,7 @@ void ANO_AK8975_CalOffset_Mag(void)
 		
 		#else
 		if(ABS(ak8975_fc.Mag_Adc.x)<MAX_HML_CAL&&ABS(ak8975_fc.Mag_Adc.y)<MAX_HML_CAL&&ABS(ak8975_fc.Mag_Adc.z)<MAX_HML_CAL)
-		{
-			
-			
-			
+		{		
 			MagMAX.x = MAX(ak8975_fc.Mag_Adc.x, MagMAX.x);
 			MagMAX.y = MAX(ak8975_fc.Mag_Adc.y, MagMAX.y);
 			MagMAX.z = MAX(ak8975_fc.Mag_Adc.z, MagMAX.z);
@@ -131,14 +119,12 @@ void ANO_AK8975_CalOffset_Mag(void)
 				ak8975_fc.Mag_Gain.y =  temp_max/MagSum.y ;
 				ak8975_fc.Mag_Gain.z =  temp_max/MagSum.z ;
 				
-		  	WRITE_PARM();//Param_SaveMagOffset(&ak8975_fc.Mag_Offset);
+		  	WRITE_PARM();
 				cnt_m = 0;
 				ak8975_fc.Mag_CALIBRATED = 0;
 			}
 		}
 		#endif
-	
-		
 	}
 	else
 	{
@@ -151,9 +137,6 @@ void ANO_AK8975_Read(void)
 		//读取磁力计
 		ANO_AK8975_Read_Mag_Data();
 }
-
-
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
 
 
 float HMC5883_lastx,HMC5883_lasty,HMC5883_lastz;
@@ -370,12 +353,6 @@ void HMC58X3_setDOR(unsigned char DOR) {
 void HMC58X3_getID(char id[3]) 
 {     u8 id_temp[3];
 	
-		//	IIC_Read_1Byte(HMC58X3_ADDR,HMC58X3_R_IDA,&id_temp[0]);
-		//	IIC_Read_1Byte(HMC58X3_ADDR,HMC58X3_R_IDB,&id_temp[1]);
-		//	IIC_Read_1Byte(HMC58X3_ADDR,HMC58X3_R_IDC,&id_temp[2]);
-	  //  id[0]=id_temp[0];
-		//	id[1]=id_temp[1];
-		//	id[2]=id_temp[2];
       id[0]=I2C_ReadOneByte(HMC58X3_ADDR,HMC58X3_R_IDA);  
       id[1]=I2C_ReadOneByte(HMC58X3_ADDR,HMC58X3_R_IDB);
       id[2]=I2C_ReadOneByte(HMC58X3_ADDR,HMC58X3_R_IDC);
@@ -392,12 +369,8 @@ void HMC5883L_SetUp(void)
 	HMC58X3_getID(id);
   HMC58X3_init(0); // Don't set mode yet, we'll do that later on.
   HMC58X3_setMode(0);
-  //HMC58X3_setDOR(HMC5883L_RATE_15);
 	HMC58X3_setDOR(HMC5883L_RATE_75);
 	HMC58X3_setGain(HMC5883L_GAIN_440);
   HMC58X3_FIFO_init();
 
 }
-//
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
-

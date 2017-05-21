@@ -3,7 +3,6 @@
 #include "filter.h"
 #include "imu.h"
 #include "quar.h"
-#include "ms5611.h"
 #include "mpu6050.h"
 #include "usart.h"
 #include "height_ctrl.h"
@@ -177,7 +176,7 @@ float acc_body_temp[3];
 		#define BARO_AV_NUM_FU 66
 		static float baro_av_arr_fu[BARO_AV_NUM_FU];
 		static  u16 baro_av_cnt_fu;
-		baro.h_origin=((float)(baro.relative_height)/1000.);//,xBuf2,yBuf2,a,b,2);
+		baro.h_origin=((float)(baro.relative_height)/1000.);
 		Moving_Average1( (float)( baro.h_origin),baro_av_arr_fu,BARO_AV_NUM_FU, &baro_av_cnt_fu ,&baro.h_flt ); //µ¥Î»mm/s
 
     eso_h_spd.h0=eso_h_acc.h0=T;
@@ -221,36 +220,14 @@ float acc_body_temp[3];
 	//#define BARO_KF_NEW 
 	#define BARO_KF	
 		
-	#if defined(BARO_KF_NEW) //UKF
-	static float acc_bias_ukf;	
-  double Z_kf[3]={posz,0,acc_bias_ukf};
-	double A[9]=
-			 {1,       0,    0,
-				T,       1,    0,
-				-T*T/2, -T,    1};
-	double H[9]={
-			 1,0,0,
-			 0,0,0,
-			 0,0,0};
-	double B[3]={T*T/2,T,0}; 	
-	
-	if((fabs(Pit_fc)>8.666||fabs(Rol_fc)>8.666)&&fly_ready)
-	{
-		H[8]=1;
-	}
-	KF_OLDX_NAV( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, A,  B,  H,  ga,  gwa, gh,  gh,  T);	
-	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
-	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
-	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
-	if((fabs(Pit_fc)<8.666&&fabs(Rol_fc)<8.666)&&fabs(X_kf_baro[2])<2.666)
-	acc_bias_ukf=ALT_ACC_BMP_UKF_OLDX;
-	#elif  defined(BARO_KF) //KF
+	#if defined(BARO_KF_NEW) //KF with limit bias
+	#elif  defined(BARO_KF) //KF with bias
 	double Z_kf[3]={posz,0,0};
 	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh,  ga,  gwa,T);
 	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
 	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
-	#else  //EKF  
+	#else  //EKF  without bias
 	float Z_baro_ekf[2]={posz,acc_bmp};		
 	BARO_EKF_OLDX(X_apo_height,P_apo_k_height, X_apo_height, P_apo_k_height ,Z_baro_ekf,  r_baro,  r_acc, T);
 	ALT_POS_BMP_UKF_OLDX=X_apo_height[0];

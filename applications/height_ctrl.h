@@ -5,7 +5,6 @@
 
 #include "parameter.h"
 
-//typedef xyz_f_t _xyz_f_t;
 #define _xyz_f_t xyz_f_t
 
 #define THR_TAKE_OFF_LIMIT 450

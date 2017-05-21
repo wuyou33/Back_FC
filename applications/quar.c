@@ -1,6 +1,5 @@
 #include "math.h"
 #include "ctrl.h"
-#include "height_ctrl.h"
 #include "quar.h"
 
  void Quaternion_Add(float *r, float *a, float *b)
@@ -521,7 +520,7 @@ float Q_control[2][4]={0};
 float R_control_set[3][3],R_control_ero[3][3];
 float R_control_now[3][3],R_control_now_t[3][3];
 float yaw_dcm;
-void cal_ero_outter_px4(void){
+void cal_ero_outter_so3(void){
 	u8 i,j;
 	//set R_sp-> R_control_set
 
