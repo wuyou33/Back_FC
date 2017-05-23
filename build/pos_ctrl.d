@@ -46,4 +46,5 @@
 .\build\pos_ctrl.o: applications\ctrl.h
 .\build\pos_ctrl.o: .\drivers\pwm_out.h
 .\build\pos_ctrl.o: .\drivers\mpu6050.h
+.\build\pos_ctrl.o: applications\filter.h
 .\build\pos_ctrl.o: applications\alt_fushion.h

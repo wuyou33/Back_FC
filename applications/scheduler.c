@@ -208,8 +208,8 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											baro.h_flt*100,baro.relative_height/10,hc_value.fusion_height/10,
-											ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,ultra_speed/10,
+											ALT_POS_BMP*100,baro.relative_height/10,hc_value.fusion_height/10,
+											ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,ALT_VEL_BMP*100,
 											ALT_POS_SONAR2*100,0*100,hc_value.fusion_acc*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF

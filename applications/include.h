@@ -15,7 +15,7 @@
 #include "stm32f4xx_dma.h"
 #include "eso.h"
 #include "fly_mode.h"
-
+extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
 //================系统===================

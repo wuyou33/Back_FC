@@ -11,6 +11,7 @@
 #include "bmp.h"
 #include "spi.h"
 u8 mcuID[3];
+u8 ble_imu_force;
 void cpuidGetId(void)
 {
     mcuID[0] = *(__IO u32*)(0x1FFF7A10);

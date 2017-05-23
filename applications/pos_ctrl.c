@@ -2,6 +2,7 @@
 #include "rc.h"
 #include "imu.h"
 #include "ctrl.h"
+#include "filter.h"
 #include "alt_fushion.h"
 CIRCLE circle,track;
 MARKER marker;
@@ -288,8 +289,10 @@ head  |    1 PIT y-   90d in marker
 	k_acc_flt=nav_acc_pid.flt_nav_kd;
 	else
 	k_acc_flt=15;	
-	acc_flt[0] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[0] - acc_flt[0] ),0);
-	acc_flt[1] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[1] - acc_flt[1] ),0);
+	//acc_flt[0] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[0] - acc_flt[0] ),0);
+	//acc_flt[1] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[1] - acc_flt[1] ),0);
+	acc_flt[0]=firstOrderFilter(-acc_temp[0] ,&firstOrderFilters[ACC_LOWPASS_X],T);
+	acc_flt[1]=firstOrderFilter(-acc_temp[1] ,&firstOrderFilters[ACC_LOWPASS_Y],T);
 	float b[3] = {0.8122  ,  1.6244  ,  0.8122};
 	float a[3] = {1.0000  ,  1.5888  ,  0.6600};
 	float xBuf1[3];

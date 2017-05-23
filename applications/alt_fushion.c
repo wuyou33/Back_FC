@@ -143,7 +143,9 @@ float acc_body_temp[3];
     body_to_NEZ(acc_body_temp, accIn, ref_q_imd_down_fc);
     acc_temp1=(float)(reference_vr_imd_down_fc[2] *mpu6050_fc.Acc.z + reference_vr_imd_down_fc[0] *mpu6050_fc.Acc.x + reference_vr_imd_down_fc[1] *mpu6050_fc.Acc.y - 4096  )/4096.0f*9.8;
 		static float wz_acc ;
-		wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
+		//wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
+		wz_acc=firstOrderFilter(acc_temp1 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
+		
     float corr_baro = flag_ero*( posz- ALT_POS_BMP_UKF_OLDX);
 		accel_bias_corr[2] -= corr_baro * w_z_baro * w_z_baro;
     float R_control_now1[9];

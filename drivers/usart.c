@@ -496,9 +496,9 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	#if USE_RECIVER_MINE
-	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||((Rc_Get.THROTTLE>1050))||fly_ready;
+	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||((Rc_Get.THROTTLE>1050))||fly_ready||ble_imu_force;
 	#else
-	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||(mode.use_dji&&(Rc_Get.THROTTLE>1050))||fly_ready;
+	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||(mode.use_dji&&(Rc_Get.THROTTLE>1050))||fly_ready||ble_imu_force;
 	#endif//
 	data_to_send[_cnt++]=BYTE0(_temp);	
 	

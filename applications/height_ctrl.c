@@ -319,7 +319,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		#if EN_ATT_CAL_FC	
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;
 		#else
-		exp_height=ALT_POS_BMP_EKF*1000;	
+		exp_height=ALT_POS_BMP_UKF_OLDX*1000;	
 		#endif
 	  }
 		if(height_ctrl_mode==2)
@@ -332,7 +332,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC		
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
 	#else
-	exp_height=ALT_POS_BMP_EKF*1000;
+	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
 	#endif
 	
 	if(mode_change&&smart.rc.POS_MODE==0){mode_change=0;
@@ -340,7 +340,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC	
 	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#else
-	{exp_height=ALT_POS_BMP_EKF*1000;}
+	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#endif
 	if(height_ctrl_mode==2)
 	{exp_height=ALT_POS_SONAR2*1000;}
@@ -350,7 +350,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC		
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#else
-	exp_height=ALT_POS_BMP_EKF*1000;}
+	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
   #endif
 	mode_safe_reg=mode.height_safe;
 	
@@ -366,7 +366,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC	
 	ultra_dis_tmp=ALT_POS_BMP_UKF_OLDX*1000;
 	#else
-	ultra_dis_tmp=ALT_POS_BMP_EKF*1000;	
+	ultra_dis_tmp=ALT_POS_BMP_UKF_OLDX*1000;	
 	#endif
 	else{ 
 	float tilted_fix_sonar;	
