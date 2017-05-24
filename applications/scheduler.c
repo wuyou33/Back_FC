@@ -269,6 +269,7 @@ void Duty_10ms()
 							data_per_uart4(SEND_SD_SAVE1);	
 							data_per_uart4(SEND_SD_SAVE2);	
 							data_per_uart4(SEND_SD_SAVE3);	
+							data_per_uart4(SEND_M100);	
 							break;
 							case 1:sd_sel=0;
 							data_per_uart4(SEND_M100);	

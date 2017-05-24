@@ -130,6 +130,9 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			height_value->fusion_speed = my_deathzoom(LIMIT( (ALT_VEL_BMP_EKF*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,10);
 			height_value->fusion_height = ALT_POS_BMP_EKF*1000;//baro_fusion.fusion_displacement.out; 
 			}	
+			
+			m100.H=(float)height_value->fusion_height/1000.;
+			m100.H_Spd=(float)height_value->fusion_speed/1000.;
 }
 
 

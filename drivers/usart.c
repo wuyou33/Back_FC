@@ -222,8 +222,8 @@ u8 pos_kf_state[3];
 		#endif
 		ALT_VEL_BMP=(float)(int16_t)((*(data_buf+21)<<8)|*(data_buf+22))/1000.;//m
 		ALT_POS_BMP=(float)(int32_t)((*(data_buf+23)<<24)|(*(data_buf+24)<<16)|(*(data_buf+25)<<8)|*(data_buf+26))/1000.;//m
-		m100.H_Spd=ALT_VEL_BMP_EKF=(float)(int16_t)((*(data_buf+27)<<8)|*(data_buf+28))/1000.;//m
-		m100.H=ALT_POS_BMP_EKF=(float)(int32_t)((*(data_buf+29)<<24)|(*(data_buf+30)<<16)|(*(data_buf+31)<<8)|*(data_buf+32))/1000.;//m
+		ALT_VEL_BMP_EKF=(float)(int16_t)((*(data_buf+27)<<8)|*(data_buf+28))/1000.;//m
+		ALT_POS_BMP_EKF=(float)(int32_t)((*(data_buf+29)<<24)|(*(data_buf+30)<<16)|(*(data_buf+31)<<8)|*(data_buf+32))/1000.;//m
 		if(mode.flow_f_use_ukfm==1||mode.flow_f_use_ukfm==2){
 		POS_UKF_X=(float)(int16_t)((*(data_buf+33)<<8)|*(data_buf+34))/1000.;//m  ->0
 		POS_UKF_Y=(float)(int16_t)((*(data_buf+35)<<8)|*(data_buf+36))/1000.;//m  ->1
@@ -1404,8 +1404,6 @@ void APP_LINK(void)
 			break;
 		default:cnt = 0;break;		
 	}
-	#else
-	Send_Status();
 	#endif
 	if(app_connect_fc)
 	cnt++;	

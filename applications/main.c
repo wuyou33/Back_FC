@@ -22,5 +22,5 @@ int main(void)
 		Duty_Loop(); 
 	}
 }
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
+
 

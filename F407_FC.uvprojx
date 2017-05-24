@@ -133,7 +133,7 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4099</DriverSelection>
+            <DriverSelection>4100</DriverSelection>
           </Flash1>
           <bUseTDR>0</bUseTDR>
           <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
@@ -619,6 +619,11 @@
               <FilePath>.\applications\alt_fushion.c</FilePath>
             </File>
             <File>
+              <FileName>anotc_baro_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
+            </File>
+            <File>
               <FileName>mymath.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\mymath.c</FilePath>
@@ -722,11 +727,6 @@
               <FileName>ultrasonic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\ultrasonic.c</FilePath>
-            </File>
-            <File>
-              <FileName>anotc_baro_ctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\anotc_baro_ctrl.c</FilePath>
             </File>
           </Files>
         </Group>
