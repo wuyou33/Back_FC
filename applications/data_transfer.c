@@ -119,6 +119,15 @@ void ANO_DT_Data_Exchange(void)
 		f.send_location += 1;		
 	}
 	
+	
+	if(height_ctrl_mode!=0){
+	if(!mode.flow_hold_position)	
+	fly_mode=2;//定高
+	else
+	fly_mode=3;//定点
+	}
+	else
+	fly_mode=1;//姿态	
 	if(++cnt>200) cnt = 0;
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.msg_id)
@@ -140,6 +149,7 @@ void ANO_DT_Data_Exchange(void)
 	 {case 0:		
 		 if(sel[0]==0){sel[0]=1;
 		 if(cnt1){cnt1=0;	 
+			 
 		 ANO_DT_Send_Status(Rol_fc,Pit_fc,Yaw_fc,(0.1f *ultra_dis_lpf),fly_mode,fly_ready);	}
 		 else{cnt1=1;
 			  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
@@ -155,7 +165,7 @@ void ANO_DT_Data_Exchange(void)
 		if(!fly_ready)	 
 		ANO_DT_Send_RCData(CH[2]+1500,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
 		else
-		ANO_DT_Send_RCData(CH[2]+1500,CH[3]+1500,thr_value+1000,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
+		ANO_DT_Send_RCData(thr_value+1000,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
 		}
 		state_mine=1;
 		break;
@@ -174,7 +184,7 @@ void ANO_DT_Data_Exchange(void)
 	  break;
 	 case 2:
 		if(sel[2]==0){sel[2]=1;
-		ANO_DT_Send_Senser2(baro.relative_height/10,ALT_POS_SONAR2*100);//原始数据
+		ANO_DT_Send_Senser2(baro.h_flt/10,ALT_POS_SONAR2*100);//原始数据
 		 }else if(sel[2]==1){sel[2]=2;
 	  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,

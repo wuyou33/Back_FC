@@ -27,10 +27,11 @@ double IIR_I_Filter(double InData, double *x, double *y, double *b, short nb, do
 
 
 
-#define NUMBER_OF_FIRST_ORDER_FILTERS 5
+#define NUMBER_OF_FIRST_ORDER_FILTERS 20
 #define ACC_LOWPASS_X 0
 #define ACC_LOWPASS_Y 1
 #define ACC_LOWPASS_Z 2
+#define BARO_LOWPASS   10
 typedef struct firstOrderFilterData {
   float   gx1;
   float   gx2;

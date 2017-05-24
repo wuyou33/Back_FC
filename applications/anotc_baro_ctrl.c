@@ -100,7 +100,7 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 	MS5611_ThreadNew();
 	baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
 	baro.height=MS5611_Pressure;//
-
+  baro.h_flt=firstOrderFilter(baro.relative_height ,&firstOrderFilters[BARO_LOWPASS],dT);
 			baro.h_dt = 0.02f; //气压计读取间隔时间20ms
 			#if EN_ATT_CAL_FC
       baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down_fc[2],3500);
