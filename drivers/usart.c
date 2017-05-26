@@ -541,7 +541,7 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
-	if(height_ctrl_mode==2&&0)
+	if(height_ctrl_mode==2&&1)
 	_temp =(vs16)(ALT_VEL_BMP_UKF_OLDX*1000);	
 	else
 	_temp =(vs16)(ALT_POS_SONAR2*1000);

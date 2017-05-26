@@ -44,7 +44,7 @@ void Ultra_PID_Init()
 {
 	HOLD_THR =HOLD_THR_PWM;//《--------------------修改悬停油门  根据不同飞行器动力和重量实验 
 //-------------------外环PID参数初始化
-	ultra_pid.kp = 0.88;
+	ultra_pid.kp = 1.0;//0.88;
 	ultra_pid.ki = 0.1;
 	ultra_pid.kd = 0.0;
 //------------------安全模式 只有速度环
@@ -61,8 +61,8 @@ void Ultra_PID_Init()
 void WZ_Speed_PID_Init()
 {//use
 	  Ultra_PID_Init();
-	  wz_speed_pid.kp = 0.5;
-		wz_speed_pid.ki = 0.2;
+	  wz_speed_pid.kp = 0.6;
+		wz_speed_pid.ki = 0.3;
 		wz_speed_pid.kd = 1.68;
 	  wz_speed_pid.fp=0.2;
 	//------------------------------安全模式PID初始化
@@ -72,7 +72,7 @@ void WZ_Speed_PID_Init()
 	  wz_speed_pid_use.fp=0.2;
 	//adrc
 	  eso_pos_spd[Zr].b0=15;
-	  eso_pos_spd[Zr].eso_dead=2;	
+	  eso_pos_spd[Zr].eso_dead=0;	
 	  eso_pos_spd[Zr].eso_for_z=1;
 }
 
@@ -141,18 +141,18 @@ void Height_Ctrl1(float T,float thr)
 				if(height_mode_reg==1&&height_ctrl_mode==2)//SONAR<-BMP
 				{exp_height=ultra_dis_lpf=ALT_POS_SONAR2*1000;}
 				else if(height_mode_reg==2&&height_ctrl_mode==1)//SONAR->BMP
-				{exp_height=ultra_dis_lpf=baro_only_move_flt;}
+				{exp_height=ultra_dis_lpf=baro.h_flt;}
 				 height_mode_reg=height_ctrl_mode;
 				//---------------------safe height--------------------------------
 				static u8 safe_mode_reg;
 				 if(safe_mode_reg==0&&mode.height_safe==1)//SONAR->BMP
-				{exp_height_safe=ultra_dis_lpf_safe=baro_only_move_flt;}
+				{exp_height_safe=ultra_dis_lpf_safe=baro.h_flt;}
 				else if(safe_mode_reg==1&&mode.height_safe==0)
 				{
 				if(height_ctrl_mode==2)//SONAR<-BMP
 				{exp_height=ultra_dis_lpf=ALT_POS_SONAR2*1000;}
 				else if(height_ctrl_mode==1)//SONAR->BMP
-				{exp_height=ultra_dis_lpf=baro_only_move_flt;}
+				{exp_height=ultra_dis_lpf=baro.h_flt;}
 				
 				}safe_mode_reg=mode.height_safe;
 				static u8 state_thr,cnt_down;
@@ -185,16 +185,16 @@ void Height_Ctrl1(float T,float thr)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
 					 } 
 					 else{
-				     if(!hold_alt_flag||mode.en_hinf_height_spd||mode.height_safe||
-							 (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
+				     if(!hold_alt_flag||mode.height_safe)//||
+							// (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
            }
 						 
-					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe)//智能起飞油门限制
+					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode.height_safe&&0)//智能起飞油门限制
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
-					 if(ALT_POS_BMP_UKF_OLDX>4&&height_ctrl_mode==2)
+					 if(ALT_POS_SONAR2>4&&height_ctrl_mode==2)
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-1000,0);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
 			}//---end of speed control
@@ -255,6 +255,8 @@ float wz_speed_old,wz_acc_mms2;
 float height_thrv,wz_speed_pid_v_view,wz_speed_pid_v_view_eso;
 float d_view;
 float ero_view[2];
+float H_INT_REG;
+u8 int_save=0;
 void height_speed_ctrl1(float T,float thr,float exp_z_speed,float h_speed)//速度控制
 {
 static float thr_lpf;
@@ -265,6 +267,10 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
 	wz_acc_mms2 = (wz_acc_ukf1/4096.0f) *9800;//-acc_bais*1000;//+ALT_BIAS_BMP*1000 ;
 
 	if(!fly_ready||Thr_Low)wz_speed_pid_v.err_i=0;
+	else if(fly_ready&&EXP_Z_SPEED>0&&!int_save){
+		H_INT_REG=(float)H_INT/100.;
+		int_save=1;
+	}
 	height_thr = LIMIT( ALT_HOLD_THR_RANGE_SCALE * thr , 0, HOLD_THR );
 	//height_thr = Thr_down_min_portect(height_thr,T);//add by gol 16.3.28 (WT)
 	thr_lpf += ( 1 / ( 1 + 1 / ( 0.5f *3.14f *T ) ) ) *( height_thr - thr_lpf );
@@ -276,17 +282,27 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
 	wz_speed_pid_v.err = wz_speed_pid_use.kp *( exp_z_speed - wz_speed );
 	wz_speed_pid_v.err_weight = (float)ABS(wz_speed_pid_v.err)/MAX_VERTICAL_SPEED;
 	wz_speed_pid_v.err_d = 0.002f/T *10*wz_speed_pid_use.kd * (-my_deathzoom1( (LIMIT(wz_acc_mms2,-9800*0.8,9800*0.8) ) ,70)) *T;
-	if(fabs(wz_speed_pid_v.err)<eso_pos_spd[Zr].eso_dead||eso_pos_spd[Zr].b0==0||mode.en_eso_h_in==0||mode.height_safe==1){
+	if(fabs(wz_speed_pid_v.err)<eso_pos_spd[Zr].eso_dead||eso_pos_spd[Zr].b0==0||mode.en_eso_h_in==0||mode.height_safe==1||1){
 	wz_speed_pid_v.err_i += wz_speed_pid_use.ki *( exp_z_speed - h_speed ) *T;
-	wz_speed_pid_v.err_i = LIMIT(wz_speed_pid_v.err_i,-Thr_Weight *300,Thr_Weight *300);}
+	wz_speed_pid_v.err_i = LIMIT(wz_speed_pid_v.err_i+H_INT*Thr_Weight*0,-Thr_Weight *300,Thr_Weight *300);}
 	else
 	wz_speed_pid_v.err_i=0;
 	
+	if(fly_ready&&wz_speed_pid_v.pid_out>300&&fabs(exp_z_speed-wz_speed)<300&&int_save>=1){
+	H_INT_REG= ( 1 / ( 1 + 1 / ( 0.1f *3.14f *T ) ) ) *( wz_speed_pid_v.err_i - H_INT_REG );
+	int_save=2;
+	}
+	if(!fly_ready&&Thr_Low&&int_save==2)
+	{
+	int_save=0;
+	H_INT=LIMIT(H_INT_REG*100*0.3+0.7*H_INT,-88,88);
+	// WRITE_PARM();	
+	}
 	OLDX_POS_CONTROL_ESO(&eso_pos_spd[Zr],exp_z_speed,wz_speed,eso_pos_spd[Zr].u,T,400,wz_speed_pid_use.kp,thr_view);//速度环自抗扰控制
 	
 	if(mode.en_eso_h_in&&!mode.height_safe&&eso_pos_spd[Zr].b0!=0){//ADRC
 		wz_speed_pid_v.pid_out=thr_lpf + Thr_Weight *LIMIT(( wz_speed_pid_use.fp *LIMIT((0.45f + 0.55f*wz_speed_pid_v.err_weight),0,1)*exp_z_speed + 
-	(1 - wz_speed_pid_use.fp )*(  wz_speed_pid_v.err_d+eso_pos_spd[Zr].u)  ),-400,400);
+	(1 - wz_speed_pid_use.fp )*(  wz_speed_pid_v.err_d+wz_speed_pid_v.err_i+eso_pos_spd[Zr].u)  ),-400,400);
 	}
   else{	
  	wz_speed_pid_v.pid_out=thr_lpf + Thr_Weight *LIMIT(( wz_speed_pid_use.fp *LIMIT((0.45f + 0.55f*wz_speed_pid_v.err_weight),0,1)*exp_z_speed + 
@@ -317,7 +333,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(height_ctrl_mode==1)
 		{
 		#if EN_ATT_CAL_FC	
-		exp_height=ALT_POS_BMP_UKF_OLDX*1000;
+		exp_height=baro.h_flt;
 		#else
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;	
 		#endif
@@ -328,17 +344,17 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else
 		hold_alt_flag=1;
 	
-	if(height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)&&smart.rc.POS_MODE==0)
-	#if EN_ATT_CAL_FC		
-	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
-	#else
-	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
-	#endif
+//	if(height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)&&smart.rc.POS_MODE==0)
+//	#if EN_ATT_CAL_FC		
+//	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
+//	#else
+//	exp_height=ALT_POS_BMP_UKF_OLDX*1000;
+//	#endif
 	
 	if(mode_change&&smart.rc.POS_MODE==0){mode_change=0;
 	if(height_ctrl_mode==1)
 	#if EN_ATT_CAL_FC	
-	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
+	{exp_height=baro.h_flt;}
 	#else
 	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#endif
@@ -348,7 +364,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	static u8 mode_safe_reg;
 	if(mode.height_safe&&!mode_safe_reg){mode_change=1;
 	#if EN_ATT_CAL_FC		
-	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
+	exp_height=baro.h_flt;}
 	#else
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
   #endif
@@ -390,11 +406,11 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp/2*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,10),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp/3*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,15),-800,800) ); 
 	else
-	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,10),-800,800) );
+	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,15),-800,800) );
 	
-	ultra_ctrl.err_d = ultra_pid.kd *( 0.0f *(-wz_speed*T) + 1.0f *(ultra_ctrl.err - ultra_ctrl.err_old) );
+	ultra_ctrl.err_d = ultra_pid.kd *( 0.7f *(-wz_speed*T) + 0.3f *(ultra_ctrl.err - ultra_ctrl.err_old) );
 	
 	
 	if(eso_pos[Zr].b0==0){

@@ -24,14 +24,14 @@ xyz_f_t ctrl_angle_offset = {0,0,0};
 xyz_f_t compensation;
 
 void CTRL_2(float T)
-{
+{static u16 init_yaw;
 // 	static xyz_f_t acc_no_g;
 // 	static xyz_f_t acc_no_g_lpf;
 //=========================== 期望角度 ========================================
 	except_A.x  = MAX_CTRL_ANGLE  *( my_deathzoom( ( CH_filter[ROL]) ,0,30 )/500.0f );   //30
 	except_A.y  = MAX_CTRL_ANGLE  *( my_deathzoom( ( CH_filter[PIT]) ,0,30 )/500.0f );  //30
 	
-	if( Thr_Low == 0 )
+	if( !Thr_Low )
 	{
 		except_A.z += (s16)( MAX_CTRL_YAW_SPEED *( my_deathzoom_2( (CH_filter[YAW]) ,0,20 )/500.0f ) ) *T ;  //50
 	}
@@ -43,9 +43,10 @@ void CTRL_2(float T)
 		except_A.z += 1 *3.14 *T *( Yaw - except_A.z );
 		#endif
 	}
+	if(init_yaw++>500){init_yaw=502;
 	except_A.z = To_180_degrees(except_A.z);
-	
-	
+	}else
+	except_A.z = Yaw_fc;
 	if(mode.flow_hold_position>0&&except_A.y==0&&except_A.x==0)
 	{
 	except_A.y=LIMIT(nav[PITr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
@@ -320,8 +321,9 @@ void Thr_Ctrl(float T)
 		cnt_for_low++;
 	else
 		cnt_for_low=0;
-	
-	if(cnt_for_low>0.68/T)
+	u8 init_flag;
+	init_flag=sys_init.baro_ekf;
+	if(cnt_for_low>0.68/T||!init_flag)
 		force_Thr_low=1;
 //protect flag init	
 //	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)

@@ -174,7 +174,7 @@ void Positon_control(float T)// 位置控制
 		nav_pos_pid.kp=0.45;
 		nav_pos_pid.ki=0.00;
 		nav_pos_pid.kd=0.0;
-		nav_pos_pid.dead=0.01;
+		nav_pos_pid.dead=0.001;
 		//adrc
 		eso_pos[X].b0=eso_pos[Y].b0=4.5;
 		eso_pos[X].err_limit=eso_pos[Y].err_limit=8000;
@@ -185,7 +185,7 @@ void Positon_control(float T)// 位置控制
 		nav_spd_pid.ki=0.150;
 		nav_spd_pid.kd=0.15;
 		nav_spd_pid.flt_nav_kd=0.0;
-		nav_spd_pid.dead=0.0125*1000;
+		nav_spd_pid.dead=0.005*1000;
 		nav_spd_pid.flt_nav=0.75;//决定刹车手感
 		//acc
 		nav_acc_pid.f_kp=0.2;

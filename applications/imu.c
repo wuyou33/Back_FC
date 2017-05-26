@@ -260,15 +260,14 @@ void MadgwickAHRSupdate(float dt,float gx, float gy, float gz, float ax, float a
     float Pit,Rol;
     Pit=-atan(mpu6050_fc.Acc.x/mpu6050_fc.Acc.z)*57.3;
 		Rol=atan(mpu6050_fc.Acc.y/mpu6050_fc.Acc.z)*57.3;
-			
+		float euler[2]; 	
+		euler[1]=Pit*0.0173  ;
+		euler[0]=Rol*0.0173  ;	
 		#if IMU_HML_ADD_500
 		float magTmp2 [3];	
 		magTmp2[0]=ak8975_fc.Mag_Val.x;
 		magTmp2[1]=ak8975_fc.Mag_Val.y;
 		magTmp2[2]=ak8975_fc.Mag_Val.z;
-		float euler[2]; 	
-		euler[1]=Pit*0.0173  ;
-		euler[0]=Rol*0.0173  ;
 		float calMagY = magTmp2[0] * cos(euler[1]) + magTmp2[1] * sin(euler[1])* sin(euler[0])+magTmp2[2] * sin(euler[1]) * cos(euler[0]); 
 		float calMagX = magTmp2[1] * cos(euler[0]) + magTmp2[2] * sin(euler[0]);
 		float yaw_mag=To_180_degrees(fast_atan2(calMagX,calMagY)* 57.3 +180);

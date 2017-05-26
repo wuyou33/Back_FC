@@ -3,7 +3,7 @@
 #include "flash.h"
 #include "ak8975.h"
 #include "mpu6050.h"	
- 
+#include "mymath.h"	
 u16 W25QXX_TYPE=W25Q32;	
 
 //4Kbytes为一个Sector
@@ -478,7 +478,9 @@ u8 FLASH_READ_BUF[SIZE_PARAM]={0};
 u8 FLASH_Buffer[SIZE_PARAM]={0};
 u32 FLASH_SIZE=16*1024*1024;	//FLASH 大小为16字节
 u16 LENGTH_OF_DRONE=330;//飞行器轴距
+int H_INT; //悬停油门
 float SONAR_HEIGHT=0.054+0.015;//超声波安装高度
+u8 need_init_mems=1;//mems flash error
 void READ_PARM(void)
 {
 #if FLASH_USE_STM32
@@ -508,11 +510,37 @@ LENGTH_OF_DRONE=(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])));
 imu_board.flow_module_offset_x=(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/1000.;	
 imu_board.flow_module_offset_y=(float)((vs16)((FLASH_READ_BUF[31]<<8|FLASH_READ_BUF[30])))/1000.;	
 imu_board.k_flow_sel=(float)((vs16)((FLASH_READ_BUF[33]<<8|FLASH_READ_BUF[32])))/1000.;	
-circle.yaw_off=(float)((vs16)((FLASH_READ_BUF[35]<<8|FLASH_READ_BUF[34])))/100.;	
+circle.yaw_off=(float)((vs16)((FLASH_READ_BUF[35]<<8|FLASH_READ_BUF[34])))/100.;//树莓派摄像头安装角度
+H_INT=((vs16)((FLASH_READ_BUF[37]<<8|FLASH_READ_BUF[36])));
+
 //dj_angle_offset[0] =(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/100.;
 //dj_angle_offset[1] =(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])))/100.;
 //dj_angle_offset[2] =(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/100.;
+u8 need_init=0;
+if(LENGTH_OF_DRONE<200||LENGTH_OF_DRONE>1200){
+ LENGTH_OF_DRONE=330;//飞行器轴距
+ need_init=1;	
+}
+if(SONAR_HEIGHT<0||SONAR_HEIGHT>2){
+	SONAR_HEIGHT=0.054+0.015;
+	 need_init=1;	
+ }
+if(imu_board.k_flow_sel<=0){
+	imu_board.k_flow_sel=1;
+need_init=1;	
+}
+if(H_INT>88||H_INT<-88){
+	H_INT=0;
+	need_init=1;	
+}
 
+if(ABS(mpu6050_fc.Acc_Offset.x)<10&&ABS(mpu6050_fc.Acc_Offset.y)<10&&ABS(mpu6050_fc.Acc_Offset.z)<10){
+	need_init_mems=1;	
+}
+
+ H_INT=LIMIT(H_INT,-88,88);
+ if(need_init)
+	 WRITE_PARM();
 }
 
 void WRITE_PARM(void)
@@ -585,41 +613,13 @@ _temp=circle.yaw_off*100;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 
+_temp=H_INT;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
 #if FLASH_USE_STM32
 STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);
 #else
 W25QXX_Write((u8*)FLASH_Buffer,FLASH_SIZE-100,SIZE_PARAM);		//从倒数第100个地址处开始,写入SIZE长度的数据
 #endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

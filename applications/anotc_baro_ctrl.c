@@ -30,9 +30,6 @@ void fusion_prepare(float dT,float av_arr[],u16 av_num,u16 *av_cnt,float deadzon
 	pre_data->dis_deadzone = my_deathzoom(data->relative_height,pre_data->dis_deadzone,deadzone);	
 	Moving_Average(av_arr,av_num ,(av_cnt),(10 *pre_data->dis_deadzone ),&(pre_data->displacement)); //厘米->毫米
 	
-//	Moving_Average(av_arr,av_num ,(av_cnt),(10 *data->relative_height),&(pre_data->dis_deadzone)); //厘米->毫米	
-//	pre_data->displacement = my_deathzoom(pre_data->dis_deadzone,pre_data->displacement,10 *deadzone);
-	
 	pre_data->speed = safe_div(pre_data->displacement - pre_data->displacement_old,dT,0);
 	pre_data->acceleration = safe_div(pre_data->speed - pre_data->speed_old,dT,0);
 	
@@ -58,57 +55,62 @@ void acc_fusion(float dT,_f_set_st *set,float est_acc,_fusion_p_st *pre_data,_fu
 	fusion->est_acc_old = est_acc;
 }
 
-//超声波融合参数
-
-#define SONAR_AV_NUM 50
-float sonar_av_arr[SONAR_AV_NUM];
-u16 sonar_av_cnt;
-
 _fusion_p_st sonar;
 _fusion_st sonar_fusion;
-_f_set_st sonar_f_set = {
-													0.2f,
-													0.5f,
-													0.8f,
-													
-													0.2f,
-													0.5f,
-													0.8f	
-												};
-
-//气压计融合参数											
-#define BARO_AV_NUM 100
-float baro_av_arr[BARO_AV_NUM];
-u16 baro_av_cnt;
 _fusion_p_st baro_p;
 _fusion_st baro_fusion;
-_f_set_st baro_f_set = {
-													0.1f,
-													0.2f,
-													0.3f,
-													
-													0.1f,
-													0.1f,
-													0.2f	
-												};
+
+
+												
+static float bmp_values[3] = { 0.0f };
+static unsigned insert_index = 0;
+static void bmp_bubble_sort(float bmp_values[], unsigned n);
+void bmp_bubble_sort(float bmp_values[], unsigned n)
+{
+	float t;
+
+	for (unsigned i = 0; i < (n - 1); i++) {
+		for (unsigned j = 0; j < (n - i - 1); j++) {
+			if (bmp_values[j] > bmp_values[j+1]) {
+				t = bmp_values[j];
+				bmp_values[j] = bmp_values[j + 1];
+				bmp_values[j + 1] = t;
+			}
+		}
+	}
+}
+
+float insert_bmp_value_and_get_mode_value(float insert)
+{
+	const unsigned bmp_count = sizeof(bmp_values) / sizeof(bmp_values[0]);
+
+	bmp_values[insert_index] = insert;
+	insert_index++;
+	if (insert_index == bmp_count) {
+		insert_index = 0;
+	}
+	float bmp_temp[bmp_count];
+	memcpy(bmp_temp, bmp_values, sizeof(bmp_values));
+	bmp_bubble_sort(bmp_temp, bmp_count);
+	return bmp_temp[bmp_count / 2];
+}
+
 
 float sonar_weight;
 float wz_speed,baro_com_val;				
 void baro_ctrl(float dT,_hc_value_st *height_value)
-{
-
-	MS5611_ThreadNew();
-	baro.relative_height = baroAlt_fc;//baro.relative_height - 0.1f *baro_com_val;
-	baro.height=MS5611_Pressure;//
-  baro.h_flt=firstOrderFilter(baro.relative_height ,&firstOrderFilters[BARO_LOWPASS],dT);
-			baro.h_dt = 0.02f; //气压计读取间隔时间20ms
+{     MS5611_ThreadNew();
+	    baro.relative_height = baroAlt_fc;
+	    baro.height=MS5611_Pressure;
+      baro.h_flt=insert_bmp_value_and_get_mode_value(firstOrderFilter(baro.relative_height ,&firstOrderFilters[BARO_LOWPASS],dT));
+			baro.h_dt = 0.02f; 
 			#if EN_ATT_CAL_FC
       baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down_fc[2],3500);
 			#else
 			baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down[2],3500);
 			#endif
 		
-	    ukf_baro_task1(dT)	;
+	    ukf_baro_task1(dT)	;//高度融合
 //////////////////////////////////////////				
 
 			wz_speed = baro_fusion.fusion_speed_m.out - baro_fusion.fusion_speed_me.out;
@@ -118,17 +120,17 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			f_speed = (1 - sonar_weight) *(wz_speed) + sonar_weight *(sonar_fusion.fusion_speed_m.out - sonar_fusion.fusion_speed_me.out);
 			
 			height_value->m_acc = acc_3d_hg.z;
-			height_value->m_speed = m_speed;  //(1 - sonar_weight) *hf1.ref_speed_lpf + sonar_weight *(sonar.speed);
-			height_value->m_height =  baro.height;// baro_p.displacement;
-			height_value->fusion_acc =  acc_body[2];//baro_fusion.fusion_acceleration.out;
+			height_value->m_speed = m_speed;  
+			height_value->m_height =  baro.height;
+			height_value->fusion_acc =  acc_body[2];
 			if(!mode.baro_f_use_ukfm){
 			height_value->fusion_speed = my_deathzoom(LIMIT( (ALT_VEL_BMP_UKF_OLDX*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,10);
-			height_value->fusion_height = ALT_POS_BMP_UKF_OLDX*1000;//baro_fusion.fusion_displacement.out; 
+			height_value->fusion_height = ALT_POS_BMP_UKF_OLDX*1000;
 	    }
 			else
 			{
 			height_value->fusion_speed = my_deathzoom(LIMIT( (ALT_VEL_BMP_EKF*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,10);
-			height_value->fusion_height = ALT_POS_BMP_EKF*1000;//baro_fusion.fusion_displacement.out; 
+			height_value->fusion_height = ALT_POS_BMP_EKF*1000;
 			}	
 			
 			m100.H=(float)height_value->fusion_height/1000.;

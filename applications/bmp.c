@@ -23,7 +23,7 @@ _height_st baro;
 #define SCPressure  0x03	  //开始转换 气压
 #define SCPressureing  0x04	  //正在转换气压值
 
-#define MOVAVG_SIZE  1//10	   //气压计滤波长度
+#define MOVAVG_SIZE  100//10	   //气压计滤波长度
 
 static uint8_t  Now_doing = SCTemperature;	//当前转换状态
 static uint16_t PROM_C[MS561101BA_PROM_REG_COUNT]; //标定值存放

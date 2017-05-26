@@ -91,6 +91,8 @@ void Duty_5ms()
 		outer_loop_time=temp;
 	
  	CTRL_2( outer_loop_time ); // 外环角度控制
+	
+	
 }
 
 float pos_time;
@@ -208,7 +210,7 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											ALT_POS_BMP*100,baro.relative_height/10,hc_value.fusion_height/10,
+											exp_height/10,baro.h_flt/10,hc_value.fusion_height/10,
 											ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,ALT_VEL_BMP*100,
 											ALT_POS_SONAR2*100,0*100,hc_value.fusion_acc*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
@@ -285,20 +287,25 @@ void Duty_10ms()
 					#else
 							SD_LINK_TASK2(SEND_IMU);	
 					#endif
-							}		
-}
+							}	
 
-void Duty_20ms()
-{
-    float temp =(float) Get_Cycle_T(GET_T_BARO_UKF)/1000000.;							
-		if(temp<0.015||temp>0.025)
-		baro_task_time=(float)20/1000.;	
+   float temp =(float) Get_Cycle_T(GET_T_BARO_UKF)/1000000.;							
+		if(temp<0.005||temp>0.015)
+		baro_task_time=(float)10/1000.;	
 		else
 		baro_task_time=temp;
     
 		
-	  baro_ctrl(baro_task_time,&hc_value);//高度融合			
-		pos_time=baro_task_time;
+	  baro_ctrl(baro_task_time,&hc_value);//高度融合								
+}
+
+void Duty_20ms()
+{
+ 		float temp =(float) Get_Cycle_T(GET_T_OUT_NAV)/1000000.;							
+		if(temp<0.015||temp>0.025)
+		pos_time=(float)20/1000.;	
+		else
+		pos_time=temp;
 		
 		AUTO_LAND_FLYUP(pos_time);//自动降落
 	  Positon_control(pos_time);//位置控制
@@ -408,18 +415,20 @@ void Duty_50ms()//遥控 模式设置
 		else
 		mode.flow_f_use_ukfm=1;
 		
-    mode.test4=0;//2 -> origin
+    mode.test4=0;//2 -> origin 1-> KF mine
 //	  if(Rc_Get_PWM.AUX1>1500)
-//		mode.trig_flow_spd=1;//mode.auto_fly_up=1;
+//		mode.height_safe=1;//mode.auto_fly_up=1;
 //		else
-//		mode.trig_flow_spd=0;	
+//		mode.height_safe=0;	
 		
  
 	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
-  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)			
-	ANO_AK8975_Read();
+	static u8 hml_cnt;	
+  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)		
+  if(hml_cnt++>2-1){hml_cnt=0;		
+	ANO_AK8975_Read();}
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
 	static u16 cnt_sonar_idle;

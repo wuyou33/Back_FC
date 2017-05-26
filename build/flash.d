@@ -43,3 +43,4 @@
 .\build\flash.o: .\drivers\ak8975.h
 .\build\flash.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\build\flash.o: .\drivers\mpu6050.h
+.\build\flash.o: applications\mymath.h

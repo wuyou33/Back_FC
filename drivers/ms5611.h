@@ -30,6 +30,7 @@ typedef struct
 	float h_dt;
 	float h_origin;
 	float h_flt;
+	float h_mov;
 	float v_flt;
 	float acc_flt;
 	float h_old;

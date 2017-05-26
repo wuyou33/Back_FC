@@ -10,6 +10,7 @@
 #include "ultrasonic.h"
 #include "bmp.h"
 #include "spi.h"
+_SYS_INIT sys_init;
 u8 mcuID[3];
 u8 ble_imu_force;
 void cpuidGetId(void)
@@ -26,6 +27,7 @@ u8 All_Init()
 	cpuidGetId();
 	I2c_Soft_Init();					//初始化模拟I2C
 	Delay_ms(100);						//延时
+	//while(1);
 	PWM_Out_Init(400);				//初始化电调输出功能	
 	#if EN_ATT_CAL_FC
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
@@ -103,7 +105,7 @@ u8 All_Init()
 // Need init for First use mpu6050_fc ak8975_fc	
 //  LENGTH_OF_DRONE=330;//飞行器轴距
 //  SONAR_HEIGHT=0.054+0.015;//超声波安装高度
-//	imu_board.k_flow_sel=1;//光流增益
+//	imu_board.k_flow_sel=1;//光流增益 飞行0.89  志陈 0.5
 //	imu_board.flow_module_offset_x=-0.05;//光流安装位置
 //	imu_board.flow_module_offset_y=0;//光流安装位置
  	return (1);

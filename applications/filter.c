@@ -231,14 +231,14 @@ void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out) //小范围内�
 
 ///////////////////////////////////////
 
-float ACC_LOWPASS_TAU        = 0.025f;
+float ACC_LOWPASS_TAU        = 4.0;//0.025f;
 float ACC_LOWPASS_SAMPLE_TIME =0.02f;
 float ACC_LOWPASS_A        ;
 float ACC_LOWPASS_GX1      ;
 float ACC_LOWPASS_GX2      ;
 float ACC_LOWPASS_GX3      ;
 
-float BARO_LOWPASS_TAU        = 0.10f;
+float BARO_LOWPASS_TAU        = 0.066f;
 float BARO_LOWPASS_SAMPLE_TIME =0.02f;
 float BARO_LOWPASS_A        ;
 float BARO_LOWPASS_GX1      ;
@@ -249,11 +249,15 @@ firstOrderFilterData_t firstOrderFilters[NUMBER_OF_FIRST_ORDER_FILTERS];
 void initFirstOrderFilter(float T)
 { 
 	ACC_LOWPASS_SAMPLE_TIME= T;
-	ACC_LOWPASS_A       =    (2.0f * ACC_LOWPASS_TAU / ACC_LOWPASS_SAMPLE_TIME );
-	ACC_LOWPASS_GX1    =     (1.0f / (1.0f + ACC_LOWPASS_A));
-	ACC_LOWPASS_GX2    =     ACC_LOWPASS_GX1;
-	ACC_LOWPASS_GX3     =    ((1.0f - ACC_LOWPASS_A) / (1.0f + ACC_LOWPASS_A));
+//	ACC_LOWPASS_A       =    (2.0f * ACC_LOWPASS_TAU / ACC_LOWPASS_SAMPLE_TIME );
+//	ACC_LOWPASS_GX1    =     (1.0f / (1.0f + ACC_LOWPASS_A));
+//	ACC_LOWPASS_GX2    =     ACC_LOWPASS_GX1;
+//	ACC_LOWPASS_GX3     =    ((1.0f - ACC_LOWPASS_A) / (1.0f + ACC_LOWPASS_A));
 	
+	ACC_LOWPASS_A       =    (2.0f * ACC_LOWPASS_TAU / ACC_LOWPASS_SAMPLE_TIME);
+  ACC_LOWPASS_GX1     =    ( ACC_LOWPASS_A / (1.0f + ACC_LOWPASS_A));
+  ACC_LOWPASS_GX2     =   (-ACC_LOWPASS_A / (1.0f + ACC_LOWPASS_A));
+  ACC_LOWPASS_GX3     =    ((1.0f - ACC_LOWPASS_A) / (1.0f + ACC_LOWPASS_A));
   firstOrderFilters[ACC_LOWPASS_X].gx1 = ACC_LOWPASS_GX1;
 	firstOrderFilters[ACC_LOWPASS_X].gx2 = ACC_LOWPASS_GX2;
 	firstOrderFilters[ACC_LOWPASS_X].gx3 = ACC_LOWPASS_GX3;

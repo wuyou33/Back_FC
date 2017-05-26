@@ -224,7 +224,7 @@ void MPU6050_Data_Offset()
 {
 #ifdef ACC_ADJ_EN
 
-    if(mpu6050_fc.Acc_CALIBRATE == 1)
+    if(mpu6050_fc.Acc_CALIBRATE == 1||need_init_mems==1)
     {
         if(my_sqrt(my_pow(mpu6050_fc.Acc_I16.x)+my_pow(mpu6050_fc.Acc_I16.y)+my_pow(mpu6050_fc.Acc_I16.z)) < 2500)
         {
@@ -250,13 +250,14 @@ void MPU6050_Data_Offset()
             acc_sum_cnt =0;
             mpu6050_fc.Acc_CALIBRATE = 0;
             WRITE_PARM();
+					  need_init_mems=2;
             sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
         }
     }
 
 #endif
 
-    if(mpu6050_fc.Gyro_CALIBRATE)
+    if(mpu6050_fc.Gyro_CALIBRATE||need_init_mems==2)
     {
         gyro_sum_cnt++;
         sum_temp[G_X] += mpu6050_fc.Gyro_I16.x;
@@ -270,11 +271,11 @@ void MPU6050_Data_Offset()
             mpu6050_fc.Gyro_Offset.y = (float)sum_temp[G_Y]/OFFSET_AV_NUM;
             mpu6050_fc.Gyro_Offset.z = (float)sum_temp[G_Z]/OFFSET_AV_NUM;
             mpu6050_fc.Gyro_Temprea_Offset = sum_temp[TEM]/OFFSET_AV_NUM;
-            gyro_sum_cnt =0;
+            gyro_sum_cnt =0;need_init_mems=0;
             if(mpu6050_fc.Gyro_CALIBRATE == 1)
 			{
                WRITE_PARM();
-			}
+			}  
             mpu6050_fc.Gyro_CALIBRATE = 0;
             sum_temp[G_X] = sum_temp[G_Y] = sum_temp[G_Z] = sum_temp[TEM] = 0;
         }

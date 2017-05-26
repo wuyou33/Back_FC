@@ -489,6 +489,11 @@
               <FilePath>.\drivers\pwm_out.c</FilePath>
             </File>
             <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\flash.c</FilePath>
+            </File>
+            <File>
               <FileName>iic_hml.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\iic_hml.c</FilePath>
@@ -502,11 +507,6 @@
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\led.c</FilePath>
-            </File>
-            <File>
-              <FileName>flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\flash.c</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
