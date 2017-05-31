@@ -182,7 +182,7 @@ Reset_Handler    PROC
 
 NMI_Handler     PROC
                 EXPORT  NMI_Handler                [WEAK]
-                B       .
+               B       .
                 ENDP
 HardFault_Handler\
                 PROC

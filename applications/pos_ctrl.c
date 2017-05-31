@@ -192,7 +192,7 @@ void Positon_control(float T)// Œª÷√øÿ÷∆
 		nav_acc_pid.kp=0.15;
 		nav_acc_pid.ki=0.00;
 		nav_acc_pid.kd=0.0;	
-		nav_acc_pid.dead=0.01*1000;
+		nav_acc_pid.dead=0.015*1000;
 		nav_acc_pid.flt_nav_kd=15;
 	}
 	static u8 pos_reset_state[2];

@@ -679,9 +679,9 @@
               <FilePath>.\applications\pos_ctrl.c</FilePath>
             </File>
             <File>
-              <FileName>eso.lib</FileName>
+              <FileName>eso_oldx.lib</FileName>
               <FileType>4</FileType>
-              <FilePath>.\applications\eso.lib</FilePath>
+              <FilePath>.\applications\eso_oldx.lib</FilePath>
             </File>
           </Files>
         </Group>

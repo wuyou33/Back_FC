@@ -216,10 +216,11 @@ void MPU6050_Init(u16 lpf)
 		
 	
 }
-
+#include "cycle_cal_oldx.h"
 s32 sum_temp[7]= {0,0,0,0,0,0,0};
-u16 acc_sum_cnt = 0,gyro_sum_cnt = 0;
-
+s32 sum_temp_3d[7]= {0,0,0,0,0,0,0};
+u16 acc_sum_cnt = 0,acc_sum_cnt_3d=0,acc_smple_cnt_3d=0,gyro_sum_cnt = 0;
+#define OFFSET_AV_NUM_ACC 50
 void MPU6050_Data_Offset()
 {
 #ifdef ACC_ADJ_EN
@@ -236,13 +237,19 @@ void MPU6050_Data_Offset()
         }
 
         acc_sum_cnt++;
+				if(mpu6050_fc.Cali_3d){
+			  sum_temp[A_X] += (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x ;
+        sum_temp[A_Y] += (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y ;
+        sum_temp[A_Z] += (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - 65536/16;
+				}else{
         sum_temp[A_X] += mpu6050_fc.Acc_I16.x;
         sum_temp[A_Y] += mpu6050_fc.Acc_I16.y;
         sum_temp[A_Z] += mpu6050_fc.Acc_I16.z - 65536/16;   // +-8G
+				}
         sum_temp[TEM] += mpu6050_fc.Tempreature;
 
         if( acc_sum_cnt >= OFFSET_AV_NUM )
-        {
+        {   
             mpu6050_fc.Acc_Offset.x = sum_temp[A_X]/OFFSET_AV_NUM;
             mpu6050_fc.Acc_Offset.y = sum_temp[A_Y]/OFFSET_AV_NUM;
             mpu6050_fc.Acc_Offset.z = sum_temp[A_Z]/OFFSET_AV_NUM;
@@ -254,7 +261,56 @@ void MPU6050_Data_Offset()
             sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
         }
     }
-
+// 3d cal
+		static xyz_f_t ACC_Reg;
+		static u8 acc_3d_step_reg;
+		float sphere_x,sphere_y,sphere_z,sphere_r;
+		switch(acc_3d_step)
+			{ 
+			case 0:
+				acc_smple_cnt_3d=acc_sum_cnt_3d=sum_temp_3d[A_X] = sum_temp_3d[A_Y] = sum_temp_3d[A_Z] = sum_temp_3d[TEM] = 0;
+				cycle_init_oldx(&hml_lsq);
+			break;
+			default:
+			if(hml_lsq.size<360&&(fabs(ACC_Reg.x-mpu6050_fc.Acc_I16.x)>0||fabs(ACC_Reg.y-mpu6050_fc.Acc_I16.y)>0||fabs(ACC_Reg.z-mpu6050_fc.Acc_I16.z)>0))
+			{
+			if(acc_3d_step>acc_3d_step_reg)
+			acc_smple_cnt_3d=acc_sum_cnt_3d=sum_temp_3d[A_X] = sum_temp_3d[A_Y] = sum_temp_3d[A_Z] = sum_temp_3d[TEM] = 0;		
+			acc_sum_cnt_3d++;
+      sum_temp_3d[A_X] += mpu6050_fc.Acc_I16.x;
+      sum_temp_3d[A_Y] += mpu6050_fc.Acc_I16.y;
+      sum_temp_3d[A_Z] += mpu6050_fc.Acc_I16.z;   // +-8G
+				if(acc_sum_cnt_3d>OFFSET_AV_NUM_ACC){
+					if(acc_smple_cnt_3d<15){
+					acc_smple_cnt_3d++;	
+					xyz_f_t data;	
+					data.x = sum_temp_3d[A_X]/OFFSET_AV_NUM_ACC;
+					data.y = sum_temp_3d[A_Y]/OFFSET_AV_NUM_ACC;
+					data.z = sum_temp_3d[A_Z]/OFFSET_AV_NUM_ACC;	
+					acc_sum_cnt_3d=sum_temp_3d[A_X] = sum_temp_3d[A_Y] = sum_temp_3d[A_Z] = sum_temp_3d[TEM] = 0;	
+					cycle_data_add_oldx(&hml_lsq, (float)data.x/1000.,(float)data.y/1000.,(float)data.z/1000.);}
+					else if(acc_3d_step==6){
+					acc_3d_step=0;	
+					cycle_cal_oldx(&hml_lsq, 666,0.001,  &sphere_x, &sphere_y, &sphere_z, &sphere_r);	
+					mpu6050_fc.Off_3d.x=(hml_lsq.Off[0]*1000);
+					mpu6050_fc.Off_3d.y=(hml_lsq.Off[1]*1000);
+					mpu6050_fc.Off_3d.z=(hml_lsq.Off[2]*1000);
+					mpu6050_fc.Gain_3d.x =  (hml_lsq.Gain[0]);
+					mpu6050_fc.Gain_3d.y =  (hml_lsq.Gain[1]);
+					mpu6050_fc.Gain_3d.z =  (hml_lsq.Gain[2]);	
+          WRITE_PARM();						
+					}		 		
+				} 
+				
+		
+			acc_3d_step_reg=acc_3d_step;	
+			}
+			break;
+		
+		}
+		ACC_Reg.x=mpu6050_fc.Acc_I16.x;
+	  ACC_Reg.y=mpu6050_fc.Acc_I16.y;
+		ACC_Reg.z=mpu6050_fc.Acc_I16.z;
 #endif
 
     if(mpu6050_fc.Gyro_CALIBRATE||need_init_mems==2)
@@ -335,7 +391,16 @@ void MPU6050_Data_Prepare(float T)
         filter_cnt_old = (filter_cnt == FILTER_NUM)? 0 : (filter_cnt + 1);
     }
 //10 170 4056
+		if(fabs(mpu6050_fc.Off_3d.x)>10||fabs(mpu6050_fc.Off_3d.y)>10||fabs(mpu6050_fc.Off_3d.z)>10)
+			mpu6050_fc.Cali_3d=1;
+		
     /* 得出校准后的数据 */
+	 if(mpu6050_fc.Cali_3d){
+			  mpu6050_tmp[A_X] = (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x - mpu6050_fc.Acc_Offset.x;
+        mpu6050_tmp[A_Y] = (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y - mpu6050_fc.Acc_Offset.y;
+        mpu6050_tmp[A_Z] = (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - mpu6050_fc.Acc_Offset.z;
+	 }
+   else{	 
     if(sensor_setup.Offset.mpu_flag == 0)
     {
         mpu6050_tmp[A_X] = (mpu6050_fc.Acc_I16.x - mpu6050_fc.Acc_Offset.x) ;
@@ -348,7 +413,7 @@ void MPU6050_Data_Prepare(float T)
         mpu6050_tmp[A_Y] = 2*(mpu6050_fc.Acc_I16.y - mpu6050_fc.Acc_Offset.y) ;
         mpu6050_tmp[A_Z] = 2*(mpu6050_fc.Acc_I16.z - mpu6050_fc.Acc_Offset.z - 2048) ;
     }
-
+  }
     mpu6050_tmp[G_X] = Gyro_tmp[0] - mpu6050_fc.Gyro_Offset.x ;//
     mpu6050_tmp[G_Y] = Gyro_tmp[1] - mpu6050_fc.Gyro_Offset.y ;//
     mpu6050_tmp[G_Z] = Gyro_tmp[2] - mpu6050_fc.Gyro_Offset.z ;//

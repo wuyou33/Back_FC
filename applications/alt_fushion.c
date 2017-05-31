@@ -51,25 +51,29 @@ float ALT_POS_BMP_UKF_OLDX,ALT_VEL_BMP_UKF_OLDX,ALT_ACC_BMP_UKF_OLDX;
 
 double P_baro[9]={1,0,0,0,1,0,0,0,1}; 
 double X_ukf_baro[3];
+
 double P_barob[16]={1,0,0,0,1,0,0,0,1}; 
 double X_ukf_barob[4];
 //------------------KF  parameter------------------
-float gh_bmp=0.15;
-float k_fp_spd_bmp=1;
+float gh_bmp=0.1;
+float k_fp_spd_bmp=15;
+float gh_bmp1=0.01;
+float k_fp_spd_bmp1=15;
 
-float gh_sonar=0.001;
-float k_fp_spd_sonar=1;
+float gh_sonar=0.01;
+float k_fp_spd_sonar=15;
 float ga=0.1;
 float gwa=0.1;
 double P_kf_baro[9]={1,0,0,1,0,0,1,0,0}; 
 double X_kf_baro[3];
-
+double P_kf_baro_bmp[9]={1,0,0,0,1,0,0,0,1}; 
+double X_kf_baro_bmp[3];
 //float r_baro_ukf[3]={1,1,1};float q_baro_ukf[3]={0.01,0.01,0.01};
 float r_baro_ukf[4]={10,1,0.1,0.1};float q_baro_ukf[4]={0.001,0.001,0.001,0.001};
 
 float dead_accz=0.00;
 float acc_off_baro=0;
-float acc_scale_bmp=1;
+float acc_scale_bmp=0.86;
 float k_flt_accz=0.75;
 float acc_bmp;
 
@@ -98,7 +102,7 @@ float k_body_acc=0.3;
 float K_SONAR=6;
 float acc_est,acc_est_imu;
 ESO eso_h_acc,eso_h_spd;
-u8 test_bmp=0;
+u8 test_bmp=1;
 void ukf_baro_task1(float T)// 气压计加速度计融合
 {
 static u8 init,mode_reg;
@@ -155,12 +159,12 @@ float acc_body_temp[3];
 		if(sys_init.baro_ekf)
 		{
 		wz_acc=firstOrderFilter(acc_temp1 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
-		//acc_body[2]=LIMIT(acc_temp1,-6,6)	;
+		//wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
+		
 		acc_off_baro =acc_temp1 ;
 		acc_off_baro=LIMIT(acc_off_baro,-3,3);
 		}			 
 		
-		//wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
 		
 		
     float corr_baro = flag_ero*( posz- ALT_POS_BMP_UKF_OLDX);
@@ -236,7 +240,10 @@ float acc_body_temp[3];
 		}
 		mode_reg=mode.test3;
    	#endif 
-		
+	if(Rc_Get_PWM.RST<1500)	
+	gh_bmp=0.1;	
+	else
+	gh_bmp=0.001;	
 	float gh_use,k_fp_spd_use;
 	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1))
   {gh_use=gh_bmp;k_fp_spd_use=k_fp_spd_bmp;}
@@ -249,8 +256,14 @@ float acc_body_temp[3];
 	#if defined(BARO_KF_NEW) //KF with limit bias
 	#elif  defined(BARO_KF) //KF with bias
 	double Z_kf[3]={posz+LIMIT(ALT_VEL_BMP_UKF_OLDX,-1,1)*T*k_fp_spd_use*1,0,0};
-	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh_use,  ga,  gwa,T);
-	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
+	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh_use,  ga,  gwa,T);//for spd
+	posz=firstOrderFilter(baro.relative_height*0.001 ,&firstOrderFilters[BARO_LOWPASS],T);
+	double Z_kf_bmp[3]={posz+LIMIT(ALT_VEL_BMP_UKF_OLDX,-1,1)*T*k_fp_spd_bmp1*1,0,0};
+	kf_oldx( X_kf_baro_bmp,  P_kf_baro_bmp,  Z_kf_bmp,  acc_bmp, gh_bmp1,  ga,  gwa,T);//for pos
+	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1))
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro_bmp[0];
+	else
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];	
 	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
 	#else  //EKF  without bias

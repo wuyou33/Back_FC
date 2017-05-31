@@ -305,7 +305,7 @@ void ANO_DT_Data_Receive_Prepare(u8 data)
 //此函数可以不用用户自行调用，由函数Data_Receive_Prepare自动调用
 u16 flash_save_en_cnt = 0;
 //u16 RX_CH[CH_NUM];
-
+u8 acc_3d_calibrate_f,acc_3d_step;
 void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 {
 	u8 sum = 0;
@@ -334,11 +334,18 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		}
 		else if((*(data_buf+4)>=0X021)&&(*(data_buf+4)<=0X26))
 		{
-			//acc_3d_calibrate_f = 1;
+			if(acc_3d_calibrate_f==0)
+			{	acc_3d_calibrate_f=1;acc_3d_step++;}
+			else if(acc_3d_calibrate_f==1){
+			if(acc_3d_step<6)	
+				acc_3d_step++;
+			else
+				acc_3d_step=0;}
+
 		}
 		else if(*(data_buf+4)==0X20)
 		{
-			//acc_3d_step = 0; //退出，6面校准步清0
+			acc_3d_step = 0; //退出，6面校准步清0
 		}
 	}
 	

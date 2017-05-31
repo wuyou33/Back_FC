@@ -184,7 +184,7 @@ void Height_Ctrl1(float T,float thr)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
 					 } 
 					 else{
-				     if(!hold_alt_flag||mode.height_safe)//||
+				     if(!hold_alt_flag||mode.height_safe||height_ctrl_mode==1)//||
 							// (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
@@ -271,7 +271,7 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
 		int_save=1;
 	}
 	height_thr = LIMIT( ALT_HOLD_THR_RANGE_SCALE * thr , 0, HOLD_THR );
-	//height_thr = Thr_down_min_portect(height_thr,T);//add by gol 16.3.28 (WT)
+
 	thr_lpf += ( 1 / ( 1 + 1 / ( 0.5f *3.14f *T ) ) ) *( height_thr - thr_lpf );
 	height_thrv=thr_lpf;
 
@@ -407,7 +407,7 @@ void Ultra_Ctrl1(float T,float thr)//Œª÷√ª∑PID
 	if(height_ctrl_mode==1||mode.height_safe)
 	ultra_ctrl.err = ( ultra_pid_use.kp/3*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,15),-800,800) ); 
 	else
-	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,15),-800,800) );
+	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) );
 	
 	ultra_ctrl.err_d = ultra_pid.kd *( 0.7f *(-wz_speed*T) + 0.3f *(ultra_ctrl.err - ultra_ctrl.err_old) );
 	

@@ -132,9 +132,15 @@ imu_board.k_flow_sel=(float)((vs16)((FLASH_READ_BUF[33]<<8|FLASH_READ_BUF[32])))
 circle.yaw_off=(float)((vs16)((FLASH_READ_BUF[35]<<8|FLASH_READ_BUF[34])))/100.;//Ê÷Ý®ÅÉÉãÏñÍ·°²×°½Ç¶È
 H_INT=((vs16)((FLASH_READ_BUF[37]<<8|FLASH_READ_BUF[36])));
 
-//dj_angle_offset[0] =(float)((vs16)((FLASH_READ_BUF[25]<<8|FLASH_READ_BUF[24])))/100.;
-//dj_angle_offset[1] =(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])))/100.;
-//dj_angle_offset[2] =(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/100.;
+
+mpu6050_fc.Off_3d.x=(vs16)(FLASH_READ_BUF[39]<<8|FLASH_READ_BUF[38]);
+mpu6050_fc.Off_3d.y=(vs16)(FLASH_READ_BUF[41]<<8|FLASH_READ_BUF[40]);
+mpu6050_fc.Off_3d.z=(vs16)(FLASH_READ_BUF[43]<<8|FLASH_READ_BUF[42]);
+	
+mpu6050_fc.Gain_3d.x =(float)((vs16)((FLASH_READ_BUF[45]<<8|FLASH_READ_BUF[44])))/1000.;
+mpu6050_fc.Gain_3d.y=(float)((vs16)((FLASH_READ_BUF[47]<<8|FLASH_READ_BUF[46])))/1000.;
+mpu6050_fc.Gain_3d.z =(float)((vs16)((FLASH_READ_BUF[49]<<8|FLASH_READ_BUF[48])))/1000.;
+
 u8 need_init=0;
 if(LENGTH_OF_DRONE<200||LENGTH_OF_DRONE>1200){
  LENGTH_OF_DRONE=330;//·ÉÐÐÆ÷Öá¾à
@@ -235,6 +241,29 @@ FLASH_Buffer[cnt++]=BYTE1(_temp);
 _temp=H_INT;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+
+
+_temp=(int16_t)mpu6050_fc.Off_3d .x;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)mpu6050_fc.Off_3d.y;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)mpu6050_fc.Off_3d.z;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+_temp=(int16_t)(mpu6050_fc.Gain_3d.x*1000);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)(mpu6050_fc.Gain_3d.y*1000);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)(mpu6050_fc.Gain_3d.z*1000);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
 
 #if FLASH_USE_STM32
 STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);

@@ -102,8 +102,8 @@ float bmp_w;
 float wz_speed,baro_com_val;				
 void baro_ctrl(float dT,_hc_value_st *height_value)
 { 
-      baro.h_flt=firstOrderFilter(insert_bmp_value_and_get_mode_value(baro.relative_height) ,&firstOrderFilters[BARO_LOWPASS],dT);
-			//baro.h_flt=baro.relative_height;
+      //baro.h_flt=firstOrderFilter(insert_bmp_value_and_get_mode_value(baro.relative_height) ,&firstOrderFilters[BARO_LOWPASS],dT);
+			baro.h_flt=baro.relative_height;
 	    baro.h_dt = dT; 
 			#if EN_ATT_CAL_FC
       baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down_fc[2],3500);

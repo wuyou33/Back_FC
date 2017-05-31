@@ -12,7 +12,7 @@
 
 
 typedef struct 
-{
+{ 
 	char Acc_CALIBRATE;
 	char Gyro_CALIBRATE;
 	char Cali_3d;
@@ -29,6 +29,8 @@ typedef struct
 	xyz_f_t Gyro_Offset;
 	xyz_f_t Gyro_Auto_Offset;
 	xyz_f_t vec_3d_cali;
+	xyz_f_t Gain_3d;
+	xyz_f_t Off_3d;
 	float Acc_Temprea_Offset;
 	float Gyro_Temprea_Offset;
 	

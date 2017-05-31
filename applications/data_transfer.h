@@ -31,7 +31,7 @@ typedef struct
 } dt_flag_t;
 
 extern dt_flag_t f;
-extern u8 UART_UP_LOAD_SEL_FORCE;
+extern u8 UART_UP_LOAD_SEL_FORCE, acc_3d_calibrate_f,acc_3d_step;;
 
 void ANO_DT_Data_Exchange(void);
 void ANO_DT_Data_Receive_Prepare(u8 data);
