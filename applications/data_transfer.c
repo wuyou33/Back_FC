@@ -220,7 +220,7 @@ void ANO_DT_Data_Exchange(void)
 	  }
     else if(sel[3]==3){sel[3]=4;
 		ANO_DT_Send_PID(4,nav_pos_pid.kp,nav_pos_pid.ki,nav_pos_pid.kd,
-											(float)eso_pos[X].b0/1000.,0,(float)eso_pos[X].eso_dead/1000.,
+											(float)eso_pos[X].b0/1000.,(float)eso_pos[Zr].b0/1000.,(float)eso_pos[X].eso_dead/1000.,
 											(float)eso_pos_spd[Zr].b0/1000.,nav_spd_pid.flt_nav,(float)eso_pos_spd[Zr].eso_dead/1000.);
 		}
 		else if(sel[3]==4){sel[3]=5;
@@ -430,7 +430,7 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
         nav_pos_pid.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
 			
 				eso_pos[Y].b0=eso_pos[X].b0 = ( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
-				//         pid_setup.groups.hc_height.ki = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
+				eso_pos[Zr].b0=               ( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
 				eso_pos[Y].eso_dead=eso_pos[X].eso_dead = ( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 		
 				eso_pos_spd[Zr].b0 	= 				( (vs16)(*(data_buf+16)<<8)|*(data_buf+17) );

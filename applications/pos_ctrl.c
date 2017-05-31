@@ -171,12 +171,12 @@ void Positon_control(float T)// Œª÷√øÿ÷∆
 	if(!init){init=1;
 		//pos
 		nav_pos_ctrl[X].mode=2;
-		nav_pos_pid.kp=0.45;
+		nav_pos_pid.kp=0.3;
 		nav_pos_pid.ki=0.00;
 		nav_pos_pid.kd=0.0;
 		nav_pos_pid.dead=0.001;
 		//adrc
-		eso_pos[X].b0=eso_pos[Y].b0=4.5;
+		eso_pos[X].b0=eso_pos[Y].b0=0;//4.5;
 		eso_pos[X].err_limit=eso_pos[Y].err_limit=8000;
 		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
@@ -305,8 +305,10 @@ head  |    1 PIT y-   90d in marker
 	pos[Y]=POS_UKF_Y;//mm
   pos[X]=POS_UKF_X;//mm
 	
-	spd[Y]=VEL_UKF_Y*1000;//mm
-  spd[X]=VEL_UKF_X*1000;//mm
+	spd[Y]=firstOrderFilter( VEL_UKF_Y*1000,&firstOrderFilters[FLOW_LOWPASS_Y],T);
+	spd[X]=firstOrderFilter( VEL_UKF_X*1000,&firstOrderFilters[FLOW_LOWPASS_X],T);		
+//	spd[Y]=VEL_UKF_Y*1000;//mm
+//  spd[X]=VEL_UKF_X*1000;//mm
 	acc_body[Y]=acc[Y]=acc_flt[Y]*9800;//IIR_LP(acc_flt[Y]*9800,xBuf1,yBuf1,a,b,2);
   acc_body[X]=acc[X]=acc_flt[X]*9800;//IIR_LP(acc_flt[X]*9800,xBuf2,yBuf2,a,b,2);
 

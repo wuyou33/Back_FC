@@ -176,8 +176,7 @@ void Height_Ctrl1(float T,float thr)
 				 //------------------------SPD CONTOLLER------------------
 				     exp_spd_zv=EXP_Z_SPEED;//调试用
 					
-						 int ultra_sp_tmp=my_deathzoom_21((hc_value.fusion_speed),0);
-						 ultra_speed=LIMIT(ultra_sp_tmp,-2.5*1000,2.5*1000);
+						 ultra_speed=LIMIT(hc_value.fusion_speed,-2.5*1000,2.5*1000);
 				
 				   if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
 					 {
@@ -264,7 +263,7 @@ float height_thr;
 float wz_acc_mms21;
 static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc_acc_i;
 
-	wz_acc_mms2 = (wz_acc_ukf1/4096.0f) *9800;//-acc_bais*1000;//+ALT_BIAS_BMP*1000 ;
+	wz_acc_mms2 = (wz_acc_ukf1/4096.0f) *9800;//-acc_bais*1000;//
 
 	if(!fly_ready||Thr_Low)wz_speed_pid_v.err_i=0;
 	else if(fly_ready&&EXP_Z_SPEED>0&&!int_save){
@@ -281,7 +280,7 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
   //-------------------------------------------PID-------------------------------
 	wz_speed_pid_v.err = wz_speed_pid_use.kp *( exp_z_speed - wz_speed );
 	wz_speed_pid_v.err_weight = (float)ABS(wz_speed_pid_v.err)/MAX_VERTICAL_SPEED;
-	wz_speed_pid_v.err_d = 0.002f/T *10*wz_speed_pid_use.kd * (-my_deathzoom1( (LIMIT(wz_acc_mms2,-9800*0.8,9800*0.8) ) ,70)) *T;
+	wz_speed_pid_v.err_d = 0.002f/T *10*wz_speed_pid_use.kd * (-my_deathzoom1( (LIMIT(wz_acc_mms2,-9800*0.8,9800*0.8) ) ,25)) *T;
 	if(fabs(wz_speed_pid_v.err)<eso_pos_spd[Zr].eso_dead||eso_pos_spd[Zr].b0==0||mode.en_eso_h_in==0||mode.height_safe==1||1){
 	wz_speed_pid_v.err_i += wz_speed_pid_use.ki *( exp_z_speed - h_speed ) *T;
 	wz_speed_pid_v.err_i = LIMIT(wz_speed_pid_v.err_i+H_INT*Thr_Weight*0,-Thr_Weight *300,Thr_Weight *300);}
@@ -339,7 +338,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		#endif
 	  }
 		if(height_ctrl_mode==2)
-		{exp_height=LIMIT(ALT_POS_SONAR2,0.04,10)*1000;}
+		{exp_height=LIMIT(ALT_POS_BMP_UKF_OLDX,0.04,10)*1000;}
 	}
 	else
 		hold_alt_flag=1;
@@ -359,7 +358,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#endif
 	if(height_ctrl_mode==2)
-	{exp_height=ALT_POS_SONAR2*1000;}
+	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	}
 	static u8 mode_safe_reg;
 	if(mode.height_safe&&!mode_safe_reg){mode_change=1;
@@ -387,8 +386,8 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else{ 
 	float tilted_fix_sonar;	
 	#if EN_ATT_CAL_FC
-	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
-									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
+	tilted_fix_sonar=LIMIT((ALT_POS_BMP_UKF_OLDX/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
+									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_BMP_UKF_OLDX),0,0.5);
 	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*1)*1000;
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
@@ -423,7 +422,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	OLDX_POS_CONTROL_ESO(&eso_pos[Zr],(exp_height),(ultra_dis_lpf),eso_pos[Zr].u,T,800,ultra_pid_use.kp,thr_view);//ADRC
 
 	if(mode.en_eso_h_in&&!mode.height_safe&&eso_pos[Zr].b0!=0)
-  ultra_ctrl.pid_out = eso_pos[Zr].u  + ultra_ctrl.err_d;	 
+  ultra_ctrl.pid_out = eso_pos[Zr].u  + ultra_ctrl.err_i + ultra_ctrl.err_d;	 
 	else	
 	ultra_ctrl.pid_out = ultra_ctrl.err + ultra_ctrl.err_i + ultra_ctrl.err_d;
 

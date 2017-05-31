@@ -5,7 +5,7 @@
 #include "i2c_soft.h"
 #include "mpu6050.h"
 
-#define MS5611_ADDR             0x77   //0xee //
+#define MS5611_ADDR1             0x77   //0xee //
 
 #define CMD_RESET               0x1E // ADC reset command
 #define CMD_ADC_READ            0x00 // ADC read command

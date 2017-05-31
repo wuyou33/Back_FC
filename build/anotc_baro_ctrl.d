@@ -1,5 +1,5 @@
 .\build\anotc_baro_ctrl.o: applications\anotc_baro_ctrl.c
-.\build\anotc_baro_ctrl.o: applications\anotc_baro_ctrl.h
+.\build\anotc_baro_ctrl.o: applications\rc.h
 .\build\anotc_baro_ctrl.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\build\anotc_baro_ctrl.o: .\Libraries\CMSIS\Include\core_cm4.h
 .\build\anotc_baro_ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -24,6 +24,7 @@
 .\build\anotc_baro_ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
 .\build\anotc_baro_ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\build\anotc_baro_ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
+.\build\anotc_baro_ctrl.o: applications\anotc_baro_ctrl.h
 .\build\anotc_baro_ctrl.o: applications\filter.h
 .\build\anotc_baro_ctrl.o: applications\parameter.h
 .\build\anotc_baro_ctrl.o: applications\imu.h

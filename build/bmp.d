@@ -48,3 +48,4 @@
 .\build\bmp.o: applications\imu.h
 .\build\bmp.o: applications\mymath.h
 .\build\bmp.o: applications\rc.h
+.\build\bmp.o: applications\filter.h

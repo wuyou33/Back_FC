@@ -551,6 +551,10 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
+	_temp =(vs16)(baro.h_flt);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+
 	data_to_send[3] = _cnt-4;
 
 	for( i=0;i<_cnt;i++)
@@ -666,11 +670,11 @@ void GOL_LINK_TASK(void)
 {
 static u8 cnt[4];
 
-if(cnt[1]++>2)
+if(cnt[1]++>0||1)
 {cnt[1]=0;
 Send_IMU_TO_FLOW();
 }
-if(cnt[2]++>10)
+if(cnt[2]++>20)
 {cnt[2]=0;
 if(cnt[3]){cnt[3]=0;
 Send_IMU_PARM();}

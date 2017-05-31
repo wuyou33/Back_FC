@@ -112,8 +112,6 @@ void anotc_filter_1(float base_hz,float gain_hz,float dT,float in,_filter_1_st *
 }
 
 
-
-
 s32 Moving_Median(s32 moavarray[],u16 len ,u16 *fil_p,s32 in)
 {
 	u16 width_num;
@@ -231,19 +229,27 @@ void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out) //小范围内�
 
 ///////////////////////////////////////
 
-float ACC_LOWPASS_TAU        = 4.0;//0.025f;
+float ACC_LOWPASS_TAU        = 4.0;
+//float ACC_LOWPASS_TAU        = 0.025;
 float ACC_LOWPASS_SAMPLE_TIME =0.02f;
 float ACC_LOWPASS_A        ;
 float ACC_LOWPASS_GX1      ;
 float ACC_LOWPASS_GX2      ;
 float ACC_LOWPASS_GX3      ;
 
-float BARO_LOWPASS_TAU        = 0.066f;
+float BARO_LOWPASS_TAU        = 0.05f;
 float BARO_LOWPASS_SAMPLE_TIME =0.02f;
 float BARO_LOWPASS_A        ;
 float BARO_LOWPASS_GX1      ;
 float BARO_LOWPASS_GX2      ;
 float BARO_LOWPASS_GX3      ;
+
+float FLOW_LOWPASS_TAU        = 0.01f;
+float FLOW_LOWPASS_SAMPLE_TIME =0.02f;
+float FLOW_LOWPASS_A        ;
+float FLOW_LOWPASS_GX1      ;
+float FLOW_LOWPASS_GX2      ;
+float FLOW_LOWPASS_GX3      ;
 firstOrderFilterData_t firstOrderFilters[NUMBER_OF_FIRST_ORDER_FILTERS];
 
 void initFirstOrderFilter(float T)
@@ -276,6 +282,18 @@ void initFirstOrderFilter(float T)
 	firstOrderFilters[BARO_LOWPASS].gx1 = BARO_LOWPASS_GX1;
 	firstOrderFilters[BARO_LOWPASS].gx2 = BARO_LOWPASS_GX2;
 	firstOrderFilters[BARO_LOWPASS].gx3 = BARO_LOWPASS_GX3;
+	
+	FLOW_LOWPASS_SAMPLE_TIME= T;
+	FLOW_LOWPASS_A       =    (2.0f * FLOW_LOWPASS_TAU / FLOW_LOWPASS_SAMPLE_TIME );
+	FLOW_LOWPASS_GX1    =     (1.0f / (1.0f + FLOW_LOWPASS_A));
+	FLOW_LOWPASS_GX2    =     FLOW_LOWPASS_GX1;
+	FLOW_LOWPASS_GX3     =    ((1.0f - FLOW_LOWPASS_A) / (1.0f + FLOW_LOWPASS_A));
+	firstOrderFilters[FLOW_LOWPASS_X].gx1 = FLOW_LOWPASS_GX1;
+	firstOrderFilters[FLOW_LOWPASS_X].gx2 = FLOW_LOWPASS_GX2;
+	firstOrderFilters[FLOW_LOWPASS_X].gx3 = FLOW_LOWPASS_GX3;
+	firstOrderFilters[FLOW_LOWPASS_Y].gx1 = FLOW_LOWPASS_GX1;
+	firstOrderFilters[FLOW_LOWPASS_Y].gx2 = FLOW_LOWPASS_GX2;
+	firstOrderFilters[FLOW_LOWPASS_Y].gx3 = FLOW_LOWPASS_GX3;
 }
 
 

@@ -1,158 +1,158 @@
 #include "FastMath.h"
-//////////////////////////////////////////////////////////////////////////
-//transmit double precision float to my own Double
- Double intToDouble(int A)
-{
-	Double B;
+////////////////////////////////////////////////////////////////////////////
+////transmit double precision float to my own Double
+// Double intToDouble(int A)
+//{
+//	Double B;
 
-	B.hi = (float)A;
-	B.lo = 0.0f;
-	
-	return B;
-}
-//
- Double floatToDouble(float A)
-{
-	Double B;
+//	B.hi = (float)A;
+//	B.lo = 0.0f;
+//	
+//	return B;
+//}
+////
+// Double floatToDouble(float A)
+//{
+//	Double B;
 
-	B.hi = A;
-	B.lo = 0.0f;
-	
-	return B;
-}
-//
- Double doubleToDouble(double A)
-{
-	Double B;
+//	B.hi = A;
+//	B.lo = 0.0f;
+//	
+//	return B;
+//}
+////
+// Double doubleToDouble(double A)
+//{
+//	Double B;
 
-	B.hi = (float)A;
-	B.lo = (float)(A - (double)B.hi);
-	
-	return B;
-}
-//transmit my own Double to double precision float
- double DoubleTodouble(Double B)
-{
-	double A;
+//	B.hi = (float)A;
+//	B.lo = (float)(A - (double)B.hi);
+//	
+//	return B;
+//}
+////transmit my own Double to double precision float
+// double DoubleTodouble(Double B)
+//{
+//	double A;
 
-	A = B.hi;
-	A += B.lo;
+//	A = B.hi;
+//	A += B.lo;
 
-	return A;
-}
+//	return A;
+//}
 
-//addition: Double + Double
- Double DoubleAdd(Double A, Double B)
-{
-	Double C;
-	float t1, t2, e;
+////addition: Double + Double
+// Double DoubleAdd(Double A, Double B)
+//{
+//	Double C;
+//	float t1, t2, e;
 
-	//Compute high order sum and error
-	t1 = A.hi + B.hi;
-	e = t1 - A.hi;
-	//Compute low order term, including error and overflows
-	t2 = ((B.hi - e) + ( A.hi - (t1 - e))) + A.lo + B.lo;
-	//Normalise to get final result
-	C.hi = t1 + t2;
-	C.lo = t2 -(C.hi - t1);
+//	//Compute high order sum and error
+//	t1 = A.hi + B.hi;
+//	e = t1 - A.hi;
+//	//Compute low order term, including error and overflows
+//	t2 = ((B.hi - e) + ( A.hi - (t1 - e))) + A.lo + B.lo;
+//	//Normalise to get final result
+//	C.hi = t1 + t2;
+//	C.lo = t2 -(C.hi - t1);
 
-	return C;
-}
+//	return C;
+//}
 
-//Subtraction: Double - Double
- Double DoubleSub(Double A, Double B)
-{
-	Double C;
-	float t1, t2, e;
+////Subtraction: Double - Double
+// Double DoubleSub(Double A, Double B)
+//{
+//	Double C;
+//	float t1, t2, e;
 
-	//Compute high order sub and error
-	t1 = A.hi - B.hi;
-	e = t1 - A.hi;
-	//Compute low order term, including error and overflows
-	t2 = ((-B.hi - e) + ( A.hi - (t1 - e))) + A.lo - B.lo;
-	//Normalise to get final result
-	C.hi = t1 + t2;
-	C.lo = t2 -(C.hi - t1);
+//	//Compute high order sub and error
+//	t1 = A.hi - B.hi;
+//	e = t1 - A.hi;
+//	//Compute low order term, including error and overflows
+//	t2 = ((-B.hi - e) + ( A.hi - (t1 - e))) + A.lo - B.lo;
+//	//Normalise to get final result
+//	C.hi = t1 + t2;
+//	C.lo = t2 -(C.hi - t1);
 
-	return C;
-}
+//	return C;
+//}
 
-//multiplication: Double * Double
- Double DoubleMul(Double A, Double B)
-{
-	Double C;
-	float cona, conb, a1, a2, b1, b2;
-	float c11, c21, c2, e, t1, t2;
+////multiplication: Double * Double
+// Double DoubleMul(Double A, Double B)
+//{
+//	Double C;
+//	float cona, conb, a1, a2, b1, b2;
+//	float c11, c21, c2, e, t1, t2;
 
-	//Compute initial high order approximation and error
-	//If a fused multiply-add is available
-	//c11 = A.hi * B.hi;
-	//c21 = A.hi * B.hi - c11;
+//	//Compute initial high order approximation and error
+//	//If a fused multiply-add is available
+//	//c11 = A.hi * B.hi;
+//	//c21 = A.hi * B.hi - c11;
 
-	//If no fused multiply-add is available
-	cona = A.hi * 8193.0f;
-	conb = B.hi * 8193.0f;
-	a1 = cona - (cona - A.hi);
-	b1 = conb - (conb - B.hi);
-	a2 = A.hi - a1;
-	b2 = B.hi - b1;
-	c11 = A.hi * B.hi;
-	c21 = (((a1 * b1 - c11) + a1 * b2) + a2 * b1) + a2 * b2;
+//	//If no fused multiply-add is available
+//	cona = A.hi * 8193.0f;
+//	conb = B.hi * 8193.0f;
+//	a1 = cona - (cona - A.hi);
+//	b1 = conb - (conb - B.hi);
+//	a2 = A.hi - a1;
+//	b2 = B.hi - b1;
+//	c11 = A.hi * B.hi;
+//	c21 = (((a1 * b1 - c11) + a1 * b2) + a2 * b1) + a2 * b2;
 
-	//Compute high order word of mixed term:
-	c2 = A.hi * B.lo + A.lo * B.hi;
-	//Compute (c11, c21) + c2 using Knuth's trick, including low order product
-	t1 = c11 + c2;
-	e = t1 - c11;
-	t2 = ((c2-e) + (c11 - (t1 -e))) + c21 + A.lo * B.lo;
-	//Normalise to get final result
-	C.hi = t1 + t2;
-	C.lo = t2 - ( C.hi - t1);
-	return C;
-}
+//	//Compute high order word of mixed term:
+//	c2 = A.hi * B.lo + A.lo * B.hi;
+//	//Compute (c11, c21) + c2 using Knuth's trick, including low order product
+//	t1 = c11 + c2;
+//	e = t1 - c11;
+//	t2 = ((c2-e) + (c11 - (t1 -e))) + c21 + A.lo * B.lo;
+//	//Normalise to get final result
+//	C.hi = t1 + t2;
+//	C.lo = t2 - ( C.hi - t1);
+//	return C;
+//}
 
-//divides: Double / Double
- Double DoubleDiv(Double A, Double B)
-{
-	Double C;
-	float a1, a2, b1, b2, cona, conb, c11, c2, c21, e, s1, s2;
-	float t1, t2, t11, t12, t21, t22;
+////divides: Double / Double
+// Double DoubleDiv(Double A, Double B)
+//{
+//	Double C;
+//	float a1, a2, b1, b2, cona, conb, c11, c2, c21, e, s1, s2;
+//	float t1, t2, t11, t12, t21, t22;
 
-	// Compute a DP approximation to the quotient.
-	s2 = 1.0f / B.hi;
-	s1 = A.hi * s2;
+//	// Compute a DP approximation to the quotient.
+//	s2 = 1.0f / B.hi;
+//	s1 = A.hi * s2;
 
-	//This splits s1 and b.x into high-order and low-order words.
-	cona = s1 * 8193.0f;
-	conb = B.hi * 8193.0f;
-	a1 = cona - (cona - s1);
-	b1 = conb - (conb - B.hi);
-	a2 = s1 -a1;
-	b2 = B.hi - b1;
-	//Multiply s1 * dsb(1) using Dekker's method.
-	c11 = s1 * B.hi;
-	c21 = (((a1 * b1 - c11) + a1 * b2) + a2 * b1) + a2 * b2;
-	//Compute s1 * b.lo (only high-order word is needed).
-	c2 = s1 * B.lo;
-	//Compute (c11, c21) + c2 using Knuth's trick.
-	t1 = c11 + c2;
-	e = t1 - c11;
-	t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
-	//The result is t1 + t2, after normalization.
-	t12 = t1 + t2;
-	t22 = t2 - (t12 - t1);
-	//Compute dsa - (t12, t22) using Knuth's trick.
-	t11 = A.hi - t12;
-	e = t11 - A.hi;
-	t21 = ((-t12 - e) + (A.hi - (t11 - e))) + A.lo - t22;
-	//Compute high-order word of (t11, t21) and divide by b.hi.
-	s2 *= (t11 + t21);
-	//The result is s1 + s2, after normalization.
-	C.hi = s1 + s2;
-	C.lo = s2 - (C.hi - s1);
+//	//This splits s1 and b.x into high-order and low-order words.
+//	cona = s1 * 8193.0f;
+//	conb = B.hi * 8193.0f;
+//	a1 = cona - (cona - s1);
+//	b1 = conb - (conb - B.hi);
+//	a2 = s1 -a1;
+//	b2 = B.hi - b1;
+//	//Multiply s1 * dsb(1) using Dekker's method.
+//	c11 = s1 * B.hi;
+//	c21 = (((a1 * b1 - c11) + a1 * b2) + a2 * b1) + a2 * b2;
+//	//Compute s1 * b.lo (only high-order word is needed).
+//	c2 = s1 * B.lo;
+//	//Compute (c11, c21) + c2 using Knuth's trick.
+//	t1 = c11 + c2;
+//	e = t1 - c11;
+//	t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
+//	//The result is t1 + t2, after normalization.
+//	t12 = t1 + t2;
+//	t22 = t2 - (t12 - t1);
+//	//Compute dsa - (t12, t22) using Knuth's trick.
+//	t11 = A.hi - t12;
+//	e = t11 - A.hi;
+//	t21 = ((-t12 - e) + (A.hi - (t11 - e))) + A.lo - t22;
+//	//Compute high-order word of (t11, t21) and divide by b.hi.
+//	s2 *= (t11 + t21);
+//	//The result is s1 + s2, after normalization.
+//	C.hi = s1 + s2;
+//	C.lo = s2 - (C.hi - s1);
 
-	return C;
-}
+//	return C;
+//}
 //translate from ADI's dsp library.
 //////////////////////////////////////////////////////////////////////////
 //Get fraction and integer parts of floating point
@@ -453,44 +453,44 @@ float FastTan(float x)
     result = xnum / xden;
     return result;
 }
-//
-float FastLn(float x)
-{
-	union { unsigned int i; float f;} e;
-	float xn;
-	float	z;
-	float	w;
-	float	a;
-	float	b;
-	float	r;
-	float	result;
-	float znum, zden;
+////
+//float FastLn(float x)
+//{
+//	union { unsigned int i; float f;} e;
+//	float xn;
+//	float	z;
+//	float	w;
+//	float	a;
+//	float	b;
+//	float	r;
+//	float	result;
+//	float znum, zden;
 
-	int exponent = (*((int*)&x) & 0x7F800000) >> 23;
-	e.i = (*((int*)&x) & 0x3F800000);
+//	int exponent = (*((int*)&x) & 0x7F800000) >> 23;
+//	e.i = (*((int*)&x) & 0x3F800000);
 
-	if(e.f > ROOT_HALF){
-		znum = e.f - 1.0f;
-		zden = e.f * 0.5f + 0.5f;
-	}
-	else{
-		exponent -= 1;
-		znum = e.f - 0.5f;
-		zden = e.f * 0.5f + 0.5f;
-	}
-	xn = (float)exponent;
-	z = znum / zden;
-	w = z * z;
-	a = (LOGDA_COEF2 * w + LOGDA_COEF1) * w + LOGDA_COEF0;
-	b = ((w + LOGDB_COEF2) * w + LOGDB_COEF1) * w + LOGDB_COEF0;
-	r = a / b * w * z + z;
-	result = xn * LN2_DC1 + r;
-	r = xn * LN2_DC2;
-	result += r;
-	r = xn * LN2_DC3;
-	result += r;
-	return result;
-}
+//	if(e.f > ROOT_HALF){
+//		znum = e.f - 1.0f;
+//		zden = e.f * 0.5f + 0.5f;
+//	}
+//	else{
+//		exponent -= 1;
+//		znum = e.f - 0.5f;
+//		zden = e.f * 0.5f + 0.5f;
+//	}
+//	xn = (float)exponent;
+//	z = znum / zden;
+//	w = z * z;
+//	a = (LOGDA_COEF2 * w + LOGDA_COEF1) * w + LOGDA_COEF0;
+//	b = ((w + LOGDB_COEF2) * w + LOGDB_COEF1) * w + LOGDB_COEF0;
+//	r = a / b * w * z + z;
+//	result = xn * LN2_DC1 + r;
+//	r = xn * LN2_DC2;
+//	result += r;
+//	r = xn * LN2_DC3;
+//	result += r;
+//	return result;
+//}
 
 float FastAsin(float x)
 {
@@ -883,31 +883,31 @@ float FastCos(float x)
 	return (cosVal);
 }
 
-Double FastSqrtID(Double dx)
-{
-	Double dy;
-	Double dhalfx = DoubleMul(doubleToDouble(0.5), dx);
-	union { double d; unsigned __int64 i; } u;
-	//
-	u.d = DoubleTodouble(dx);
-	u.i = 0x5fe6ec85e7de30daLL - (u.i >> 1);
+//Double FastSqrtID(Double dx)
+//{
+//	Double dy;
+//	Double dhalfx = DoubleMul(doubleToDouble(0.5), dx);
+//	union { double d; unsigned __int64 i; } u;
+//	//
+//	u.d = DoubleTodouble(dx);
+//	u.i = 0x5fe6ec85e7de30daLL - (u.i >> 1);
 
-	dy = doubleToDouble(u.d);
-	dy = DoubleMul(dy, DoubleSub(doubleToDouble(1.5), DoubleMul(DoubleMul(dhalfx, dy), dy)));
-	//return DoubleDiv(doubleToDouble(1.0), dx);
-	return dy;
-}
+//	dy = doubleToDouble(u.d);
+//	dy = DoubleMul(dy, DoubleSub(doubleToDouble(1.5), DoubleMul(DoubleMul(dhalfx, dy), dy)));
+//	//return DoubleDiv(doubleToDouble(1.0), dx);
+//	return dy;
+//}
 
-Double FastSqrtD(Double dx)
-{
-	Double dy;
-	Double dhalfx = DoubleMul(doubleToDouble(0.5), dx);
-	union { double d; unsigned __int64 i; } u;
-	//
-	u.d = DoubleTodouble(dx);
-	u.i = 0x5fe6ec85e7de30daLL - (u.i >> 1);
+//Double FastSqrtD(Double dx)
+//{
+//	Double dy;
+//	Double dhalfx = DoubleMul(doubleToDouble(0.5), dx);
+//	union { double d; unsigned __int64 i; } u;
+//	//
+//	u.d = DoubleTodouble(dx);
+//	u.i = 0x5fe6ec85e7de30daLL - (u.i >> 1);
 
-	dy = doubleToDouble(u.d);
-	dy = DoubleMul(dy, DoubleSub(doubleToDouble(1.5), DoubleMul(DoubleMul(dhalfx, dy), dy)));
-	return DoubleDiv(doubleToDouble(1.0), dx);
-}
+//	dy = doubleToDouble(u.d);
+//	dy = DoubleMul(dy, DoubleSub(doubleToDouble(1.5), DoubleMul(DoubleMul(dhalfx, dy), dy)));
+//	return DoubleDiv(doubleToDouble(1.0), dx);
+//}

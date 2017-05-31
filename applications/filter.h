@@ -32,6 +32,8 @@ double IIR_I_Filter(double InData, double *x, double *y, double *b, short nb, do
 #define ACC_LOWPASS_Y 1
 #define ACC_LOWPASS_Z 2
 #define BARO_LOWPASS   10
+#define FLOW_LOWPASS_X   11
+#define FLOW_LOWPASS_Y   12
 typedef struct firstOrderFilterData {
   float   gx1;
   float   gx2;

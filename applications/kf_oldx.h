@@ -17,10 +17,10 @@
 #include "kf_oldx_types.h"
 
 /* Function Declarations */
-extern void kf_oldx(double X[3], double P[9], const double Z[3], double U,
-                    double gh, double ga, double gw, double T);
-extern void kf_oldx_initialize(void);
-extern void kf_oldx_terminate(void);
+void kf_oldx1(double X[3], double P[9], const double Z[3], double U, double gh,
+             double ga, double gw, double T);
+ void kf_oldx_initialize(void);
+ void kf_oldx_terminate(void);
 
 #endif
 
