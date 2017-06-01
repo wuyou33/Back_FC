@@ -141,6 +141,8 @@ mpu6050_fc.Gain_3d.x =(float)((vs16)((FLASH_READ_BUF[45]<<8|FLASH_READ_BUF[44]))
 mpu6050_fc.Gain_3d.y=(float)((vs16)((FLASH_READ_BUF[47]<<8|FLASH_READ_BUF[46])))/1000.;
 mpu6050_fc.Gain_3d.z =(float)((vs16)((FLASH_READ_BUF[49]<<8|FLASH_READ_BUF[48])))/1000.;
 
+mpu6050_fc.att_off[0]=(float)((vs16)((FLASH_READ_BUF[51]<<8|FLASH_READ_BUF[50])))/100.;
+mpu6050_fc.att_off[1]=(float)((vs16)((FLASH_READ_BUF[53]<<8|FLASH_READ_BUF[52])))/100.;
 u8 need_init=0;
 if(LENGTH_OF_DRONE<200||LENGTH_OF_DRONE>1200){
  LENGTH_OF_DRONE=330;//·ÉÐÐÆ÷Öá¾à
@@ -261,6 +263,13 @@ _temp=(int16_t)(mpu6050_fc.Gain_3d.y*1000);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 _temp=(int16_t)(mpu6050_fc.Gain_3d.z*1000);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+_temp=(int16_t)(mpu6050_fc.att_off[0]*100);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)(mpu6050_fc.att_off[1]*100);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 

@@ -733,6 +733,11 @@
               <FileType>1</FileType>
               <FilePath>.\drivers\ultrasonic.c</FilePath>
             </File>
+            <File>
+              <FileName>cycle_cal_oldx.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\applications\cycle_cal_oldx.lib</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

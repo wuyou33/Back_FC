@@ -31,12 +31,13 @@ typedef struct
 	xyz_f_t vec_3d_cali;
 	xyz_f_t Gain_3d;
 	xyz_f_t Off_3d;
+	float att_off[2];
 	float Acc_Temprea_Offset;
 	float Gyro_Temprea_Offset;
 	
 	float Gyro_Temprea_Adjust;
 	float ACC_Temprea_Adjust;
-
+ 
 	s16 Tempreature;
 	float TEM_LPF;
 	float Ftempreature;

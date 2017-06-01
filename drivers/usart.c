@@ -554,7 +554,11 @@ void Send_IMU_TO_FLOW(void)
 	_temp =(vs16)(baro.h_flt);	
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp=acc_3d_step;
+	data_to_send[_cnt++]=BYTE0(_temp);
 
+	
+	
 	data_to_send[3] = _cnt-4;
 
 	for( i=0;i<_cnt;i++)

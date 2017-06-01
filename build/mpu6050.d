@@ -43,4 +43,6 @@
 .\build\mpu6050.o: .\applications\include.h
 .\build\mpu6050.o: .\applications\mymath.h
 .\build\mpu6050.o: drivers\i2c_soft.h
+.\build\mpu6050.o: .\applications\imu.h
+.\build\mpu6050.o: .\applications\mymath.h
 .\build\mpu6050.o: drivers\cycle_cal_oldx.h

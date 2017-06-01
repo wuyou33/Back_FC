@@ -171,7 +171,7 @@ void ANO_DT_Data_Exchange(void)
 		break;
 	 case 1:
 		 if(sel[1]==0){sel[1]=1;
-		 ANO_DT_Send_Speed(VEL_UKF_X*1000,VEL_UKF_Y*1000,wz_speed);}
+		 ANO_DT_Send_Speed(VEL_UKF_X*1000,VEL_UKF_Y*1000,ALT_VEL_BMP_UKF_OLDX*1000);}
 		 else{sel[1]=0;
 	   ANO_DT_Send_QR1(POS_UKF_X-off_flow_pos[X]-pos_off[X],-POS_UKF_Y-off_flow_pos[Y]-pos_off[Y],ALT_POS_SONAR2);
 			 if(mode.flow_hold_position==0&&NS==2)

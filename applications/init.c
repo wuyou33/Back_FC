@@ -29,6 +29,7 @@ u8 All_Init()
 	Delay_ms(100);						//延时
 	//while(1);
 	PWM_Out_Init(400);				//初始化电调输出功能	
+	PWM_AUX_Out_Init(50);
 	#if EN_ATT_CAL_FC
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
 	#endif

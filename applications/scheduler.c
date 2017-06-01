@@ -66,9 +66,12 @@ void Duty_2ms()
 	inner_loop_time_yaw = Get_Cycle_T(GET_T_IMU_YAW)/1000000.0f;	
 	/*IMU更新姿态。输入：半个执行周期，三轴陀螺仪数据（转换到度每秒），三轴加速度计数据（4096--1G）；输出：ROLPITYAW姿态角*/
 	if(cnt_init++>2/0.002){cnt_init=65530;
-
+ 
  	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
-	,&Rol_fc,&Pit_fc,&Yaw_fc1);
+	,&Rol_fc1,&Pit_fc1,&Yaw_fc1);
+		
+	Pit_fc=Pit_fc1-mpu6050_fc.att_off[0]*mpu6050_fc.Cali_3d;	
+	Rol_fc=Rol_fc1-mpu6050_fc.att_off[1]*mpu6050_fc.Cali_3d;		
 	if(NAV_BOARD_CONNECT&&!yaw_use_fc)
 		Yaw_fc=Yaw;
 	else
@@ -302,7 +305,10 @@ void Duty_10ms()
 }
 
 void Duty_20ms()
-{
+{   
+	  aux.att[0]=Pit_fc+aux.att_ctrl[0];
+	  aux.att[1]=Rol_fc+aux.att_ctrl[1];
+	  SetPwm_AUX(aux.att[0],aux.att[1]);
  		float temp =(float) Get_Cycle_T(GET_T_OUT_NAV)/1000000.;							
 		if(temp<0.001)
 		pos_time=0.02;	

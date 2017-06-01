@@ -1,7 +1,7 @@
 #include "mpu6050.h"
 #include "mymath.h"
 #include "i2c_soft.h"
-
+#include "imu.h"
 MPU6050_STRUCT mpu6050,mpu6050_fc;
 
 u8 mpu6050_buffer[14];
@@ -212,12 +212,11 @@ void MPU6050_Init(u16 lpf)
     MPU6050_setI2CMasterModeEnabled(0);	 //不让MPU6050 控制AUXI2C
     Delay_ms(10);
     MPU6050_setI2CBypassEnabled(1);	 //主控制器的I2C与	MPU6050的AUXI2C	直通。控制器可以直接访问HMC5883L
-    Delay_ms(10);
-		
-	
+    Delay_ms(10);	
 }
 #include "cycle_cal_oldx.h"
 s32 sum_temp[7]= {0,0,0,0,0,0,0};
+float sum_temp_att[2]={0};
 s32 sum_temp_3d[7]= {0,0,0,0,0,0,0};
 u16 acc_sum_cnt = 0,acc_sum_cnt_3d=0,acc_smple_cnt_3d=0,gyro_sum_cnt = 0;
 #define OFFSET_AV_NUM_ACC 50
@@ -238,10 +237,14 @@ void MPU6050_Data_Offset()
 
         acc_sum_cnt++;
 				if(mpu6050_fc.Cali_3d){
-			  sum_temp[A_X] += (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x ;
-        sum_temp[A_Y] += (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y ;
-        sum_temp[A_Z] += (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - 65536/16;
-				}else{
+//			  sum_temp[A_X] += (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x ;
+//        sum_temp[A_Y] += (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y ;
+//        sum_temp[A_Z] += (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - 65536/16;
+				  sum_temp_att[0]+=Pit_fc1;
+					sum_temp_att[1]+=Rol_fc1;
+				}
+				
+				{
         sum_temp[A_X] += mpu6050_fc.Acc_I16.x;
         sum_temp[A_Y] += mpu6050_fc.Acc_I16.y;
         sum_temp[A_Z] += mpu6050_fc.Acc_I16.z - 65536/16;   // +-8G
@@ -253,12 +256,15 @@ void MPU6050_Data_Offset()
             mpu6050_fc.Acc_Offset.x = sum_temp[A_X]/OFFSET_AV_NUM;
             mpu6050_fc.Acc_Offset.y = sum_temp[A_Y]/OFFSET_AV_NUM;
             mpu6050_fc.Acc_Offset.z = sum_temp[A_Z]/OFFSET_AV_NUM;
+					  mpu6050_fc.att_off[0]=(float)sum_temp_att[0]/OFFSET_AV_NUM;
+					  mpu6050_fc.att_off[1]=(float)sum_temp_att[1]/OFFSET_AV_NUM;
             mpu6050_fc.Acc_Temprea_Offset = sum_temp[TEM]/OFFSET_AV_NUM;
             acc_sum_cnt =0;
             mpu6050_fc.Acc_CALIBRATE = 0;
             WRITE_PARM();
 					  need_init_mems=2;
             sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
+				  	sum_temp_att[1]=sum_temp_att[0]=0;
         }
     }
 // 3d cal
@@ -279,9 +285,9 @@ void MPU6050_Data_Offset()
 			acc_sum_cnt_3d++;
       sum_temp_3d[A_X] += mpu6050_fc.Acc_I16.x;
       sum_temp_3d[A_Y] += mpu6050_fc.Acc_I16.y;
-      sum_temp_3d[A_Z] += mpu6050_fc.Acc_I16.z;   // +-8G
+      sum_temp_3d[A_Z] += mpu6050_fc.Acc_I16.z;   
 				if(acc_sum_cnt_3d>OFFSET_AV_NUM_ACC){
-					if(acc_smple_cnt_3d<15){
+					if(acc_smple_cnt_3d<12){
 					acc_smple_cnt_3d++;	
 					xyz_f_t data;	
 					data.x = sum_temp_3d[A_X]/OFFSET_AV_NUM_ACC;
@@ -301,8 +307,6 @@ void MPU6050_Data_Offset()
           WRITE_PARM();						
 					}		 		
 				} 
-				
-		
 			acc_3d_step_reg=acc_3d_step;	
 			}
 			break;
@@ -393,12 +397,12 @@ void MPU6050_Data_Prepare(float T)
 //10 170 4056
 		if(fabs(mpu6050_fc.Off_3d.x)>10||fabs(mpu6050_fc.Off_3d.y)>10||fabs(mpu6050_fc.Off_3d.z)>10)
 			mpu6050_fc.Cali_3d=1;
-		
+		int en_off_3d_off=0;
     /* 得出校准后的数据 */
 	 if(mpu6050_fc.Cali_3d){
-			  mpu6050_tmp[A_X] = (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x - mpu6050_fc.Acc_Offset.x;
-        mpu6050_tmp[A_Y] = (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y - mpu6050_fc.Acc_Offset.y;
-        mpu6050_tmp[A_Z] = (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - mpu6050_fc.Acc_Offset.z;
+			  mpu6050_tmp[A_X] = (mpu6050_fc.Acc_I16.x - mpu6050_fc.Off_3d.x)*mpu6050_fc.Gain_3d.x - mpu6050_fc.Acc_Offset.x*en_off_3d_off;
+        mpu6050_tmp[A_Y] = (mpu6050_fc.Acc_I16.y - mpu6050_fc.Off_3d.y)*mpu6050_fc.Gain_3d.y - mpu6050_fc.Acc_Offset.y*en_off_3d_off;
+        mpu6050_tmp[A_Z] = (mpu6050_fc.Acc_I16.z - mpu6050_fc.Off_3d.z)*mpu6050_fc.Gain_3d.z - mpu6050_fc.Acc_Offset.z*en_off_3d_off;
 	 }
    else{	 
     if(sensor_setup.Offset.mpu_flag == 0)

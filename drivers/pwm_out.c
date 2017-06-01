@@ -330,6 +330,92 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 	
 }
 
+u8 PWM_AUX_Out_Init(uint16_t hz)//50Hz
+{
+		TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+		TIM_OCInitTypeDef  TIM_OCInitStructure;
+		GPIO_InitTypeDef GPIO_InitStructure;
+		uint16_t PrescalerValue = 0;
+		u32 hz_set = ACCURACY*hz*2;
+
+		TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+		TIM_OCStructInit(&TIM_OCInitStructure);
+
+		hz_set = LIMIT (hz_set,1,84000000);
+
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
+		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+
+	
+		//////////////////////////////////////TIM8///////////////////////////////////////////
+	  hz_set = ACCURACY*hz;
+		hz_set = LIMIT (hz_set,1,84000000);
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7; 
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd =GPIO_PuPd_DOWN;//GPIO_PuPd_UP ;
+		GPIO_Init(GPIOC, &GPIO_InitStructure); 
+
+		GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_TIM8);
+		GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_TIM8);
+		//------------------
+		/* Compute the prescaler value */
+		PrescalerValue = (uint16_t) ( ( SystemCoreClock /2 ) / hz_set ) - 1;
+		/* Time base configuration */
+		TIM_TimeBaseStructure.TIM_Period = ACCURACY;									
+		TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;		
+		TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+		TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+		TIM_TimeBaseInit(TIM8, &TIM_TimeBaseStructure);
+
+		TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
+		TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+		/* PWM1 Mode configuration: Channel1 */
+		TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+		TIM_OCInitStructure.TIM_Pulse = INIT_DUTY;
+		TIM_OC1Init(TIM8, &TIM_OCInitStructure);
+		TIM_OCInitStructure.TIM_Pulse = INIT_DUTY;
+		TIM_OC2Init(TIM8, &TIM_OCInitStructure);
+
+
+		TIM_CtrlPWMOutputs(TIM8, ENABLE);
+		TIM_ARRPreloadConfig(TIM8, ENABLE);
+		TIM_Cmd(TIM8, ENABLE);	
+
+    SetPwm_AUX(0,0);
+		
+	
+}
+
+AUX_S aux;
+void SetPwm_AUX(float pit,float rol)
+{ static u8 init;
+	u8 i;
+	if(!init)
+	{
+	init=1;
+	aux.init[0]=1550;
+	aux.init[1]=1625;
+	aux.min[0]=500;
+	aux.min[1]=500;
+  aux.max[0]=2500;
+	aux.max[1]=2500;
+	aux.flag[0]=1;
+  aux.flag[1]=1;		
+	aux.pwm_per_dig=5;
+	}	
+	aux.pwm_tem[0]=aux.init[0]+aux.pwm_per_dig*pit*aux.flag[0];
+	aux.pwm_tem[1]=aux.init[1]+aux.pwm_per_dig*rol*aux.flag[1];
+	for(i=0;i<2;i++)
+	{
+			aux.pwm_tem[i] = LIMIT(aux.pwm_tem[i],aux.min[i],aux.max[i]);
+	}
+	
+	TIM8->CCR1 = (aux.pwm_tem[0] ) ;				//1	
+	TIM8->CCR2 = (aux.pwm_tem[1] ) ;				//2
+}	
+
 u16 BEEP_RATE;
 u8 PMW_T=1;
 #if USE_MINI_BOARD

@@ -16,7 +16,7 @@ typedef struct
 	xyz_f_t g;
 	
 }ref_t;
-
+extern float Pit_fc1,Rol_fc1;
 extern xyz_f_t reference_v,acc_3d_hg;
 void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, float az,float *rol,float *pit,float *yaw);
 extern float  Roll,Pitch,Yaw,Roll_mid_down,Pitch_mid_down,Yaw_mid_down,Rol_fc,Pit_fc,Yaw_fc;   
