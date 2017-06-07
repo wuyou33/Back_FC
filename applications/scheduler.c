@@ -309,6 +309,7 @@ void Duty_20ms()
 	  aux.att[0]=Pit_fc+aux.att_ctrl[0];
 	  aux.att[1]=Rol_fc+aux.att_ctrl[1];
 	  SetPwm_AUX(aux.att[0],aux.att[1]);
+	
  		float temp =(float) Get_Cycle_T(GET_T_OUT_NAV)/1000000.;							
 		if(temp<0.001)
 		pos_time=0.02;	

@@ -317,7 +317,7 @@ void Thr_Ctrl(float T)
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
 	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
-    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode.att_pid_tune==0)
+    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode.att_pid_tune==0||(fly_ready&&!Rc_Get_PWM.update))
 		cnt_for_low++;
 	else
 		cnt_for_low=0;
