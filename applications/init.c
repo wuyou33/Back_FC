@@ -95,6 +95,7 @@ u8 All_Init()
 	#endif
 	READ_PARM();//读取参数
 	Para_Init();//参数初始
+	//TIM3_Int_Init(1000-1,8400-1);
 	//-------------系统默认参数
 	mode.en_eso_h_in=1;
 	mode.imu_use_mid_down=1;

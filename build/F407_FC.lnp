@@ -38,6 +38,7 @@
 ".\build\rtgetnan.o"
 ".\applications\baro_ekf_oldx.lib"
 ".\applications\kf_oldx.lib"
+".\build\ukf_bmp.o"
 ".\build\ctrl.o"
 ".\build\height_ctrl.o"
 ".\build\pos_ctrl.o"

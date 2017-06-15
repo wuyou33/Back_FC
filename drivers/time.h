@@ -19,7 +19,7 @@ void Delay_us(uint32_t);
 void Delay_ms(uint32_t);
 void SysTick_Configuration(void);
 uint32_t GetSysTime_us(void);
-
+void TIM3_Int_Init(u16 arr,u16 psc);
 #define GET_T_OUTTER 0
 #define GET_T_INNER 1
 #define GET_T_FLOW_UART 2

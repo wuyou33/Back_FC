@@ -41,6 +41,7 @@ void Loop_check()  //TIME INTTERRUPT
 
 void Duty_1ms()
 {
+	  MS5611_ThreadNew();baro.relative_height = baroAlt_fc;baro.height=MS5611_Pressure;
 //none spi mems sample for future
 }
 
@@ -82,7 +83,7 @@ void Duty_2ms()
 	
 	RC_Duty( inner_loop_time , Rc_Pwm_In );		// 遥控器通道数据处理 ，输入：执行周期，接收机pwm捕获的数据。
 	
-  //MS5611_ThreadNew();baro.relative_height = baroAlt_fc;baro.height=MS5611_Pressure;
+
 }
 
 float outer_loop_time;
@@ -215,9 +216,9 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											acc_body[2]*1000,baro.h_flt/10,hc_value.fusion_height/10,
-											ultra_ctrl_out_use/10,ALT_VEL_BMP_UKF_OLDX*100,hc_value.fusion_speed/10,
-											ALT_POS_SONAR2*100,exp_height/10,ALT_POS_BMP_UKF_OLDX*100,
+											ultra_dis_lpf,baro.h_flt,hc_value.fusion_height,
+											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*1000,ultra_speed,
+											ALT_POS_SONAR2*1000,exp_height,ALT_POS_BMP_UKF_OLDX*1000,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF
 											data_per_uart1(
@@ -294,7 +295,7 @@ void Duty_10ms()
 					#endif
 							}	
 
-   	MS5611_Update();	
+   //	MS5611_Update();	
     float temp1 =(float) Get_Cycle_T(GET_T_BARO_UKF)/1000000.;							
 		if(temp1<0.001)
 		baro_task_time=0.01;	

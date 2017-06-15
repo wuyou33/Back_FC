@@ -14,16 +14,17 @@ _height_st baro;
 
 #undef ALTI_SPEED
 
+//#define MS5611Press_OSR  MS561101BA_OSR_2048  //气压采样精度
+//#define MS5611Temp_OSR   MS561101BA_OSR_2048 //温度采样精度
 #define MS5611Press_OSR  MS561101BA_OSR_4096  //气压采样精度
 #define MS5611Temp_OSR   MS561101BA_OSR_4096 //温度采样精度
-
 // 气压计状态机
 #define SCTemperature  0x01	  //开始 温度转换
 #define CTemperatureing  0x02  //正在转换温度
 #define SCPressure  0x03	  //开始转换 气压
 #define SCPressureing  0x04	  //正在转换气压值
 
-#define MOVAVG_SIZE  1//10	   //气压计滤波长度
+#define MOVAVG_SIZE  100//10	   //气压计滤波长度
 
 static uint8_t  Now_doing = SCTemperature;	//当前转换状态
 static uint16_t PROM_C[MS561101BA_PROM_REG_COUNT]; //标定值存放

@@ -230,14 +230,14 @@ void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out) //小范围内�
 ///////////////////////////////////////
 
 float ACC_HIGHPASS_TAU        = 4.0;
-float ACC_LOWPASS_TAU        = 0.025;
+float ACC_LOWPASS_TAU        = 0.05;
 float ACC_LOWPASS_SAMPLE_TIME =0.02f;
 float ACC_LOWPASS_A        ;
 float ACC_LOWPASS_GX1      ;
 float ACC_LOWPASS_GX2      ;
 float ACC_LOWPASS_GX3      ;
 
-float BARO_LOWPASS_TAU        = 0.05f;
+float BARO_LOWPASS_TAU        = 0.001f;
 float BARO_LOWPASS_SAMPLE_TIME =0.02f;
 float BARO_LOWPASS_A        ;
 float BARO_LOWPASS_GX1      ;

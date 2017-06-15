@@ -106,6 +106,7 @@ float off_inner=2;
 float wz_acc_ukf1,wz_acc1;
 float ultra_speed_bmp;
 float tilted_fix1;
+float k_flt_z_spd=3.25;
 void Height_Ctrl1(float T,float thr)
 {			static u8 hs_ctrl_cnt;
 	static float wz_speed_t;
@@ -135,7 +136,7 @@ void Height_Ctrl1(float T,float thr)
 	if(mode.en_h_mode_switch)
 				height_mode_switch();
 	
-	    if( hs_ctrl_cnt++>=5)//PA
+	    if( hs_ctrl_cnt++>=4)//PA
 			{  //----------------------mode switch----------------------
 				in_timer_high=(float)Get_Cycle_T(GET_T_HIGH_CONTROL_I)/1000000.;hs_ctrl_cnt=0;
 				if(height_mode_reg==1&&height_ctrl_mode==2)//SONAR<-BMP
@@ -176,15 +177,24 @@ void Height_Ctrl1(float T,float thr)
 				 //------------------------SPD CONTOLLER------------------
 				     exp_spd_zv=EXP_Z_SPEED;//调试用
 					
-						 ultra_speed=LIMIT(hc_value.fusion_speed,-2.5*1000,2.5*1000);
 				
+						if( ABS(hc_value.fusion_speed) < 100 )
+						{
+						ultra_speed += ( 1 / ( 1 + 1 / ( 4 *3.14f *in_timer_high*k_flt_z_spd ) ) ) * ( (float)(hc_value.fusion_speed) - ultra_speed );
+						}
+						else
+						{
+						ultra_speed += ( 1 / ( 1 + 1 / ( 1.0f *3.14f *in_timer_high*k_flt_z_spd  ) ) ) * ( (float)(hc_value.fusion_speed) - ultra_speed );
+						}
+						 //ultra_speed=LIMIT(ultra_speed,-2.5*1000,2.5*1000);
+				     ultra_speed=LIMIT(hc_value.fusion_speed,-2.5*1000,2.5*1000);
 				   if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
 					 {
 						 if(smart.spd.z==0)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
 					 } 
 					 else{
-				     if(!hold_alt_flag||mode.height_safe||height_ctrl_mode==1)//||
+				     if(!hold_alt_flag||mode.height_safe)//||
 							// (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
@@ -201,7 +211,7 @@ void Height_Ctrl1(float T,float thr)
 			#if  defined(SONAR_SAMPLE1)
 			hs_ctrl_cnt_max[0]=10;//50Hz  WT
 			#endif
-			if( cnt_100ms++>=10)//PA
+			if( cnt_100ms++>=8)//PA
 			{
 	      out_timer_high=(float)Get_Cycle_T(GET_T_HIGH_CONTROL_O)/1000000.;
 				cnt_100ms=0;
@@ -264,7 +274,7 @@ float wz_acc_mms21;
 static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc_acc_i;
 
 	wz_acc_mms2 = (wz_acc_ukf1/4096.0f) *9800;//-acc_bais*1000;//
-
+  //wz_acc_mms2 = acc_body[2]*1000;
 	if(!fly_ready||Thr_Low)wz_speed_pid_v.err_i=0;
 	else if(fly_ready&&EXP_Z_SPEED>0&&!int_save){
 		H_INT_REG=(float)H_INT/100.;
@@ -313,6 +323,7 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
 }
 
 u8 baro_ctrl_start;
+float k_flt_pos_z=1;
 float baro_height,ultra_speed_bmp;
 float ultra_sp_test[2];
 float k_dh=1;
@@ -332,7 +343,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(height_ctrl_mode==1)
 		{
 		#if EN_ATT_CAL_FC	
-		exp_height=baro.h_flt;
+		exp_height=ALT_POS_BMP_UKF_OLDX*1000;;
 		#else
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;	
 		#endif
@@ -353,7 +364,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(mode_change&&smart.rc.POS_MODE==0){mode_change=0;
 	if(height_ctrl_mode==1)
 	#if EN_ATT_CAL_FC	
-	{exp_height=baro.h_flt;}
+	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#else
 	{exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#endif
@@ -363,7 +374,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	static u8 mode_safe_reg;
 	if(mode.height_safe&&!mode_safe_reg){mode_change=1;
 	#if EN_ATT_CAL_FC		
-	exp_height=baro.h_flt;}
+	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
 	#else
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
   #endif
@@ -388,7 +399,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	#if EN_ATT_CAL_FC
 	tilted_fix_sonar=LIMIT((ALT_POS_BMP_UKF_OLDX/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_BMP_UKF_OLDX),0,0.5);
-	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*1)*1000;
+	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*0)*1000;
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);
@@ -397,19 +408,36 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	}	
  
+//		if( fabs(ultra_dis_tmp - ultra_dis_lpf) < 0.1*1000 )
+//		{			
+//			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*4.0f *3.14f *T ) ) ) *(ultra_dis_tmp - ultra_dis_lpf) ;
+//		}
+//		else if( fabs(ultra_dis_tmp - ALT_POS_SONAR2) < 0.2*1000 )
+//		{
+//			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*2.2f *3.14f *T ) ) ) *(ultra_dis_tmp- ultra_dis_lpf) ;
+//		}
+//		else if( fabs(ultra_dis_tmp - ALT_POS_SONAR2) < 0.4*1000 )
+//		{
+//			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*1.2f *3.14f *T ) ) ) *(ultra_dis_tmp- ultra_dis_lpf) ;
+//		}
+//		else
+//		{
+//			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*0.6f *3.14f *T ) ) ) *(ultra_dis_tmp- ultra_dis_lpf) ;
+//		}	
+	ultra_ctrl.now=ultra_dis_lpf=  ultra_dis_tmp;	
 	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.THROTTLE-1500)>25))
 	exp_height=ultra_dis_lpf;
 		
 	ultra_ctrl.exp=exp_height;
-	ultra_ctrl.now=ultra_dis_lpf=  ultra_dis_tmp;
+	
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp/3*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,15),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp*0.66*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) ); 
 	else
 	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) );
 	
-	ultra_ctrl.err_d = ultra_pid.kd *( 0.7f *(-wz_speed*T) + 0.3f *(ultra_ctrl.err - ultra_ctrl.err_old) );
+	ultra_ctrl.err_d = ultra_pid.kd *( 0.0f *(-wz_speed*T) + 1.0f *(ultra_ctrl.err - ultra_ctrl.err_old) );
 	
 	
 	if(eso_pos[Zr].b0==0){

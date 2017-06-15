@@ -42,17 +42,7 @@ void SysTick_Handler(void)
 	sys_time();
 }
 
-void TIM3_IRQHandler(void)
-{
-	//_TIM3_IRQHandler();
 
-}
-
-void TIM4_IRQHandler(void)
-{
-	//_TIM4_IRQHandler();
-
-}
 
 //void USART2_IRQHandler(void)
 //{
