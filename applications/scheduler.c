@@ -16,7 +16,8 @@
 #include "fly_mode.h"
 #include "anotc_baro_ctrl.h"
 #include "alt_fushion.h"
-
+float pos_time;
+float baro_task_time;
 u16 Rc_Pwm_In[8];
 s16 loop_cnt;
 loop_t loop;
@@ -98,11 +99,16 @@ void Duty_5ms()
 	
  	CTRL_2( outer_loop_time ); // 外环角度控制
 	
+//	float temp1 =(float) Get_Cycle_T(GET_T_BARO_UKF)/1000000.;							
+//	if(temp1<0.001)
+//	baro_task_time=0.005;	
+//	else
+//	baro_task_time=temp1;
 
+//	baro_ctrl(baro_task_time,&hc_value);//高度融合			
 }
 
-float pos_time;
-float baro_task_time;
+
 u8 UART_UP_LOAD_SEL=0;//<------------------------------上传数据选择
 u8 UART_UP_LOAD_SEL_FORCE=0;//<--上位机强制选择
 u8 force_flow_ble_debug;
@@ -216,9 +222,9 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											ultra_dis_lpf,baro.h_flt,hc_value.fusion_height,
-											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*1000,ultra_speed,
-											ALT_POS_SONAR2*1000,exp_height,ALT_POS_BMP_UKF_OLDX*1000,
+											X_kf_baro_bmp[0]*1000,baro.h_flt*1000,hc_value.fusion_height,
+											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*1000,X_kf_baro_bmp[1]*1000,
+											X_kf_baro_bmp[2]*1000,0,acc_body[2]*1000,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF
 											data_per_uart1(

@@ -43,6 +43,57 @@ static void navUkfRotateVecByRevMatrix(float *vr, float *v, float *m) {
     vr[2] = m[0*3 + 2]*v[0] + m[1*3 + 2]*v[1] + m[2*3 + 2]*v[2];
 }
 
+
+
+
+
+u8 OLDX_KF2(float *measure,float tau,float *r_sensor,u8 *flag_sensor,double *state,double *state_correct,float T)
+{
+float PosDealt;	
+float SpeedDealt;
+float K_ACC_Z;
+float K_VEL_Z;
+float K_POS_Z;
+
+if(!flag_sensor[0]&&!flag_sensor[1]&&!flag_sensor[2])	
+	return 0;
+K_ACC_Z =(5.0f / (tau * tau * tau));
+K_VEL_Z =(3.0f / (tau * tau));
+K_POS_Z =(3.0f / tau);
+//d spd	
+if(flag_sensor[0]&&!flag_sensor[1])	
+PosDealt=(measure[0]-state[0]);
+else if(flag_sensor[0]&&!flag_sensor[1])
+PosDealt=measure[1];
+else if(flag_sensor[1]&&!flag_sensor[1])
+PosDealt=(measure[0]-state[0])+state[1];
+else 
+return 0;	
+
+state_correct[3*0+2] += r_sensor[0]*PosDealt* K_ACC_Z ;
+state_correct[3*0+1] += r_sensor[1]*PosDealt* K_VEL_Z ;
+state_correct[3*0+0] += r_sensor[2]*PosDealt* K_POS_Z ;
+
+//acc correct
+if(!flag_sensor[1]&&flag_sensor[2])	
+state[2]=measure[2]+state_correct[0*3+2];
+else if(flag_sensor[1]&&flag_sensor[2])	
+state[2]=measure[1]+(measure[2]+state_correct[0*3+2]);
+	
+//d acc
+SpeedDealt=state[2]*T;
+
+//pos correct
+state_correct[1*3+0]+=(state[1]+0.5*SpeedDealt)*T;
+state[0]=state_correct[1*3+0]+state_correct[0*3+0];
+
+//vel correct
+state_correct[0*3+1]+=SpeedDealt;
+state[1]=state_correct[1*3+1]+state_correct[0*3+1];
+
+return 1;	
+}
+
 float ALT_POS_BMP,ALT_VEL_BMP;
 float ALT_POS_SONAR,ALT_VEL_SONAR,ALT_POS_SONAR2,ALT_POS_SONAR3;
 float ALT_POS_SONAR2,ALT_POS_SONAR3;
@@ -56,16 +107,22 @@ double P_barob[16]={1,0,0,0,1,0,0,0,1};
 double X_ukf_barob[4];
 //------------------KF  parameter------------------
 float gh_bmp=0.1;
-float k_fp_spd_bmp=15;
+float k_fp_spd_bmp=10;
 float gh_bmp1=0.01;
-float k_fp_spd_bmp1=15;
+float k_fp_spd_bmp1=10;
 
 float gh_sonar=0.005;
-float k_fp_spd_sonar=0;
+float k_fp_spd_sonar=10;
 float ga=0.1;
 float gwa=0.1;
+
+float  r_baro_new[4]={0.015,0.05,0.03,5};
+float  r_sonar_new[4]={0.036,0.056,0.026,3.5};
+
+
 double P_kf_baro[9]={1,0,0,1,0,0,1,0,0}; 
 double X_kf_baro[3];
+double state_correct_baro[6];
 double P_kf_baro_bmp[9]={1,0,0,0,1,0,0,0,1}; 
 double X_kf_baro_bmp[3];
 //float r_baro_ukf[3]={1,1,1};float q_baro_ukf[3]={0.01,0.01,0.01};
@@ -104,6 +161,7 @@ float acc_est,acc_est_imu;
 ESO eso_h_acc,eso_h_spd;
 u8 test_bmp=1;
 int flag_acc_bias;
+float acc_z_att_corr;
 float speed_estimation,  bias_accel,  position_estimation;
 float  sigmaAcc=0.1,  sigmaPos=1,  gammaAcc=0.1,  gammaBiasAcc=0.1;
 void ukf_baro_task1(float T)// 气压计加速度计融合
@@ -157,6 +215,9 @@ float acc_body_temp[3];
     body_to_NEZ(acc_body_temp, accIn, ref_q_imd_down_fc);
     //acc_temp1=(float)(reference_vr_imd_down_fc[2] *mpu6050_fc.Acc.z + reference_vr_imd_down_fc[0] *mpu6050_fc.Acc.x + reference_vr_imd_down_fc[1] *mpu6050_fc.Acc.y - 4096  )/4096.0f*9.8;
 		//acc_temp1=acc_body_temp[2]-9.8;
+
+    acc_z_att_corr=-my_sqrt(pow(my_sqrt(pow(sin(Pit_fc*0.0173),2)+pow(sin(Rol_fc*0.0173),2)),2));
+
 		static float wz_acc ;
 		static u16 ekf_init_cnt;
 		if(ekf_init_cnt++>256 && fabs(acc_temp1)<1)
@@ -164,7 +225,7 @@ float acc_body_temp[3];
 		
 		if(sys_init.baro_ekf)
 		{
-		wz_acc=firstOrderFilter(acc_body_temp[2]-9.8 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
+		wz_acc=firstOrderFilter(acc_body_temp[2]-9.78+acc_z_att_corr*0 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
 		//wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
 		
 //	acc_off_baro =acc_temp1 ;
@@ -207,10 +268,10 @@ float acc_body_temp[3];
 		static float xBuf1[3];
 		static float yBuf1[3];
 	  acc_bmp=(LIMIT(my_deathzoom1(wz_acc-acc_off_baro*1,dead_accz)*acc_scale_bmp,-6.6,6.6));//,xBuf1,yBuf1,a,b,2);//+LIMIT(acc_bais,-1.5,1.5);
-    acc_body[2]=acc_bmp-LIMIT(ALT_ACC_BMP_UKF_OLDX,-1,1);
+    acc_body[2]=acc_bmp-LIMIT(ALT_ACC_BMP_UKF_OLDX,-1,1)*0;
 		static float xBuf2[3];
 		static float yBuf2[3];
-		#define BARO_AV_NUM_FU 66
+		#define BARO_AV_NUM_FU 100*1/2
 		static float baro_av_arr_fu[BARO_AV_NUM_FU];
 		static  u16 baro_av_cnt_fu;
 		baro.h_origin=((float)(baro.relative_height)/1000.);
@@ -234,6 +295,7 @@ float acc_body_temp[3];
 		X_ukf_baro[0] =posz;X_ukf_baro[1]=X_ukf_baro[2]=0;acc_bais=0;
 		X_kf_baro[0] =posz;X_kf_baro[1]=X_kf_baro[2]=0;
 		X_apo_height[0] =posz;X_apo_height[1]=0;
+
 		ero.baro_ekf=0;
 		}
 			
@@ -250,45 +312,32 @@ float acc_body_temp[3];
 		}
 		mode_reg=mode.test3;
    	#endif 
-//	if(Rc_Get_PWM.RST<1500)	
-//	{gh_bmp=0.05;	r_baro=10;}
-//	else
-//	{gh_bmp=0.0025;	r_baro=1;}
-	
+		
 	float gh_use,k_fp_spd_use;
 	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1))
   {gh_use=gh_bmp;k_fp_spd_use=k_fp_spd_bmp;}
   else 
   {gh_use=gh_sonar;k_fp_spd_use=k_fp_spd_sonar;}	
 	
-	#define BARO_KF_NEW 
+	#define BARO_KF2 
 	//#define BARO_KF	
-		
-	#if defined(BARO_KF_NEW) //KF with limit bias
-	double Z_kf[3]={posz+LIMIT(ALT_VEL_BMP_UKF_OLDX,-1,1)*T*k_fp_spd_use*1,0,0};
-	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh_use,  ga,  gwa,T);//for spd
-	float Z_baro_ekf[2]={posz+LIMIT(X_apo_height[1],-1,1)*T*k_fp_spd_bmp1*0,acc_bmp-LIMIT(ALT_ACC_BMP_UKF_OLDX,-1,1)*0};		
-	BARO_EKF_OLDX(X_apo_height,P_apo_k_height, X_apo_height, P_apo_k_height ,Z_baro_ekf,  r_baro,  r_acc, T);
-	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1)){
-	ALT_POS_BMP_UKF_OLDX=X_apo_height[0];
-	ALT_VEL_BMP_UKF_OLDX=X_apo_height[1]+0.08;
-	}else{
-	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];	
+
+	#if defined(BARO_KF2) //KF with limit bias
+	u8 flag_sensor[3]={1,0,1};	
+	float Z_kf[3]={posz+LIMIT(my_deathzoom1(X_kf_baro[1],0.68),-1,1)*T*k_fp_spd_use,0,acc_bmp};
+	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1))
+  OLDX_KF2(Z_kf,r_baro_new[3],r_baro_new,flag_sensor,X_kf_baro,state_correct_baro,T);
+	else
+	OLDX_KF2(Z_kf,r_sonar_new[3],r_sonar_new,flag_sensor,X_kf_baro,state_correct_baro,T);
+
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];
 	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
-	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];
-	}
+	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];	
 	#elif  defined(BARO_KF) //KF with bias
 	double Z_kf[3]={posz+LIMIT(ALT_VEL_BMP_UKF_OLDX,-1,1)*T*k_fp_spd_use*0,0,0};
 	kf_oldx( X_kf_baro,  P_kf_baro,  Z_kf,  acc_bmp, gh_use,  ga,  gwa,T);//for spd
 	posz=firstOrderFilter(baro.relative_height*0.001 ,&firstOrderFilters[BARO_LOWPASS],T);
-	double Z_kf_bmp[3]={posz+LIMIT(ALT_VEL_BMP_UKF_OLDX,-1,1)*T*k_fp_spd_bmp1*1,0,0};
-
- // altitude_kalman(posz, acc_bmp, T ,  sigmaAcc,  sigmaPos,  gammaAcc,  gammaBiasAcc,P_kf_baro_bmp, X_kf_baro_bmp, speed_estimation,  bias_accel,  position_estimation);
-
-//	kf_oldx( X_kf_baro_bmp,  P_kf_baro_bmp,  Z_kf_bmp,  acc_bmp, gh_bmp1,  ga,  gwa,T);//for pos
-//	if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1))
-//	ALT_POS_BMP_UKF_OLDX=X_kf_baro_bmp[0];
-//	else
+	double Z_kf_bmp[3]={posz+LIMIT(my_deathzoom21(ALT_VEL_BMP_UKF_OLDX,0.68),-1,1)*T*k_fp_spd_bmp1*1,0,0};
 	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];	
 	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1];
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];

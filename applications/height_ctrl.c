@@ -61,7 +61,7 @@ void Ultra_PID_Init()
 void WZ_Speed_PID_Init()
 {//use
 	  Ultra_PID_Init();
-	  wz_speed_pid.kp = 0.6;
+	  wz_speed_pid.kp = 0.5;
 		wz_speed_pid.ki = 0.3;
 		wz_speed_pid.kd = 1.68;
 	  wz_speed_pid.fp=0.2;
@@ -343,7 +343,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(height_ctrl_mode==1)
 		{
 		#if EN_ATT_CAL_FC	
-		exp_height=ALT_POS_BMP_UKF_OLDX*1000;;
+		exp_height=ALT_POS_BMP_UKF_OLDX*1000;
 		#else
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;	
 		#endif
@@ -433,7 +433,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		
 	if(ultra_pid.ki==0||(mode.use_dji)||!fly_ready)ultra_ctrl.err_i=0;
 	if(height_ctrl_mode==1||mode.height_safe)
-	ultra_ctrl.err = ( ultra_pid_use.kp*0.66*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) ); 
+	ultra_ctrl.err = ( ultra_pid_use.kp*1*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) ); 
 	else
 	ultra_ctrl.err = ( ultra_pid_use.kp*LIMIT(my_deathzoom1(exp_height - ultra_dis_lpf,5),-800,800) );
 	
