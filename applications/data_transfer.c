@@ -70,7 +70,7 @@ static void ANO_DT_Send_Msg(u8 id, u8 data)
 //此函数应由用户每1ms调用一次
 extern float ultra_dis_lpf;
 u8 fly_mode;
-float off_flow_pos[2]={-2.5,-2.5};
+float off_flow_pos[2]={0};//{-2.5,-2.5};
 void ANO_DT_Data_Exchange(void)
 { static float pos_off[2];
 	static u8 cnt1;
@@ -184,7 +184,7 @@ void ANO_DT_Data_Exchange(void)
 	  break;
 	 case 2:
 		if(sel[2]==0){sel[2]=1;
-		ANO_DT_Send_Senser2(baro.h_flt/10,ALT_POS_SONAR2*100);//原始数据
+		ANO_DT_Send_Senser2(baro.h_flt*100,ALT_POS_SONAR2*100);//原始数据
 		 }else if(sel[2]==1){sel[2]=2;
 	  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,

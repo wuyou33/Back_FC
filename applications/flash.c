@@ -129,9 +129,9 @@ LENGTH_OF_DRONE=(float)((vs16)((FLASH_READ_BUF[27]<<8|FLASH_READ_BUF[26])));
 imu_board.flow_module_offset_x=(float)((vs16)((FLASH_READ_BUF[29]<<8|FLASH_READ_BUF[28])))/1000.;	
 imu_board.flow_module_offset_y=(float)((vs16)((FLASH_READ_BUF[31]<<8|FLASH_READ_BUF[30])))/1000.;	
 imu_board.k_flow_sel=(float)((vs16)((FLASH_READ_BUF[33]<<8|FLASH_READ_BUF[32])))/1000.;	
-circle.yaw_off=(float)((vs16)((FLASH_READ_BUF[35]<<8|FLASH_READ_BUF[34])))/100.;//树莓派摄像头安装角度
+imu_board.flow_set_yaw=(float)((vs16)((FLASH_READ_BUF[35]<<8|FLASH_READ_BUF[34])))/100.;//树莓派摄像头安装角度
 H_INT=((vs16)((FLASH_READ_BUF[37]<<8|FLASH_READ_BUF[36])));
-
+circle.yaw_off=0;
 
 mpu6050_fc.Off_3d.x=(vs16)(FLASH_READ_BUF[39]<<8|FLASH_READ_BUF[38]);
 mpu6050_fc.Off_3d.y=(vs16)(FLASH_READ_BUF[41]<<8|FLASH_READ_BUF[40]);
@@ -235,8 +235,7 @@ FLASH_Buffer[cnt++]=BYTE1(_temp);
 _temp=imu_board.k_flow_sel*1000;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
-
-_temp=circle.yaw_off*100;
+_temp=imu_board.flow_set_yaw*100;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 

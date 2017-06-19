@@ -110,5 +110,7 @@ u8 All_Init()
 //	imu_board.k_flow_sel=1;//光流增益 飞行0.89  志陈 0.5
 //	imu_board.flow_module_offset_x=-0.05;//光流安装位置
 //	imu_board.flow_module_offset_y=0;//光流安装位置
+//	imu_board.flow_set_yaw=0;//光流安装位置
+	
  	return (1);
 }

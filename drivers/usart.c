@@ -658,7 +658,9 @@ void Send_IMU_PARM(void)
 	_temp = imu_board.flow_module_offset_y*1000;
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
- 
+ 	_temp = imu_board.flow_set_yaw*10;
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	data_to_send[3] = _cnt-4;
 
