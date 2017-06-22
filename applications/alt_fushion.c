@@ -11,7 +11,29 @@
 #include "ultrasonic.h"
 #include "baro_ekf_oldx.h"
 #include "eso.h"
+#include "oldx_kf2.h"
 
+float baro_compensate(float dT,float kup,float kdw,float vz,float lim)
+{
+	float z_sin;
+	static float com_val,com_tar;
+	
+	z_sin = my_sqrt(1-my_pow(vz));
+	
+	//com_tar = (z_sin/0.44f) *lim;
+	LPF_1_(2.0f,dT,((z_sin/0.44f) *lim),com_tar);
+	com_tar = LIMIT(com_tar,0,lim);
+	
+	if(com_val<(com_tar-100))
+	{
+		com_val += 1000 *dT *kup;
+	}
+	else if(com_val>(com_tar+100))
+	{
+		com_val -= 1000 *dT *kdw;
+	}
+	return (com_val);
+}
 
 void body_to_NEZ(float *vr, float *v, float *q) {
     float w, x, y, z;
@@ -47,53 +69,6 @@ static void navUkfRotateVecByRevMatrix(float *vr, float *v, float *m) {
 
 
 
-u8 OLDX_KF2(float *measure,float tau,float *r_sensor,u8 *flag_sensor,double *state,double *state_correct,float T)
-{
-float PosDealt;	
-float SpeedDealt;
-float K_ACC_Z;
-float K_VEL_Z;
-float K_POS_Z;
-
-if(!flag_sensor[0]&&!flag_sensor[1]&&!flag_sensor[2])	
-	return 0;
-K_ACC_Z =(5.0f / (tau * tau * tau));
-K_VEL_Z =(3.0f / (tau * tau));
-K_POS_Z =(3.0f / tau);
-//d spd	
-if(flag_sensor[0]&&!flag_sensor[1])	
-PosDealt=(measure[0]-state[0]);
-else if(flag_sensor[0]&&!flag_sensor[1])
-PosDealt=measure[1];
-else if(flag_sensor[1]&&!flag_sensor[1])
-PosDealt=(measure[0]-state[0])+state[1];
-else 
-return 0;	
-
-state_correct[3*0+2] += r_sensor[0]*PosDealt* K_ACC_Z ;
-state_correct[3*0+1] += r_sensor[1]*PosDealt* K_VEL_Z ;
-state_correct[3*0+0] += r_sensor[2]*PosDealt* K_POS_Z ;
-
-//acc correct
-if(!flag_sensor[1]&&flag_sensor[2])	
-state[2]=measure[2]+state_correct[0*3+2];
-else if(flag_sensor[1]&&flag_sensor[2])	
-state[2]=measure[1]+(measure[2]+state_correct[0*3+2]);
-	
-//d acc
-SpeedDealt=state[2]*T;
-
-//pos correct
-state_correct[1*3+0]+=(state[1]+0.5*SpeedDealt)*T;
-state[0]=state_correct[1*3+0]+state_correct[0*3+0];
-
-//vel correct
-state_correct[0*3+1]+=SpeedDealt;
-state[1]=state_correct[1*3+1]+state_correct[0*3+1];
-
-return 1;	
-}
-
 float ALT_POS_BMP,ALT_VEL_BMP;
 float ALT_POS_SONAR,ALT_VEL_SONAR,ALT_POS_SONAR2,ALT_POS_SONAR3;
 float ALT_POS_SONAR2,ALT_POS_SONAR3;
@@ -115,8 +90,11 @@ float gh_sonar=0.005;
 float k_fp_spd_sonar=10;
 float ga=0.1;
 float gwa=0.1;
-
+#if USE_M100_IMU
+float  r_baro_new[4]={0.015,0.05,0.03,3.5};
+#else
 float  r_baro_new[4]={0.015,0.05,0.03,5};
+#endif
 float  r_sonar_new[4]={0.036,0.056,0.026,3.5};
 
 
@@ -195,11 +173,29 @@ float posz_sonar=LIMIT(ultra.relative_height+tilted_fix_sonar,0,5);
 			ALT_POS_SONAR2 += ( 1 / ( 1 + 1 / ( K_SONAR*0.6f *3.14f *dt ) ) ) *(posz_sonar- ALT_POS_SONAR2) ;
 		}	
 #endif
-
+float baro_com_val;
+#if EN_ATT_CAL_FC
+baro_com_val = baro_compensate(dt,1.0f,1.0f,reference_vr_imd_down_fc[2],3500);
+#else
+baro_com_val = baro_compensate(dt,1.0f,1.0f,reference_vr_imd_down[2],3500);
+#endif
 float posz;
 u8 input_flag=2;
 if(mode.height_safe||height_ctrl_mode==1||(NS==0&&test_bmp==1)){
-posz=(float)(baro.relative_height)/1000.;input_flag=1;
+#if USE_M100_IMU
+static u8 m100_connect_r;
+static float off_m100;	
+if(m100.m100_connect)	
+off_m100=	(float)(baroAlt-baro.relative_height)/1000.;
+if(m100.m100_connect)
+posz=(float)(baroAlt)/1000.;
+else
+posz=(float)(baro.relative_height)/1000.+off_m100;	
+input_flag=1;
+m100_connect_r=m100.m100_connect;
+#else
+posz=(float)(baro.relative_height)/1000.-0.001*baro_com_val*1;input_flag=1;
+#endif
 }
 else
 posz=LIMIT(ALT_POS_SONAR2,0,5);

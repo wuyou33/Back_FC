@@ -192,6 +192,7 @@ float POS_UKF_X,POS_UKF_Y,VEL_UKF_X,VEL_UKF_Y;
 int k_scale_pix;
 float uart_time[10];
 u8 pos_kf_state[3];
+u8 m100_connect;
  void Data_Receive_Anl(u8 *data_buf,u8 num)
 {
 	vs16 rc_value_temp;
@@ -259,6 +260,9 @@ u8 pos_kf_state[3];
 		target_position[LAT]=now_position[LAT];//m
 		}
 		reg=mode.flow_f_use_ukfm;
+		
+			
+		
     //sys.flow=1;
 	}		
   else if(*(data_buf+2)==0x01)//debug
@@ -273,7 +277,11 @@ u8 pos_kf_state[3];
 	flow_debug.hx=((int16_t)(*(data_buf+17)<<8)|*(data_buf+18));
 	flow_debug.hy=((int16_t)(*(data_buf+19)<<8)|*(data_buf+20));
   flow_debug.hz=((int16_t)(*(data_buf+21)<<8)|*(data_buf+22));
-
+	#if USE_FLOW_PI
+		circle.x=(int16_t)((*(data_buf+23)<<8)|*(data_buf+24));//m
+		circle.y=(int16_t)((*(data_buf+25)<<8)|*(data_buf+26));//m
+		circle.z=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));//m
+		#endif
 	}		
 	else if(*(data_buf+2)==0x02)//CAL
   { 
@@ -290,6 +298,7 @@ u8 pos_kf_state[3];
 		ak8975.Mag_Gain.y=(float)((int16_t)(*(data_buf+24)<<8)|*(data_buf+25))/1000.;
 		ak8975.Mag_Gain.z=(float)((int16_t)(*(data_buf+26)<<8)|*(data_buf+27))/1000.;
 		k_scale_pix=(float)((int16_t)(*(data_buf+28)<<8)|*(data_buf+29));
+		
 	
 	}		
 	else if(*(data_buf+2)==0x10)//Mems
@@ -316,8 +325,8 @@ u8 pos_kf_state[3];
 		flow_matlab_data[2]=(float)((int16_t)(*(data_buf+32)<<8)|*(data_buf+33))/1000.;
 		flow_matlab_data[3]=(float)((int16_t)(*(data_buf+34)<<8)|*(data_buf+35))/1000.;
 		baro_matlab_data[1]=((int16_t)(*(data_buf+36)<<8)|*(data_buf+37));
-		
-		pos_kf_state[Xr]=pos_kf_state[Yr]=*(data_buf+38);
+		m100.m100_connect=*(data_buf+38);
+	
 	}		
 	else if(*(data_buf+2)==0x11)//Att
   { uart_time[2]= Get_Cycle_T(GET_T_FLOW_UART)/1000000.0f;	
@@ -2716,12 +2725,13 @@ switch(sel){
 	_temp=m100.Rc_gear;
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-	_temp=m100.STATUS;
+	_temp=m100.m100_connect;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=m100.GPS_STATUS;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=mode.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+	
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 		for( i=cnt_reg;i<nrf_uart_cnt;i++)

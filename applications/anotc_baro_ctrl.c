@@ -3,27 +3,7 @@
 #include "filter.h"
 #include "alt_fushion.h"
 #include "bmp.h"
-float baro_compensate(float dT,float kup,float kdw,float vz,float lim)
-{
-	float z_sin;
-	static float com_val,com_tar;
-	
-	z_sin = my_sqrt(1-my_pow(vz));
-	
-	//com_tar = (z_sin/0.44f) *lim;
-	LPF_1_(2.0f,dT,((z_sin/0.44f) *lim),com_tar);
-	com_tar = LIMIT(com_tar,0,lim);
-	
-	if(com_val<(com_tar-100))
-	{
-		com_val += 1000 *dT *kup;
-	}
-	else if(com_val>(com_tar+100))
-	{
-		com_val -= 1000 *dT *kdw;
-	}
-	return (com_val);
-}
+
 
 void fusion_prepare(float dT,float av_arr[],u16 av_num,u16 *av_cnt,float deadzone,_height_st *data,_fusion_p_st *pre_data)
 {
@@ -105,12 +85,6 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
       //baro.h_flt=firstOrderFilter((baro.relative_height) ,&firstOrderFilters[BARO_LOWPASS],dT);
 			//baro.h_flt=baro.relative_height;
 	    baro.h_dt = dT; 
-			#if EN_ATT_CAL_FC
-      baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down_fc[2],3500);
-			#else
-			baro_com_val = baro_compensate(dT,1.0f,1.0f,reference_vr_imd_down[2],3500);
-			#endif
-		
 	    ukf_baro_task1(dT)	;//¸ß¶ÈÈÚºÏ
 //////////////////////////////////////////				
 

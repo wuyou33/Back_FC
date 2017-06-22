@@ -222,8 +222,8 @@ void Duty_10ms()
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											X_kf_baro_bmp[0]*1000,baro.h_flt*1000,hc_value.fusion_height,
-											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*1000,X_kf_baro_bmp[1]*1000,
+											X_kf_baro_bmp[0]*100,baroAlt/10,hc_value.fusion_height/10,
+											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
 											X_kf_baro_bmp[2]*1000,0,acc_body[2]*1000,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF

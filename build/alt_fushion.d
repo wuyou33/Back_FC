@@ -56,3 +56,4 @@
 .\build\alt_fushion.o: applications\baro_ekf_oldx.h
 .\build\alt_fushion.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\build\alt_fushion.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\build\alt_fushion.o: applications\oldx_kf2.h

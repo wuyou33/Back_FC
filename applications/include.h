@@ -19,11 +19,15 @@ extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
 //================系统===================
-#define USE_ANO_GROUND 1  //实验匿名地面站 否则使用  安卓APP 和 OLDX-PC上位机
+
 #define USE_RECIVER_MINE 0  
 #define EN_ATT_CAL_FC 1  //姿态使用FC解算
+#define USE_ANO_GROUND 1  //实验匿名地面站 否则使用  安卓APP 和 OLDX-PC上位机
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
+
+#define USE_M100_IMU 1
+#define USE_FLOW_PI 1
 #define TUNING_X 1   //0->y 1->x   
 #define TUNING_Z 1   //higher than tuning x or y
 #define SONAR_USE_FC 0  //FC采集超声波USE IDLE 串口

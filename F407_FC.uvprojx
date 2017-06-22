@@ -659,9 +659,9 @@
               <FilePath>.\applications\kf_oldx.lib</FilePath>
             </File>
             <File>
-              <FileName>ukf_bmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\ukf_bmp.c</FilePath>
+              <FileName>oldx_kf2.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\applications\oldx_kf2.lib</FilePath>
             </File>
           </Files>
         </Group>
