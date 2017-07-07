@@ -194,7 +194,7 @@ float uart_time[10];
 u8 pos_kf_state[3];
 u8 m100_connect;
  void Data_Receive_Anl(u8 *data_buf,u8 num)
-{
+{ double zen,xiao;
 	vs16 rc_value_temp;
 	u8 sum = 0;
 	u8 i;
@@ -225,26 +225,26 @@ u8 m100_connect;
 		ALT_POS_BMP=(float)(int32_t)((*(data_buf+23)<<24)|(*(data_buf+24)<<16)|(*(data_buf+25)<<8)|*(data_buf+26))/1000.;//m
 		ALT_VEL_BMP_EKF=(float)(int16_t)((*(data_buf+27)<<8)|*(data_buf+28))/1000.;//m
 		ALT_POS_BMP_EKF=(float)(int32_t)((*(data_buf+29)<<24)|(*(data_buf+30)<<16)|(*(data_buf+31)<<8)|*(data_buf+32))/1000.;//m
-		if(mode.flow_f_use_ukfm==1||mode.flow_f_use_ukfm==2){
+		if(mode_oldx.flow_f_use_ukfm==1||mode_oldx.flow_f_use_ukfm==2){
 		POS_UKF_X=(float)(int16_t)((*(data_buf+33)<<8)|*(data_buf+34))/1000.;//m  ->0
 		POS_UKF_Y=(float)(int16_t)((*(data_buf+35)<<8)|*(data_buf+36))/1000.;//m  ->1
 		}
-		else if(mode.flow_f_use_ukfm==0)
+		else if(mode_oldx.flow_f_use_ukfm==0)
 		{
 		POS_UKF_X=-temp_pos[LON];
 		POS_UKF_Y=-temp_pos[LAT];
 		}	
 		
-		if(mode.flow_f_use_ukfm==1){	
+		if(mode_oldx.flow_f_use_ukfm==1){	
 		VEL_UKF_X=(float)(int16_t)((*(data_buf+37)<<8)|*(data_buf+38))/1000.;//m
 		VEL_UKF_Y=(float)(int16_t)((*(data_buf+39)<<8)|*(data_buf+40))/1000.;//m			
 		}
-    else if(mode.flow_f_use_ukfm==0||mode.flow_f_use_ukfm==2){
+    else if(mode_oldx.flow_f_use_ukfm==0||mode_oldx.flow_f_use_ukfm==2){
 		VEL_UKF_Y=imu_nav.flow.speed.y_f;
 		VEL_UKF_X=imu_nav.flow.speed.x_f;
 		}
 		
-    if(mode.flow_f_use_ukfm){
+    if(mode_oldx.flow_f_use_ukfm){
     now_position[LON]=POS_UKF_X;//m  lon->0 X
 		now_position[LAT]=POS_UKF_Y;//m  lat->1 Y			
 		}
@@ -254,12 +254,12 @@ u8 m100_connect;
 		now_position[LAT]=temp_pos[LAT];//m  lat->1 Y			
 		}			
 		static u8 reg;
-		if(mode.flow_f_use_ukfm!=reg)
+		if(mode_oldx.flow_f_use_ukfm!=reg)
 		{
 		target_position[LON]=now_position[LON];//m
 		target_position[LAT]=now_position[LAT];//m
 		}
-		reg=mode.flow_f_use_ukfm;
+		reg=mode_oldx.flow_f_use_ukfm;
 		
 			
 		
@@ -277,7 +277,7 @@ u8 m100_connect;
 	flow_debug.hx=((int16_t)(*(data_buf+17)<<8)|*(data_buf+18));
 	flow_debug.hy=((int16_t)(*(data_buf+19)<<8)|*(data_buf+20));
   flow_debug.hz=((int16_t)(*(data_buf+21)<<8)|*(data_buf+22));
-	#if USE_FLOW_PI
+	 #if USE_FLOW_PI
 		circle.x=(int16_t)((*(data_buf+23)<<8)|*(data_buf+24));//m
 		circle.y=(int16_t)((*(data_buf+25)<<8)|*(data_buf+26));//m
 		circle.z=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));//m
@@ -353,30 +353,18 @@ u8 m100_connect;
 	  reference_vr_imd_down[2] = 1 - 2*(ref_q_imd_down[1]*ref_q_imd_down[1] + ref_q_imd_down[2]*ref_q_imd_down[2]);
 	
 	}
-	else if(*(data_buf+2)==0x13)//CAL
+	else if(*(data_buf+2)==0x14)//GPS
   {
 		
-//	  DIS_IN[0]=(int16_t)(*(data_buf+5)<<8)|*(data_buf+6);
-//		DIS_IN[1]=(int16_t)(*(data_buf+7)<<8)|*(data_buf+8);
-//		DIS_IN[2]=(int16_t)(*(data_buf+9)<<8)|*(data_buf+10);
-//		DIS_IN[3]=(int16_t)(*(data_buf+11)<<8)|*(data_buf+12);
-//		DIS_IN[4]=(int16_t)(*(data_buf+13)<<8)|*(data_buf+14);
-//		DIS_IN[5]=(int16_t)(*(data_buf+15)<<8)|*(data_buf+16);
-//		DIS_IN[6]=(int16_t)(*(data_buf+17)<<8)|*(data_buf+18);
-//		DIS_IN[7]=(int16_t)(*(data_buf+19)<<8)|*(data_buf+20);
-//		DIS_IN[8]=(int16_t)(*(data_buf+21)<<8)|*(data_buf+22);
-//		DIS_IN[9]=(int16_t)(*(data_buf+23)<<8)|*(data_buf+24);
-//		DIS_IN[10]=(int16_t)(*(data_buf+25)<<8)|*(data_buf+26);	
-//		DIS_IN[11]=(int16_t)(*(data_buf+27)<<8)|*(data_buf+28);
-//		DIS_IN[12]=(int16_t)(*(data_buf+29)<<8)|*(data_buf+30);
-//		DIS_IN[13]=(int16_t)(*(data_buf+31)<<8)|*(data_buf+32);
-//		DIS_IN[14]=(int16_t)(*(data_buf+33)<<8)|*(data_buf+34);
-//		DIS_IN[15]=(int16_t)(*(data_buf+35)<<8)|*(data_buf+36);
-//		DIS_IN[16]=(int16_t)(*(data_buf+37)<<8)|*(data_buf+38);
-//		DIS_IN[17]=(int16_t)(*(data_buf+39)<<8)|*(data_buf+40);
-//		DIS_IN[18]=(int16_t)(*(data_buf+41)<<8)|*(data_buf+42);
-//		DIS_IN[19]=(int16_t)(*(data_buf+43)<<8)|*(data_buf+44);
-    
+		zen=(*(data_buf+4)<<8)|*(data_buf+5);
+		xiao=(double)((u32)(*(data_buf+6)<<24)|(*(data_buf+7)<<16)|(*(data_buf+8)<<8)|*(data_buf+9))/1000000000.;
+		m100.Init_Lon=zen+xiao;
+		zen=(*(data_buf+10)<<8)|*(data_buf+11);
+		xiao=(double)((u32)(*(data_buf+12)<<24)|(*(data_buf+13)<<16)|(*(data_buf+14)<<8)|*(data_buf+15))/1000000000.;
+		m100.Init_Lat=zen+xiao;
+		
+		r1=((u32)(*(data_buf+16)<<24)|(*(data_buf+17)<<16)|(*(data_buf+18)<<8)|*(data_buf+19));
+		r2=((u32)(*(data_buf+20)<<24)|(*(data_buf+21)<<16)|(*(data_buf+22)<<8)|*(data_buf+23));
 	}			
 }
  
@@ -507,7 +495,7 @@ void Send_IMU_TO_FLOW(void)
 	#if USE_RECIVER_MINE
 	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||((Rc_Get.THROTTLE>1050))||fly_ready||ble_imu_force;
 	#else
-	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||(mode.use_dji&&(Rc_Get.THROTTLE>1050))||fly_ready||ble_imu_force;
+	_temp =  NS==0||Rc_Get_PWM.THROTTLE>1250||(mode_oldx.use_dji&&(Rc_Get.THROTTLE>1050))||fly_ready||ble_imu_force;
 	#endif//
 	data_to_send[_cnt++]=BYTE0(_temp);	
 	
@@ -534,7 +522,7 @@ void Send_IMU_TO_FLOW(void)
  	_temp = (vs16)(circle.spdx);//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (vs16)(circle.spdy);//mode.save_video;//ultra_distance;
+	_temp = (vs16)(circle.spdy);//mode_oldx.save_video;//ultra_distance;
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
@@ -1526,7 +1514,7 @@ u8 lock_tx;
 			HPID.OP=HPID_app.OP;
 			HPID.OI=HPID_app.OI;
 			HPID.OD=HPID_app.OD;
-			if(!mode.flow_hold_position&&0){
+			if(!mode_oldx.flow_hold_position&&0){
 			ultra_pid.kp =  		0.001*(float)SPID.OP;
 			ultra_pid.ki =  		0.001*(float)SPID.OI;
 			ultra_pid.kd = 			0.001*(float)SPID.OD;
@@ -1540,7 +1528,7 @@ u8 lock_tx;
 			}
 			else
 			{
-//				if(mode.test4&&0)
+//				if(mode_oldx.test4&&0)
 //				{
 ////				nav_spd_pid.kp=0.001*(float)SPID.OP;//0;//0.2;
 ////				nav_spd_pid.ki=0.001*(float)SPID.OI;//0.0;
@@ -1682,8 +1670,8 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 	u8 i;
 	for( i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
-	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
-	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
+	if(!(sum==*(data_buf+num-1)))	{Rc_Get_PWM.Heart_error++;	return;}		//判断sum
+	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))	{Rc_Get_PWM.Heart_error++;	return;}			//判断帧头
 	#if !USE_RECIVER_MINE
 	//if((Rc_Get_PWM.THROTTLE>1139+5||Rc_Get_PWM.THROTTLE<1139-5||Rc_Get_PWM.update)&&Rc_Get_PWM.THROTTLE!=1000)
 	if(Rc_Get_PWM.update&&Rc_Get_PWM.THROTTLE>600)
@@ -1707,7 +1695,8 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 		Rc_Get_PWM.POS_MODE=Rc_Get_PWM.AUX3;
 		Rc_Get_PWM.HEIGHT_MODE=Rc_Get_PWM.AUX4;
 		Rc_Get_PWM.RST=Rc_Get_PWM.AUX2;
-			
+		Rc_Get_PWM.Heart=*(data_buf+23);	
+		Rc_Get_PWM.Heart_rx++;
 	}
 	else if(*(data_buf+2)==0x81)//Smart_control
 	{
@@ -1774,7 +1763,7 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 	}
 		else if(*(data_buf+2)==0x02 &&Rc_Get.update)//RC
 	{
-	if(mode.en_pid_sb_set){
+	if(mode_oldx.en_pid_sb_set){
 	  SPID.OP=((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
 		SPID.OI=((int16_t)(*(data_buf+6)<<8)|*(data_buf+7));
 		SPID.OD=((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));
@@ -1791,7 +1780,7 @@ void Data_Receive_Anl4(u8 *data_buf,u8 num)
 		HPID.IP=((int16_t)(*(data_buf+28)<<8)|*(data_buf+29));
 		HPID.II=((int16_t)(*(data_buf+30)<<8)|*(data_buf+31));
 		HPID.ID=((int16_t)(*(data_buf+32)<<8)|*(data_buf+33));	
-		if(mode.att_pid_tune){//PID调参模式
+		if(mode_oldx.att_pid_tune){//PID调参模式
 
 						ctrl_2.PID[PIDPITCH].kp =ctrl_2.PID[PIDROLL].kp  = 0.001*SPID.OP;
 						ctrl_2.PID[PIDPITCH].ki =ctrl_2.PID[PIDROLL].ki  = 0.001*SPID.OI;
@@ -1946,7 +1935,7 @@ void Usart4_Init(u32 br_num)//-------SD_board
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
    //USART1 初始化设置
 	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
@@ -2208,7 +2197,7 @@ void Send_IMU_TO_GPS(void)
 	data_to_send[_cnt++]=0xAF;
 	data_to_send[_cnt++]=0x01;//功能字
 	data_to_send[_cnt++]=0;//数据量
-	_temp =  mode.en_sonar_avoid;//ultra_distance;
+	_temp =  mode_oldx.en_sonar_avoid;//ultra_distance;
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	_temp = (vs16)(Pitch*10);//ultra_distance;
@@ -2729,7 +2718,7 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=m100.GPS_STATUS;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-	_temp=mode.en_sd_save;
+	_temp=mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	
@@ -2765,7 +2754,7 @@ switch(sel){
 	_temp = ALT_POS_SONAR2*1000	;
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-  _temp = mode.en_sd_save;
+  _temp = mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp = ALT_POS_BMP_EKF*1000	;
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
@@ -2848,7 +2837,7 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
-		_temp=mode.en_sd_save;
+		_temp=mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
@@ -2981,7 +2970,7 @@ switch(sel){
 	_temp=HPID.OD;//filter
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-	_temp=mode.en_sd_save;
+	_temp=mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
@@ -3084,7 +3073,7 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE1(_temp);
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	}
-	SendBuff4[nrf_uart_cnt++]=mode.en_sd_save;
+	SendBuff4[nrf_uart_cnt++]=mode_oldx.en_sd_save;
 	
   SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 	for( i=cnt_reg;i<nrf_uart_cnt;i++)

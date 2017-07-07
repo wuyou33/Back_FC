@@ -49,5 +49,8 @@ void ANO_DT_Send_Speed(float,float,float);
 void ANO_DT_Send_Location(u8 state,u8 sat_num,s32 lon,s32 lat,float back_home_angle);
 void ANO_DT_Send_QR1(float x,float y,float z);
 void ANO_DT_Send_QR2(float x,float y,float z);
+
+//HT
+void HT_DT_Send_ATT(float pit,float rol,float yaw,float h);
 #endif
 

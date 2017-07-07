@@ -2,7 +2,22 @@
 #define	_CIRCLE_H_
 
 #include "stm32f4xx.h"
-extern float yaw_qr_off;
+
+#define NAV_EQUATORIAL_RADIUS	(6378.137 * 1000.0)			    // meters
+#define NAV_FLATTENING		(1.0 / 298.257223563)			    // WGS-84
+#define NAV_E_2			(NAV_FLATTENING * (2.0 - NAV_FLATTENING))
+#define M_PI			3.14159265f
+#define M_PI_2			(M_PI / 2.0f)
+#define NAV_HF_HOME_DIST_D_MIN	2.0f						// do not compute dynamic bearing when closer than this to home position (zero to never compute)
+#define NAV_HF_HOME_DIST_FREQ	4						// update distance to home at this Hz, should be > 0 and <= 400
+#define NAV_HF_HOME_BRG_D_MAX	1.0f * DEG_TO_RAD				// re-compute headfree reference angles when bearing to home changes by this many degrees (zero to always re-compute)
+#define NAV_HF_DYNAMIC_DELAY	((int)3e6f)					// delay micros before entering dynamic mode after switch it toggled high
+#define RAD_TO_DEG		(180.0f / M_PI)
+#define DEG_TO_RAD		(M_PI / 180.0f)
+ void CalcEarthRadius(double lat) ;
+ void CalcGlobalDistance(double lat, double lon,float local_Lat,float local_Lon,float *posNorth,float *posEast ) ;
+ void CalcGlobalLocation(float posNorth,float posEast,float local_Lat,float local_Lon,float *GPS_W_F,float* GPS_J_F);
+extern float yaw_qr_off,r1,r2;
 typedef struct
 { float exp;
 	float now;

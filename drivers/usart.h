@@ -45,7 +45,7 @@ typedef struct int16_rcget{
 				int16_t AUX5;
 	      int16_t HEIGHT_MODE;
 	      int16_t POS_MODE;
-	      u8 update;
+	      u8 update,Heart,Heart_rx,Heart_error;
 				int16_t RST;}RC_GETDATA;
 
 extern RC_GETDATA Rc_Get,Rc_Get_PWM;//接收到的RC数据,1000~2000
@@ -423,6 +423,7 @@ Flight status val	status name
  float Bat;	
  int Rc_pit,Rc_rol,Rc_yaw,Rc_thr,Rc_mode,Rc_gear;
  u8 m100_connect;
+ double Init_Lat,Init_Lon;
 }M100;
 extern M100 m100;
 extern u16 nrf_uart_cnt;

@@ -4,6 +4,8 @@
 #include "stm32f4xx.h"
 #include "include.h"
 #include "parameter.h"
+
+
 typedef struct 
 {
 u8 nav_control_use_acc_loop;
@@ -90,9 +92,10 @@ u8 h_is_fix;
 u8 att_ident1;
 //flow
 u8 en_flow_gro_fix;
-u8 flow_size;
+u8 flow_size;u8 show_qr_origin;
 }_MODE;
-extern struct _MODE mode;
+
+extern _MODE mode_oldx;
 
 enum
 {

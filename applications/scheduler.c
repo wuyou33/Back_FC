@@ -40,9 +40,11 @@ void Loop_check()  //TIME INTTERRUPT
 	}
 }
 
+
 void Duty_1ms()
 {
 	  MS5611_ThreadNew();baro.relative_height = baroAlt_fc;baro.height=MS5611_Pressure;
+	  
 //none spi mems sample for future
 }
 
@@ -112,6 +114,7 @@ void Duty_5ms()
 u8 UART_UP_LOAD_SEL=0;//<------------------------------上传数据选择
 u8 UART_UP_LOAD_SEL_FORCE=0;//<--上位机强制选择
 u8 force_flow_ble_debug;
+u8 flow_debug_stop=1;
 void Duty_10ms()
 {
 	static u8 cnt_bmp;
@@ -145,7 +148,7 @@ void Duty_10ms()
 								 GOL_LINK_TASK();	
 					#endif
 							}					
-							
+				flow_debug_stop=0;			
 				//BLE UPLOAD《----------------------蓝牙调试
 			 if(UART_UP_LOAD_SEL_FORCE!=0)
           UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
@@ -159,7 +162,7 @@ void Duty_10ms()
 								  ANO_DT_Data_Exchange();												//数传通信定时调用
 								  #endif
 							if(cnt[2]++>1){cnt[2]=0;
-								    if(mode.att_pid_tune){//PID TUNING
+								    if(mode_oldx.att_pid_tune){//PID TUNING
 											{	
 										 #if !TUNING_Z									
 												if(ctrl_2.PID[PIDROLL].kp!=0&&KEY[7])//OUTTER
@@ -211,20 +214,20 @@ void Duty_10ms()
 												}				
 											#endif
 										}
-										else if(flow_debug.en_ble_debug||force_flow_ble_debug)//DEBUG  FLOW
+										else if((flow_debug.en_ble_debug||force_flow_ble_debug)&&flow_debug_stop)//DEBUG  FLOW
 											data_per_uart1(
 											flow_debug.ax,flow_debug.ay,flow_debug.az,
 										  flow_debug.gx,flow_debug.gy,flow_debug.gz,
 										  flow_debug.hx,flow_debug.hy,flow_debug.hz,
 											(int16_t)(inner_loop_time*10000.0),(int16_t)(outer_loop_time*10000.0),(int16_t)(0*10.0),0/10,0,0/10,0*0);
-										else{//DEBUG-------------------------Normal mode--------------------------------
+										else{//DEBUG-------------------------Normal mode_oldx--------------------------------
 								    switch(UART_UP_LOAD_SEL)
 											{
 											case 0://BMP UKF
 											data_per_uart1(
-											X_kf_baro_bmp[0]*100,baroAlt/10,hc_value.fusion_height/10,
-											ultra_ctrl_out_use,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
-											X_kf_baro_bmp[2]*1000,0,acc_body[2]*1000,
+											ALT_POS_BMP_UKF_OLDX*100,baroAlt/10,baro.relative_height/10,
+											Rc_Get_PWM.Heart,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
+											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF
 											data_per_uart1(
@@ -331,7 +334,7 @@ void Duty_20ms()
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
 		if(!rc_board_connect)
-			Rc_Get_PWM.ROLL=Rc_Get_PWM.PITCH=Rc_Get_PWM.YAW=1500;
+			Rc_Get_PWM.THROTTLE=Rc_Get_PWM.ROLL=Rc_Get_PWM.PITCH=Rc_Get_PWM.YAW=1500;
 		RX_CH_PWM[THRr]=	LIMIT(Rc_Get_PWM.THROTTLE-RX_CH_FIX_PWM[THRr],1000,2000)	;
 		RX_CH_PWM[ROLr]=  my_deathzoom_rc(Rc_Get_PWM.ROLL-RX_CH_FIX_PWM[ROLr],2)	;
 		RX_CH_PWM[PITr]=  my_deathzoom_rc(Rc_Get_PWM.PITCH-RX_CH_FIX_PWM[PITr],2)	;
@@ -351,7 +354,7 @@ void Duty_20ms()
 		RX_CH_PWM[YAWr]=  1500;
 		}	
 		//------------------------Smart UPDATE--------------------
-		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&mode.flow_hold_position==2)
+		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&mode_oldx.flow_hold_position==2)
 				switch(smart.rc.POS_MODE)
 				{
 					case SMART_MODE_RC://rc
@@ -378,14 +381,14 @@ void Duty_50ms()//遥控 模式设置
 		//---------------use now
 		//------------0 1   |   2 3       KEY_SEL
 		#if USE_RECIVER_MINE		
-		mode.flow_hold_position=KEY_SEL[0];
-		mode.height_safe=KEY_SEL[1];
+		mode_oldx.flow_hold_position=KEY_SEL[0];
+		mode_oldx.height_safe=KEY_SEL[1];
     #else
-    mode.en_sonar_avoid=KEY_SEL[0];		
-    mode.en_sd_save=KEY_SEL[1];		
+	  mode_oldx.show_qr_origin=KEY_SEL[0];
+    mode_oldx.en_sd_save=KEY_SEL[1];		
     #endif
 		
-		mode.en_pid_sb_set=KEY_SEL[2];
+		mode_oldx.en_pid_sb_set=KEY_SEL[2];
 //-------------------------------------------------	
 		#if !USE_RECIVER_MINE
 			#if !USE_TOE_IN_UNLOCK
@@ -410,37 +413,40 @@ void Duty_50ms()//遥控 模式设置
 			#endif
 		#endif
 		if(ALT_POS_SONAR2<4.5&&height_ctrl_mode==2&&NS==2 )
-		mode.test3=1;
+		mode_oldx.test3=1;
 		else
-		mode.test3=0;
+		mode_oldx.test3=0;
 		
-		if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
-		mode.h_is_fix=1;		
+		if(mode_oldx.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
+		mode_oldx.h_is_fix=1;		
 		else
-		mode.h_is_fix=0;	
+		mode_oldx.h_is_fix=0;	
 		
-		if(mode.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
-		mode.rc_control_flow_pos_sel=3;
-		else if(mode.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
-		mode.rc_control_flow_pos_sel=2;
+		if(mode_oldx.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
+		mode_oldx.rc_control_flow_pos_sel=3;
+		else if(mode_oldx.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
+		mode_oldx.rc_control_flow_pos_sel=2;
 		else
-		mode.rc_control_flow_pos_sel=0; 
+		mode_oldx.rc_control_flow_pos_sel=0; 
 					
-    mode.flow_f_use_ukfm=2;	    //2 -> origin 1-> KF mine
-	  mode.test4=1;//acc
+   // mode_oldx.flow_f_use_ukfm=2;	    //2 -> origin 1-> KF mine
+	  mode_oldx.test4=1;//acc
 	  //------------7 6 5 4  |  3 2 1 0  KEY
-//		if(Rc_Get_PWM.RST>1500)
-//		mode.test4=1;
-//		else
-//		mode.test4=0;
-		
+		#if USE_M100_IMU
+		mode_oldx.flow_f_use_ukfm=1;
+		#else
+		if(Rc_Get_PWM.RST>1500)
+		mode_oldx.flow_f_use_ukfm=1;
+		else
+		mode_oldx.flow_f_use_ukfm=2;
+		#endif
 //	  if(Rc_Get_PWM.AUX1>1500)
-//		mode.height_safe=1;//mode.auto_fly_up=1;
+//		mode_oldx.show_qr_origin=1;//mode_oldx.auto_fly_up=1;
 //		else
-//		mode.height_safe=0;	
-		
+//		mode_oldx.show_qr_origin=0;	
+		  
  
-	mode.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
+	mode_oldx.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
 	static u8 hml_cnt;	
@@ -464,7 +470,7 @@ void Duty_50ms()//遥控 模式设置
 	circle.connect=0;
 	if(marker.lose_cnt++>4/0.05)
 	marker.connect=0;
-	circle.use_spd=circle.connect&&mode.flow_sel;
+	circle.use_spd=circle.connect&&mode_oldx.flow_sel;
 	
 	static u8 led_cnt;
 	if(led_cnt++>1.5/0.05){led_cnt=0;LEDRGB();}

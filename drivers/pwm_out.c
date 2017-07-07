@@ -447,6 +447,16 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 	}
 	
 #if USE_MINI_BOARD
+	#if MAXMOTORS==4
+	TIM3->CCR1 = PWM_RADIO *( pwm_tem[0] ) + INIT_DUTY;				//1	
+	TIM3->CCR2 = PWM_RADIO *( pwm_tem[1] ) + INIT_DUTY;				//2
+	TIM3->CCR3 = PWM_RADIO *( pwm_tem[2] ) + INIT_DUTY;				//3	
+	TIM3->CCR4 = PWM_RADIO *( pwm_tem[3] ) + INIT_DUTY;				//4
+	TIM4->CCR1 = PWM_RADIO *( pwm_tem[0] ) + INIT_DUTY;				//3	
+	TIM4->CCR2 = PWM_RADIO *( pwm_tem[1] ) + INIT_DUTY;				//4
+	TIM4->CCR3 = PWM_RADIO *( pwm_tem[2] ) + INIT_DUTY;				//3	
+	TIM4->CCR4 = PWM_RADIO *( pwm_tem[3] ) + INIT_DUTY;				//4
+	#else
 	TIM3->CCR1 = PWM_RADIO *( pwm_tem[0] ) + INIT_DUTY;				//1	
 	TIM3->CCR2 = PWM_RADIO *( pwm_tem[1] ) + INIT_DUTY;				//2
 	TIM3->CCR3 = PWM_RADIO *( pwm_tem[2] ) + INIT_DUTY;				//3	
@@ -457,6 +467,7 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 	TIM4->CCR4 = PWM_RADIO *( pwm_tem[7] ) + INIT_DUTY;				//4
 	#if USE_BEEP
 	TIM4->CCR2 = PWM_RADIO *( BEEP_RATE ) + INIT_DUTY;				//4
+	#endif
 	#endif
 #else
 	TIM1->CCR4 = PWM_RADIO *( pwm_tem[0] ) + INIT_DUTY;				//1	

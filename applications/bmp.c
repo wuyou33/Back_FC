@@ -58,7 +58,8 @@ uint32_t MS5611_Delay_us[9] = {
 	3000,//MS561101BA_OSR_1024 2.3ms
 	5000,//MS561101BA_OSR_2048 4.6ms 0x06
 	5000,//MS561101BA_OSR_2048 4.6ms
-	11000,//MS561101BA_OSR_4096 9.1ms 0x08
+	//11000,//MS561101BA_OSR_4096 9.1ms 0x08
+	20000, // 16.44ms
 };
 
 // FIFO 队列					
@@ -265,11 +266,7 @@ float MS561101BA_get_altitude(void)
 	//计算相对于上电时的位置的高度值 。单位为m
 	Altitude = 4433000.0 * (1 - pow((MS5611_Pressure / Alt_offset_Pa), 0.1903))*0.01f;  
 	#if !DEBUG_WITHOUT_SB
-		#if USE_RECIVER_MINE
-		if(Rc_Get.THROTTLE<1200&&NS==2)		
-		#else
-		if(Rc_Get_PWM.THROTTLE<1111&&NS==2)	
-		#endif
+		if(!fly_ready&&NS==2)		
 		Alt_Offset_m=Altitude;
 	#endif
 	Altitude = Altitude - Alt_Offset_m ;  //加偏置
@@ -324,7 +321,7 @@ void MS561101BA_getPressure(void)
 	float press_limit_coe = 1.0f; 
 	
 	//机动时限制气压值降低（气压高度增高）
-	if(mode.baro_lock&& (fabs(Pit_fc)>angle_baro || fabs(Rol_fc)>angle_baro))
+	if(mode_oldx.baro_lock&& (fabs(Pit_fc)>angle_baro || fabs(Rol_fc)>angle_baro))
 	{		
 		press_limit_coe = 0.01f;   //0.005
 		if(newPress<lastPress)

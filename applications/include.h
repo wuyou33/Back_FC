@@ -15,6 +15,7 @@
 #include "stm32f4xx_dma.h"
 #include "eso.h"
 #include "fly_mode.h"
+
 extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
@@ -23,6 +24,7 @@ extern u8 mcuID[3];
 #define USE_RECIVER_MINE 0  
 #define EN_ATT_CAL_FC 1  //姿态使用FC解算
 #define USE_ANO_GROUND 1  //实验匿名地面站 否则使用  安卓APP 和 OLDX-PC上位机
+#define USE_HT_GROUND  0
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
 

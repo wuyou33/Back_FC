@@ -3,7 +3,7 @@
  ERO ero;
 u8 mode_value[10];
 u8 mode_state,mode_state_old;
-struct _MODE mode;
+_MODE mode_oldx;
 void mode_check(float *ch_in,u8 *mode_value)
 {
 	 #if USE_RECIVER_MINE		 //使用我的手柄   未使用
@@ -52,11 +52,15 @@ void mode_check(float *ch_in,u8 *mode_value)
 		
 		//定点模式判断
 		if(Rc_Get_PWM.POS_MODE>1800)		
-		mode.flow_hold_position=2;	//智能
+		mode_oldx.flow_hold_position=2;	//智能
 		else if(Rc_Get_PWM.POS_MODE<1400)
-		mode.flow_hold_position=0;  //手动
+		mode_oldx.flow_hold_position=0;  //手动
     else
-		mode.flow_hold_position=1;	//光流		
+		mode_oldx.flow_hold_position=1;	//光流	
+
+    #if  USE_M100_IMU
+		mode_oldx.flow_hold_position=mode_oldx.flow_hold_position&&m100.m100_connect;	
+    #endif		
 #endif	
 		
 	if(*(ch_in+AUX1) <-200)

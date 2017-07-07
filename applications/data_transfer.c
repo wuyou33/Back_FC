@@ -70,6 +70,7 @@ static void ANO_DT_Send_Msg(u8 id, u8 data)
 //此函数应由用户每1ms调用一次
 extern float ultra_dis_lpf;
 u8 fly_mode;
+float test_up[5];
 float off_flow_pos[2]={0};//{-2.5,-2.5};
 void ANO_DT_Data_Exchange(void)
 { static float pos_off[2];
@@ -121,7 +122,7 @@ void ANO_DT_Data_Exchange(void)
 	
 	
 	if(height_ctrl_mode!=0){
-	if(!mode.flow_hold_position)	
+	if(!mode_oldx.flow_hold_position)	
 	fly_mode=2;//定高
 	else
 	fly_mode=3;//定点
@@ -135,6 +136,15 @@ void ANO_DT_Data_Exchange(void)
 		ANO_DT_Send_Msg(f.msg_id,f.msg_data);
 		f.msg_id = 0;
 	}
+	
+		static float x,y,z;
+		if(circle.x!=0)
+			x=(float)circle.x/100.;
+		if(circle.y!=0)
+			y=(float)-circle.y/100.;
+		if(circle.z!=0)
+			z=(float)circle.z/100.;
+			
 /////////////////////////////////////////////////////////////////////////////////////
 	static u8 state_mine;
 	static u8 sel[10];
@@ -146,57 +156,119 @@ void ANO_DT_Data_Exchange(void)
 	else 
 	{ 
 	switch(state_mine)
-	 {case 0:		
+	 {
+		case 0:		
 		 if(sel[0]==0){sel[0]=1;
 		 if(cnt1){cnt1=0;	 
-			 
-		 ANO_DT_Send_Status(Rol_fc,Pit_fc,Yaw_fc,(0.1f *ultra_dis_lpf),fly_mode,fly_ready);	}
+		 #if USE_HT_GROUND 
+		 HT_DT_Send_ATT(Pit_fc,Rol_fc,Yaw_fc,0.001f *ultra_dis_lpf);
+		 #else 
+		 ANO_DT_Send_Status(Rol_fc,Pit_fc,Yaw_fc,(0.1f *ultra_dis_lpf),fly_mode,fly_ready);	
+		 #endif	 
+		 }
 		 else{cnt1=1;
+			 #if USE_HT_GROUND 
+			 
+			 #else
 			  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,
 												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);
+			 #endif
 		 }
 		 }
 		 else if(sel[0]==1){sel[0]=2;
+			#if USE_HT_GROUND 
+
+      #else			 
 		 ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,
 												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);
+			 #endif
 		 }else {sel[0]=0;
+		#if USE_HT_GROUND 
+
+    #else			 
 		if(!fly_ready)	 
 		ANO_DT_Send_RCData(CH[2]+1500,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
 		else
 		ANO_DT_Send_RCData(thr_value+1000,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
-		}
+			#endif 
+		 }
+	
+		 
 		state_mine=1;
 		break;
 	 case 1:
+	
+	
 		 if(sel[1]==0){sel[1]=1;
-		 ANO_DT_Send_Speed(VEL_UKF_X*1000,VEL_UKF_Y*1000,ALT_VEL_BMP_UKF_OLDX*1000);}
+			#if USE_HT_GROUND 
+
+			#else			 
+		 ANO_DT_Send_Speed(VEL_UKF_X*1000,VEL_UKF_Y*1000,ALT_VEL_BMP_UKF_OLDX*1000);
+		 #endif
+			 }
 		 else{sel[1]=0;
+			#if !USE_HT_GROUND 
+		 if(mode_oldx.show_qr_origin)
+     ANO_DT_Send_QR1(x-off_flow_pos[X]-pos_off[X],y-off_flow_pos[Y]-pos_off[Y],z);
+     else		
 	   ANO_DT_Send_QR1(POS_UKF_X-off_flow_pos[X]-pos_off[X],-POS_UKF_Y-off_flow_pos[Y]-pos_off[Y],ALT_POS_SONAR2);
-			 if(mode.flow_hold_position==0&&NS==2)
+			 if(mode_oldx.flow_hold_position==0&&NS==2)
 			 {
 				pos_off[X]=POS_UKF_X;
 				pos_off[Y]=POS_UKF_Y;
-			 }			 
+			 }	
+      #endif			 
 		 }
+		 
 	   state_mine=2;
 	  break;
 	 case 2:
 		if(sel[2]==0){sel[2]=1;
+		#if USE_HT_GROUND 
+
+    #else			
 		ANO_DT_Send_Senser2(baro.h_flt*100,ALT_POS_SONAR2*100);//原始数据
+		#endif	
 		 }else if(sel[2]==1){sel[2]=2;
+		#if USE_HT_GROUND 
+
+    #else			 
 	  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,
-												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);}
+												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);
+		 #endif
+		 }
 	  else {sel[2]=0;
-		#if MAXMOTORS == 8
-		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],motor_out[6],motor_out[7]);
-		#elif MAXMOTORS == 6
-		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],0,0);
-		#elif MAXMOTORS == 4
-		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],0,0,0,0);
-		#endif
+//		#if MAXMOTORS == 8
+//		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],motor_out[6],motor_out[7]);
+//		#elif MAXMOTORS == 6
+//		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],0,0);
+//		#elif MAXMOTORS == 4
+//		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],0,0,0,0);
+//		#endif
+	    if(m100.m100_connect)
+				m100.GPS_STATUS=10;
+			else
+			  m100.GPS_STATUS=3;
+		 float temp_j;
+		 float temp_w;
+		 if(!m100.Lat&&!m100.Lon)	
+		 {
+		 temp_j=(int)(116.39122*10000000)	;
+		 temp_w=(int)(39.90736*10000000)	;
+		 } 
+		 else{
+		 temp_j=(int)(m100.Lon*10000000)	;
+		 temp_w=(int)(m100.Lat*10000000)	;
+		 }
+		 #if USE_HT_GROUND 
+		 
+		 #else
+		 ANO_DT_Send_Location(m100.m100_connect,m100.GPS_STATUS,temp_j,temp_w,0);
+		 #endif
+		 //ANO_DT_Send_Location(test_up[0],test_up[1],116.123123*10000000,38.123123*10000000,test_up[2]);
 		}
 		if(f.send_pid1){
 	  state_mine=3;}
@@ -204,6 +276,9 @@ void ANO_DT_Data_Exchange(void)
 		state_mine=0;	
 	 break;
 	 case 3:
+		#if USE_HT_GROUND 
+
+    #else	 
 		if(f.send_pid1){
 		 if(sel[3]==0){sel[3]=1;
 		ANO_DT_Send_PID(1,ctrl_1.PID[PIDROLL].kp,ctrl_1.PID[PIDROLL].ki,ctrl_1.PID[PIDROLL].kd,
@@ -244,6 +319,8 @@ void ANO_DT_Data_Exchange(void)
 	 }
 		if(f.send_pid1==0)
 	   state_mine =0;
+		#endif
+		break;
 	 }	
 	}
 
@@ -969,6 +1046,38 @@ void ANO_DT_Send_QR2(float x,float y,float z)
 	
 	data_to_send[3] = _cnt-4;
 	
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+// HT
+void HT_DT_Send_ATT(float pit,float rol,float yaw,float h)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x0C;
+	data_to_send[_cnt++]=0x01; //用户数据
+
+	_temp = (s16)(pit*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(rol*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(yaw*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(h*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+
 	u8 sum = 0;
 	for(u8 i=0;i<_cnt;i++)
 		sum += data_to_send[i];

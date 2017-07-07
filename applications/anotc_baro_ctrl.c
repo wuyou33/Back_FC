@@ -99,7 +99,7 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			height_value->m_height =  baro.height;
 			height_value->fusion_acc =  acc_body[2];
 			
-			if(!mode.baro_f_use_ukfm){
+			if(!mode_oldx.baro_f_use_ukfm){
 		  float bmp_wt = LIMIT(LIMIT(fabs(Pit_fc)/30.,0,1)*LIMIT(fabs(Rol_fc)/30.,0,1),0,1);   
       bmp_w+= ( 1 / ( 1 + 1 / ( 3.14f *dT*0.5 ) ) )*( (bmp_wt - bmp_w));				
       if(height_ctrl_mode==2&&NS==2)		

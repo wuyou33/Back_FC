@@ -51,7 +51,7 @@ u8 All_Init()
 	#if EN_DMA_UART2
 	MYDMA_Config(DMA1_Stream6,DMA_Channel_4,(u32)&USART2->DR,(u32)SendBuff2,SEND_BUF_SIZE2+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
-  Usart4_Init(576000L);     //接收机  SD卡
+  Usart4_Init(256000L);     //接收机  SD卡
 	#if EN_DMA_UART4 
 	MYDMA_Config(DMA1_Stream4,DMA_Channel_4,(u32)&UART4->DR,(u32)SendBuff4,SEND_BUF_SIZE4+2,0);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
@@ -97,11 +97,11 @@ u8 All_Init()
 	Para_Init();//参数初始
 	//TIM3_Int_Init(1000-1,8400-1);
 	//-------------系统默认参数
-	mode.en_eso_h_in=1;
-	mode.imu_use_mid_down=1;
-	mode.flow_f_use_ukfm=2;
-	mode.baro_f_use_ukfm=0;				
-	mode.yaw_use_eso=0;
+	mode_oldx.en_eso_h_in=1;
+	mode_oldx.imu_use_mid_down=1;
+	mode_oldx.flow_f_use_ukfm=2;
+	mode_oldx.baro_f_use_ukfm=0;				
+	mode_oldx.yaw_use_eso=0;
 	
 	
 // Need init for First use mpu6050_fc ak8975_fc	

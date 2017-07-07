@@ -47,7 +47,7 @@ void CTRL_2(float T)
 	except_A.z = To_180_degrees(except_A.z);
 	}else
 	except_A.z = Yaw_fc;
-	if(mode.flow_hold_position>0&&except_A.y==0&&except_A.x==0)
+	if(mode_oldx.flow_hold_position>0&&except_A.y==0&&except_A.x==0)
 	{
 	except_A.y=LIMIT(nav[PITr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
 	except_A.x=LIMIT(nav[ROLr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
@@ -56,7 +56,7 @@ void CTRL_2(float T)
 	
 
 	static u8 yaw_trig;
-	if(mode.att_pid_tune)
+	if(mode_oldx.att_pid_tune)
 	{
 	{	
 	if(KEY_SEL[0])//TRIG for tuning
@@ -81,7 +81,7 @@ void CTRL_2(float T)
 	#endif
   }
 
-  if(mode.use_px4_err){
+  if(mode_oldx.use_px4_err){
 	cal_ero_outter_so3(); 
   ctrl_2.err.x =  my_deathzoom_21(ero_angle_px4[0],0.0);
 	ctrl_2.err.y =  my_deathzoom_21(ero_angle_px4[1],0.0);
@@ -103,7 +103,7 @@ void CTRL_2(float T)
 	
 	cal_ero_outter_so3(); 
   /* 得到角度误差 */
-	if(mode.use_px4_err){
+	if(mode_oldx.use_px4_err){
   ctrl_2.err.x =  my_deathzoom_21(ero_angle_px4[0],0.0);
 	ctrl_2.err.y =  my_deathzoom_21(ero_angle_px4[1],0.0);
 	#if EN_ATT_CAL_FC
@@ -280,7 +280,7 @@ if(eso_att_inner_c[PITr].b0==0){
 
 	
 	Thr_Ctrl(T);// 高度控制
-	if(mode.att_pid_tune)
+	if(mode_oldx.att_pid_tune)
 	{	
 	#if !TUNING_Z		
 		#if TUNING_X	
@@ -317,7 +317,7 @@ void Thr_Ctrl(float T)
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
 	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
-    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode.att_pid_tune==0||(fly_ready&&!Rc_Get_PWM.update))
+    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode_oldx.att_pid_tune==0)//||(fly_ready&&!Rc_Get_PWM.update))
 		cnt_for_low++;
 	else
 		cnt_for_low=0;
@@ -330,7 +330,7 @@ void Thr_Ctrl(float T)
 //		force_Thr_low=1;
 		fly_ready_r=fly_ready;
 	
-	if(mode.use_dji)
+	if(mode_oldx.use_dji)
 		force_Thr_low=1;
 	if(force_Thr_low)
 		thr=0;

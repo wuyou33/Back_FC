@@ -529,7 +529,7 @@ void cal_ero_outter_so3(void){
 //	Rot_sp.from_euler(_v_att_sp.roll_body, _v_att_sp.pitch_body, _v_att_sp.yaw_body);
 	exp_angle[1]=except_A.x;
 	exp_angle[0]=except_A.y;
-	if(mode.imu_use_mid_down)
+	if(mode_oldx.imu_use_mid_down)
 	#if EN_ATT_CAL_FC
   exp_angle[2]=-Yaw_fc_q;//Yaw_fc;//(ctrl_angle_offset.z + except_A.z);	
   #else	
@@ -563,7 +563,7 @@ void cal_ero_outter_so3(void){
 	//q_to_dcm(Q_control[0],R_control_set);
 	//now R ->R_control_now
 	//euler_to_q(angle_now,Q_control[1]);
-	if(mode.imu_use_mid_down)
+	if(mode_oldx.imu_use_mid_down)
 	#if EN_ATT_CAL_FC
 	q_to_dcm(ref_q,R_control_now);
   #else	

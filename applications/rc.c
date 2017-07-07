@@ -139,7 +139,7 @@ void RC_Duty( float T , u16 tmp16_CH[CH_NUM] )
 	Fly_Ready(T,wz_speed);		//解锁判断
 	#endif
 	//======================================================================
-	if(++NS_cnt>200)  // 400ms  未插信号线。
+	if(++NS_cnt>400)  // 400ms  未插信号线。
 	{
 		NS_cnt = 0;
 		NS = 0;
