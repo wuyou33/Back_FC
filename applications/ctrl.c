@@ -50,7 +50,7 @@ void CTRL_2(float T)
 	except_A.z = Yaw_fc;
 	if(mode_oldx.flow_hold_position>0&&except_A.y==0&&except_A.x==0)
 	{
-			if((module.gps||module.flow||module.pi)==1){
+			if((module.gps||module.flow||module.pi||module.pi_flow)==1){
 				except_A.y=LIMIT(nav[PITr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
 				except_A.x=LIMIT(nav[ROLr],-MAX_CTRL_ANGLE,MAX_CTRL_ANGLE);
 			}

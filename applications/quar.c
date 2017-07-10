@@ -531,7 +531,7 @@ void cal_ero_outter_so3(void){
 	exp_angle[0]=except_A.y;
 	if(mode_oldx.imu_use_mid_down)
 	#if EN_ATT_CAL_FC
-  exp_angle[2]=-Yaw_fc_q;//Yaw_fc;//(ctrl_angle_offset.z + except_A.z);	
+  exp_angle[2]=-Yaw_fc1;//Yaw_fc;//(ctrl_angle_offset.z + except_A.z);	
   #else	
 	exp_angle[2]=yaw_dcm = -fast_atan2(2*(-ref_q_imd_down[1]*ref_q_imd_down[2] - ref_q_imd_down[0]*ref_q_imd_down[3]),
 	2*(ref_q_imd_down[0]*ref_q_imd_down[0] + ref_q_imd_down[1]*ref_q_imd_down[1]) - 1) *57.3f  ;////	Yaw_mid_down;//(ctrl_angle_offset.z + except_A.z);	

@@ -63,9 +63,6 @@ float nav_circle[2],nav_circle_last[2];
 float circle_check=0.01;
 float circle_lfp=1;
 
-void circle_control(float T)//对圆自动降落 未使用
-{
-}
 
 float data_d(float in,float *reg,float T,float max)//微分函数
 {
@@ -240,7 +237,13 @@ void Positon_control(float T)// 位置控制
 	}
 	static u8 pos_reset_state[2];
 	static u16 pos_reset_cnt[2];
-	if(NS==0||mode_oldx.rc_control_flow_pos_sel||Thr_Low)
+	
+	u8 flag_temp=0;
+	#if defined(POS_TEST)
+	flag_temp=1;
+	#endif
+	
+	if((NS==0||mode_oldx.rc_control_flow_pos_sel||Thr_Low)&&flag_temp)
 	Nav_pos_set_test(mode_oldx.rc_control_flow_pos_sel,T);
 	else if(smart.rc.POS_MODE==0){
 	for(i=0;i<2;i++){
@@ -429,9 +432,9 @@ else
 	 nav_spd_ctrl[X].exp=temp_pos_out[X];
 	 } 
 	
-  if(mode_oldx.flow_hold_position!=2){
-	 nav_spd_ctrl[Y].exp*=0.0;
-	 nav_spd_ctrl[X].exp*=0.0;}
+//  if(mode_oldx.flow_hold_position!=2){
+//	 nav_spd_ctrl[Y].exp*=0.0;
+//	 nav_spd_ctrl[X].exp*=0.0;}
 	
 	static u8 state_tune_spd;
 	static u8 flag_way;
@@ -591,16 +594,28 @@ else
 
 }
 
-
+float circle_p=0.1;
+float circle_size=20;//圆实际大小cm
+float circle_flt=0.3;//输出滤波系数
 float cycle_control[2];
-void CIRCLE_CONTROL(float x,float y,float T){
+void CIRCLE_CONTROL(float T){//x->width  y->hight  由于摄像头安装方向会造成xy顺序正负号不同请按实际修改
+float ero_x,ero_y;
+float temp[2];	
+  ero_x=320/2-circle.x;	
+  ero_y=240/2-circle.y;	 
+	if(circle.check&&circle.r>0){
+	temp[0]=ero_x*circle_p*(circle_size/circle.r);
+	temp[1]=ero_y*circle_p*(circle_size/circle.r);
+	}
+//输出滤波	
+	cycle_control[0]=temp[0]*circle_flt+(1-circle_flt)*cycle_control[0];
+	cycle_control[1]=temp[1]*circle_flt+(1-circle_flt)*cycle_control[1];
 	
-
-	
-	
-	
-	
-	
+	if(circle.check){
+	cycle_control[0]=LIMIT(cycle_control[0],-1,1);
+	cycle_control[1]=LIMIT(cycle_control[1],-1,1);
+	}else
+	cycle_control[0]=cycle_control[1]=0;
 }
 //--------------------------------------自动起飞降落 视觉导航状态机
 u8 mode_change;
@@ -724,6 +739,7 @@ void AUTO_LAND_FLYUP(float T)
 	 else
 		state_v=SD_SAFE;
 #endif	 
+	  CIRCLE_CONTROL(T);
 //----------------------------output---------------------------
 	  if(state_v==SG_LOW_CHECK)
 		smart.rc.POS_MODE=0;	

@@ -7,8 +7,9 @@
 #include "quar.h"
 //--------------------------------------匿名
 #define Kp 0.3f                	// proportional gain governs rate of convergence to accelerometer/magnetometer
-#define Ki 0.001f                	// 0.001  integral gain governs rate of convergence of gyroscope biases
-
+#define Kp_Yaw 0.3f
+#define Ki 0.005f                	// 0.001  integral gain governs rate of convergence of gyroscope biases
+float Kp_use;
 #define IMU_INTEGRAL_LIM  ( 2.0f *ANGLE_TO_RADIAN )
 #define NORM_ACC_LPF_HZ 10  		//(Hz)
 #define REF_ERR_LPF_HZ  1				//(Hz)
@@ -31,6 +32,30 @@ xyz_f_t mag_sim_3d,acc_3d_hg,acc_ng,acc_ng_offset;
 u8 acc_ng_cali;
 extern u8 fly_ready;
 float yaw_mag;
+
+float accConfidenceDecay 			  =	5.2f;
+float accConfidence      = 1.0f; 
+#define HardFilter(O,N)  ((O)*0.9f+(N)*0.1f)
+#define accelOneG 10
+void calculateAccConfidence(float accMag_in)
+{
+	// G.K. Egan (C) computes confidence in accelerometers when
+	// aircraft is being accelerated over and above that due to gravity
+
+	static float accMagP = 1.0f;
+
+	float accMag =accMag_in/ accelOneG;  // HJI Added to convert MPS^2 to G's
+
+	accMagP  = HardFilter(accMagP, accMag );
+
+
+	accConfidence=((accConfidenceDecay * sqrt(fabs(accMagP - 1.0f))));
+  if(accConfidence>1)
+		accConfidence=1;
+	if(accConfidence<0)
+		accConfidence=0;
+}
+
 void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, float az,float *rol,float *pit,float *yaw) 
 {	static u8 init;
 	float ref_err_lpf_hz;
@@ -92,8 +117,12 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	imu_flag=NAV_BOARD_CONNECT;
 	
 	#endif
-
+//---------acc norm---------
+	float norm;
+	norm = sqrt(ax*(ax) + ay*(ay) + az*az)/4096.*9.8;
+	calculateAccConfidence(norm);
 	
+	Kp_use =	Kp* accConfidence ;
 	//=============================================================================
 	// 计算等效重力向量
 	reference_v.x = 2*(ref_q[1]*ref_q[3] - ref_q[0]*ref_q[2]);
@@ -183,12 +212,12 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	{
 		if( fly_ready  )
 		{
-			yaw_correct = Kp *0.2f *To_180_degrees(yaw_mag - Yaw_fc1);
+			yaw_correct = Kp_Yaw *0.2f *To_180_degrees(yaw_mag - Yaw_fc1);
 			//已经解锁，只需要低速纠正。
 		}
 		else
 		{
-			yaw_correct = Kp *1.5f *To_180_degrees(yaw_mag - Yaw_fc1);
+			yaw_correct = Kp_Yaw *1.5f *To_180_degrees(yaw_mag - Yaw_fc1);
 			//没有解锁，视作开机时刻，快速纠正
 		}
 // 		if( yaw_correct>360 || yaw_correct < -360  )
@@ -203,8 +232,8 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	}
 
 	
-	ref.g.x = (gx - reference_v.x *yaw_correct) *ANGLE_TO_RADIAN + ( Kp*(ref.err.x + ref.err_Int.x) ) ;     //IN RADIAN
-	ref.g.y = (gy - reference_v.y *yaw_correct) *ANGLE_TO_RADIAN + ( Kp*(ref.err.y + ref.err_Int.y) ) ;		  //IN RADIAN
+	ref.g.x = (gx - reference_v.x *yaw_correct) *ANGLE_TO_RADIAN + ( Kp_use*(ref.err.x + ref.err_Int.x) ) ;     //IN RADIAN
+	ref.g.y = (gy - reference_v.y *yaw_correct) *ANGLE_TO_RADIAN + ( Kp_use*(ref.err.y + ref.err_Int.y) ) ;		  //IN RADIAN
 	ref.g.z = (gz - reference_v.z *yaw_correct) *ANGLE_TO_RADIAN;
 	
 	/* 用叉积误差来做PI修正陀螺零偏 */

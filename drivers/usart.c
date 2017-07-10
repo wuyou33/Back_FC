@@ -290,7 +290,10 @@ int debug_pi_flow[20];
 	module.gps=	*(data_buf+30);
 	module.flow=	*(data_buf+31);
 	module.laser=	*(data_buf+32);
-
+  module.pi_flow=	*(data_buf+33);
+	module.acc_imu=	*(data_buf+34);
+	module.gyro_imu=	*(data_buf+35);
+	module.hml_imu=	*(data_buf+36);
 	}		
 	else if(*(data_buf+2)==0x02)//CAL
   { 
@@ -891,6 +894,15 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	mark_map[1][3]=(int16_t)((*(data_buf+36)<<8)|*(data_buf+37));
 	mark_map[1][4]=*(data_buf+38);
 	}	
+	else if(*(data_buf+2)==0x02)//CIRCLE
+  {
+	circle.connect=1;
+	circle.lose_cnt=0;
+	track.check=circle.check=(*(data_buf+4));///10.;
+	circle.x=(int16_t)((*(data_buf+5)<<8)|*(data_buf+6));
+	circle.y=(int16_t)((*(data_buf+7)<<8)|*(data_buf+8));
+	circle.z=(int16_t)((*(data_buf+9)<<8)|*(data_buf+10));
+	}
 	else if(*(data_buf+2)==0x22)//QR MAP2
 	{
 	mark_map[2][0]=(int16_t)((*(data_buf+4)<<8)|*(data_buf+5));
@@ -3220,6 +3232,10 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=m100.GPS_STATUS;
 	else
 	SendBuff4[nrf_uart_cnt++]=0;
+	SendBuff4[nrf_uart_cnt++]=module.acc_imu==2&&module.gyro_imu==2&&module.hml_imu==2;
+	
+	
+	
 	
   SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 	for( i=cnt_reg;i<nrf_uart_cnt;i++)
