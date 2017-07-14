@@ -206,7 +206,7 @@ void Fly_Ready(float T,float height_speed_mm)
 	}
 
 	
-	if( ready_cnt > 300 ) // 600ms 
+	if( ready_cnt > 200 ) // 600ms 
 	{
 		ready_cnt = -1;
 		//fly_ready = ( fly_ready==1 ) ? 0 : 1 ;
@@ -242,7 +242,7 @@ void Fly_Ready(float T,float height_speed_mm)
 //	
 	if(fly_ready && (thr_stick_low ==1) && (ABS(height_speed_mm)<300))
 	{
-		if(locked_cnt < 2000)
+		if(locked_cnt < 1500)
 		{
 			locked_cnt  += 1000*T;
 		}

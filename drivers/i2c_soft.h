@@ -11,10 +11,21 @@
 #define SCL_read      ANO_GPIO_I2C->IDR  & I2C_Pin_SCL
 #define SDA_read      ANO_GPIO_I2C->IDR  & I2C_Pin_SDA
 
+#define SCL_H_F         ANO_GPIO_I2C->BSRRL = I2C_Pin_SCL_F
+#define SCL_L_F         ANO_GPIO_I2C->BSRRH = I2C_Pin_SCL_F
+#define SDA_H_F         ANO_GPIO_I2C->BSRRL = I2C_Pin_SDA_F
+#define SDA_L_F        ANO_GPIO_I2C->BSRRH = I2C_Pin_SDA_F
+#define SCL_read_F      ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_F
+#define SDA_read_F      ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_F
 /***************I2C GPIO定义******************/
 #define ANO_GPIO_I2C	GPIOC
+
+#define I2C_Pin_SCL_F		GPIO_Pin_5
+#define I2C_Pin_SDA_F		GPIO_Pin_4
+
 #define I2C_Pin_SCL		GPIO_Pin_4
 #define I2C_Pin_SDA		GPIO_Pin_5
+
 #define ANO_RCC_I2C		RCC_AHB1Periph_GPIOC
 /*********************************************/
 extern volatile u8 I2C_FastMode;

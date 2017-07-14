@@ -33,6 +33,14 @@ extern float SONAR_HEIGHT;
 extern u16 LENGTH_OF_DRONE;
 extern int H_INT;
 extern u8 need_init_mems;
+extern float k_sensitivity[2];//感度
+
+extern u16 SBUS_MIN ;//=954;
+extern u16 SBUS_MAX ;//=2108;
+extern u16 SBUS_MID ;//=1524;
+extern u16 SBUS_MIN_A ;//=954;
+extern u16 SBUS_MAX_A ;//=2108;
+extern u16 SBUS_MID_A ;//=1524;
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板

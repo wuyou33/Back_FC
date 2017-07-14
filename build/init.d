@@ -54,3 +54,4 @@
 .\build\init.o: .\drivers\ultrasonic.h
 .\build\init.o: applications\bmp.h
 .\build\init.o: applications\spi.h
+.\build\init.o: applications\nrf.h

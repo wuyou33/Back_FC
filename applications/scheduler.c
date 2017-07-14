@@ -15,7 +15,9 @@
 #include "height_ctrl.h"
 #include "fly_mode.h"
 #include "anotc_baro_ctrl.h"
+#include "rc_mine.h"
 #include "alt_fushion.h"
+#include "sbus.h"
 float pos_time;
 float baro_task_time;
 u16 Rc_Pwm_In[8];
@@ -57,7 +59,7 @@ void Duty_2ms()
 	static u16 cnt_init;
   float temp;
 	temp = Get_Cycle_T(GET_T_INNER)/1000000.0f; 						//获取内环准确的执行周期
-	if(temp<0.001||temp>0.003)
+	if(temp<0.001||temp>0.004)
 		inner_loop_time=0.002;
 	else
 		inner_loop_time=temp;
@@ -148,7 +150,7 @@ void Duty_10ms()
 								 GOL_LINK_TASK();	
 					#endif
 							}					
-				flow_debug_stop=0;			
+				//flow_debug_stop=0;			
 				//BLE UPLOAD《----------------------蓝牙调试
 			 if(UART_UP_LOAD_SEL_FORCE!=0)
           UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
@@ -216,9 +218,15 @@ void Duty_10ms()
 										}
 										else if((flow_debug.en_ble_debug||force_flow_ble_debug)&&flow_debug_stop)//DEBUG  FLOW
 											data_per_uart1(
+										#if USE_MINI_FC_FLOW_BOARD
+										  debug_pi_flow[1],debug_pi_flow[2],debug_pi_flow[3],
+										  debug_pi_flow[4],debug_pi_flow[5],debug_pi_flow[6],
+										  debug_pi_flow[7],debug_pi_flow[8],debug_pi_flow[9],
+										#else
 											flow_debug.ax,flow_debug.ay,flow_debug.az,
 										  flow_debug.gx,flow_debug.gy,flow_debug.gz,
 										  flow_debug.hx,flow_debug.hy,flow_debug.hz,
+										#endif
 											(int16_t)(inner_loop_time*10000.0),(int16_t)(outer_loop_time*10000.0),(int16_t)(0*10.0),0/10,0,0/10,0*0);
 										else{//DEBUG-------------------------Normal mode_oldx--------------------------------
 								    switch(UART_UP_LOAD_SEL)
@@ -315,7 +323,7 @@ void Duty_10ms()
 }
 
 void Duty_20ms()
-{   
+{   u16 temps;
 	  aux.att[0]=Pit_fc+aux.att_ctrl[0];
 	  aux.att[1]=Rol_fc+aux.att_ctrl[1];
 	  SetPwm_AUX(aux.att[0],aux.att[1]);
@@ -329,8 +337,50 @@ void Duty_20ms()
 		
 		AUTO_LAND_FLYUP(pos_time);//自动降落
 	  Positon_control(pos_time);//位置控制
-	
-
+		#if USE_MINI_FC_FLOW_BOARD
+			#if USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS
+			temps=((channels[0])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.ROLL=		 temps;
+			temps=((channels[1])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.PITCH=		 temps;
+			temps=((channels[2])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.THROTTLE=		 temps;
+			temps=((channels[3])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.YAW=		 temps;
+			temps=((channels[4])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.AUX1=		 temps;
+			temps=((channels[5])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.AUX2=		 temps;
+			temps=((channels[6])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.AUX3=		 temps;
+			temps=((channels[7])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
+			if(temps>900&&temps<2100)
+			Rc_Get_SBUS.AUX4=		 temps;
+			Rc_Get_PWM.THROTTLE=Rc_Get_PWM.ROLL=Rc_Get_PWM.PITCH=Rc_Get_PWM.YAW=1500;
+			RX_CH_PWM[THRr]=	Rc_Get_PWM.THROTTLE=LIMIT(Rc_Get_SBUS.THROTTLE-RX_CH_FIX_PWM[THRr],1000,2000)	;
+			RX_CH_PWM[ROLr]=  Rc_Get_PWM.ROLL=my_deathzoom_rc(Rc_Get_SBUS.ROLL-RX_CH_FIX_PWM[ROLr],2)	;
+			RX_CH_PWM[PITr]=  Rc_Get_PWM.PITCH=my_deathzoom_rc(Rc_Get_SBUS.PITCH-RX_CH_FIX_PWM[PITr],2)	;
+			RX_CH_PWM[YAWr]=  Rc_Get_PWM.YAW=my_deathzoom_rc(Rc_Get_SBUS.YAW-RX_CH_FIX_PWM[YAWr],2)	;
+			Rc_Get_PWM.AUX1=Rc_Get_SBUS.AUX1;
+			Rc_Get_PWM.AUX2=Rc_Get_SBUS.AUX2;
+			Rc_Get_PWM.AUX3=Rc_Get_SBUS.AUX3;
+			Rc_Get_PWM.AUX4=Rc_Get_SBUS.AUX4;
+		  Rc_Get_PWM.connect=Rc_Get_SBUS.connect;
+	    Rc_Get_PWM.update=Rc_Get_SBUS.update;
+			RX_CH_PWM[AUX3r]=Rc_Get_PWM.POS_MODE=Rc_Get_SBUS.AUX3;
+			RX_CH_PWM[AUX4r]=Rc_Get_PWM.HEIGHT_MODE=Rc_Get_SBUS.AUX4;
+		
+			#endif
+    Nrf_Check_Event();
+		RC_Send_Task();
+		#else
 		//------------------------RC UPDATE-----------------------  	
 		if(Rc_Get_PWM.update){
 		if(!rc_board_connect)
@@ -353,6 +403,7 @@ void Duty_20ms()
 	  RX_CH_PWM[PITr]=  1500;
 		RX_CH_PWM[YAWr]=  1500;
 		}	
+		#endif
 		//------------------------Smart UPDATE--------------------
 		if((ABS(Rc_Get_PWM.ROLL-1500)<50&&ABS(Rc_Get_PWM.PITCH-1500)<50)&&mode_oldx.flow_hold_position==2)
 				switch(smart.rc.POS_MODE)
@@ -450,16 +501,18 @@ void Duty_50ms()//遥控 模式设置
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
 	static u8 hml_cnt;	
-  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)		
+  if(!NAV_BOARD_CONNECT||yaw_use_fc)		
   if(hml_cnt++>2-1){hml_cnt=0;		
-	ANO_AK8975_Read();}
-	
+	ANO_AK8975_Read();
+	}
+	#if !USE_MINI_FC_FLOW_BOARD
 	#if SONAR_USE_FC||SONAR_USE_FC1
 	static u16 cnt_sonar_idle;
 	if(!Thr_Low||NS==0)
 	Ultra_Duty();	
 	else if(cnt_sonar_idle++>2/0.05){cnt_sonar_idle=0;
 	Ultra_Duty();}
+	#endif
 	#endif
 	
 //-------------------------超时判断	

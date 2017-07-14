@@ -49,7 +49,7 @@ static void  Param_SetSettingToFC(void)
 }
 
 float k_pid=1;
-float k_sensitivity=1;//感度
+
 void Para_ResetToFactorySetup(void)
 {
  float pid_att_out[3]={0.7,0.0,0.0};
@@ -63,9 +63,9 @@ void Para_ResetToFactorySetup(void)
  eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=20;
  eso_att_inner_c[PITr].not_use_px4=eso_att_inner_c[ROLr].not_use_px4=1;
  
- k_pid=LIMIT(LENGTH_OF_DRONE/320.,0.25,2)*k_sensitivity;
+ k_pid=LIMIT(LENGTH_OF_DRONE/320.,0.25,2);
  pid_att_in[0]*=LIMIT(k_pid,0.5,1.5);
- pid_att_in_yaw[0]*=LIMIT(k_pid,0.65,1.35);
+ pid_att_in_yaw[0]*=LIMIT(k_pid,0.65,1);
 //  if(mcuID[0]== TUNNING_DRONE_CHIP_ID)//250
 // {
 // pid_att_in[0]=0.568;

@@ -11,6 +11,7 @@
 #include "height_ctrl.h"
 #include "mymath.h"
 #include "led.h"
+#include "sbus.h"
 ///TX
 void Uart5_Send(unsigned char *DataToSend ,u8 data_num)
 {
@@ -84,7 +85,7 @@ USART_SendData(USART1, DataToSend);
 
 //  INIT 
 int16_t BLE_DEBUG[16];
- M100 m100;
+M100 m100;
 void Usart2_Init(u32 br_num)//--GOL-link
 {
 	USART_InitTypeDef USART_InitStructure;
@@ -178,7 +179,7 @@ PID_STA HPID_app,SPID_app,FIX_PID_app,NAV_PID_app;
 struct _PID_SET pid;
 struct SMART smart,smart_in;
 RC_GETDATA Rc_Get;
-RC_GETDATA Rc_Get_PWM;
+RC_GETDATA Rc_Get_PWM,Rc_Get_SBUS;
 struct _plane plane;
 struct _slam slam;
 struct _IMU_NAV imu_nav;
@@ -193,6 +194,8 @@ int k_scale_pix;
 float uart_time[10];
 u8 pos_kf_state[3];
 u8 m100_connect;
+struct _FLOW_PI pi_flow;
+int debug_pi_flow[20];
  void Data_Receive_Anl(u8 *data_buf,u8 num)
 { double zen,xiao;
 	vs16 rc_value_temp;
@@ -202,6 +205,7 @@ u8 m100_connect;
 		sum += *(data_buf+i);
 	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
 	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
+	#if !USE_MINI_FC_FLOW_BOARD
   if(*(data_buf+2)==0x12)//FLOW_MINE_frame
   { float temp_pos[2];
 		LEDRGB();//LED显示
@@ -277,7 +281,7 @@ u8 m100_connect;
 	flow_debug.hx=((int16_t)(*(data_buf+17)<<8)|*(data_buf+18));
 	flow_debug.hy=((int16_t)(*(data_buf+19)<<8)|*(data_buf+20));
   flow_debug.hz=((int16_t)(*(data_buf+21)<<8)|*(data_buf+22));
-	 #if USE_FLOW_PI
+	  #if USE_FLOW_PI
 		circle.x=(int16_t)((*(data_buf+23)<<8)|*(data_buf+24));//m
 		circle.y=(int16_t)((*(data_buf+25)<<8)|*(data_buf+26));//m
 		circle.z=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));//m
@@ -365,9 +369,82 @@ u8 m100_connect;
 		
 		r1=((u32)(*(data_buf+16)<<24)|(*(data_buf+17)<<16)|(*(data_buf+18)<<8)|*(data_buf+19));
 		r2=((u32)(*(data_buf+20)<<24)|(*(data_buf+21)<<16)|(*(data_buf+22)<<8)|*(data_buf+23));
-	}			
+	}	
+	//-------------
+	#else
+  if(*(data_buf+2)==0x66)//PI_FLOW FUSION OUT
+  { pi_flow.loss_cnt=0;
+		pi_flow.insert=1;
+		pi_flow.x=(float)((vs16)(*(data_buf+4)<<8)|*(data_buf+5))/100.;
+		pi_flow.y=(float)((vs16)(*(data_buf+6)<<8)|*(data_buf+7))/100.;
+		pi_flow.z=(float)((vs16)(*(data_buf+8)<<8)|*(data_buf+9))/1000.;
+		float temp;
+		temp=(float)((vs16)(*(data_buf+10)<<8)|*(data_buf+11))/1000.;
+		if(fabs(temp)<8)
+		pi_flow.spdx=temp;
+		temp=(float)((vs16)(*(data_buf+12)<<8)|*(data_buf+13))/1000.;
+		if(fabs(temp)<8)
+		pi_flow.spdy=temp;
+		temp=(float)((vs16)(*(data_buf+14)<<8)|*(data_buf+15))/1000.;
+		if(fabs(temp)<8)
+		pi_flow.spdz=temp;
+		
+		POS_UKF_X=pi_flow.x;
+		POS_UKF_Y=pi_flow.y;
+		VEL_UKF_X=pi_flow.spdx;
+		VEL_UKF_Y=pi_flow.spdy;
+			
+		pi_flow.pit=(float)((vs16)(*(data_buf+16)<<8)|*(data_buf+17))/100.;
+		pi_flow.rol=(float)((vs16)(*(data_buf+18)<<8)|*(data_buf+19))/100.;
+		pi_flow.yaw=(float)((vs16)(*(data_buf+20)<<8)|*(data_buf+21))/100.;
+
+    pi_flow.connect=*(data_buf+22);
+		pi_flow.check=*(data_buf+23);
+		
+		pi_flow.z_o=(float)((vs16)(*(data_buf+24)<<8)|*(data_buf+25))/1000.;
+		
+		ALT_POS_SONAR2=ultra.relative_height=pi_flow.z_o;
+	}
+	else  if(*(data_buf+2)==0x77)//PI_FLOW FUSION OUT
+  { 
+		pi_flow.sensor.spdx=(float)((vs16)(*(data_buf+4)<<8)|*(data_buf+5))/1000.;
+		pi_flow.sensor.spdy=(float)((vs16)(*(data_buf+6)<<8)|*(data_buf+7))/1000.;
+	
+	}	
+		else  if(*(data_buf+2)==0x88)//PI_FLOW FUSION OUT
+  { 
+		pi_flow.sensor.x=((vs16)(*(data_buf+6)<<8)|*(data_buf+7));
+		pi_flow.sensor.y=((vs16)(*(data_buf+8)<<8)|*(data_buf+9));
+		pi_flow.sensor.z=((vs16)(*(data_buf+10)<<8)|*(data_buf+11));
+	}	
+	else  if(*(data_buf+2)==0x11)//PI_FLOW FUSION OUT
+  { 
+		flow_debug.en_ble_debug=debug_pi_flow[0]=((vs16)(*(data_buf+4)<<8)|*(data_buf+5));
+		debug_pi_flow[1]=((vs16)(*(data_buf+6)<<8)|*(data_buf+7));
+		debug_pi_flow[2]=((vs16)(*(data_buf+8)<<8)|*(data_buf+9));
+		debug_pi_flow[3]=((vs16)(*(data_buf+10)<<8)|*(data_buf+11));
+		debug_pi_flow[4]=((vs16)(*(data_buf+12)<<8)|*(data_buf+13));
+		debug_pi_flow[5]=((vs16)(*(data_buf+14)<<8)|*(data_buf+15));
+		debug_pi_flow[6]=((vs16)(*(data_buf+16)<<8)|*(data_buf+17));
+		debug_pi_flow[7]=((vs16)(*(data_buf+18)<<8)|*(data_buf+19));
+		debug_pi_flow[8]=((vs16)(*(data_buf+20)<<8)|*(data_buf+21));
+		debug_pi_flow[9]=((vs16)(*(data_buf+22)<<8)|*(data_buf+23));
+		debug_pi_flow[10]=((vs16)(*(data_buf+24)<<8)|*(data_buf+25));
+		debug_pi_flow[11]=((vs16)(*(data_buf+26)<<8)|*(data_buf+27));
+		debug_pi_flow[12]=((vs16)(*(data_buf+28)<<8)|*(data_buf+29));
+		debug_pi_flow[13]=((vs16)(*(data_buf+30)<<8)|*(data_buf+31));
+		debug_pi_flow[14]=((vs16)(*(data_buf+32)<<8)|*(data_buf+33));
+		debug_pi_flow[15]=((vs16)(*(data_buf+34)<<8)|*(data_buf+35));
+		debug_pi_flow[16]=((vs16)(*(data_buf+36)<<8)|*(data_buf+37));
+		debug_pi_flow[17]=((vs16)(*(data_buf+38)<<8)|*(data_buf+39));
+		debug_pi_flow[18]=((vs16)(*(data_buf+40)<<8)|*(data_buf+41));
+		debug_pi_flow[19]=((vs16)(*(data_buf+42)<<8)|*(data_buf+43));
+	}
+  #endif	
 }
  
+
+
 
 
 u8 TxBuffer[256];
@@ -554,7 +631,24 @@ void Send_IMU_TO_FLOW(void)
 	_temp=acc_3d_step;
 	data_to_send[_cnt++]=BYTE0(_temp);
 
-	
+	_temp =(vs16)(acc_body[0]*100);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =(vs16)(acc_body[1]*100);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =(vs16)(acc_body[2]*100);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =(vs16)( mpu6050_fc.Gyro_deg.x*10);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =(vs16)( mpu6050_fc.Gyro_deg.y*10);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp =(vs16)( mpu6050_fc.Gyro_deg.z*10);	
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	data_to_send[3] = _cnt-4;
 
@@ -725,12 +819,21 @@ void Uart5_Init(u32 br_num)//-----odroid
 	
 	//配置UART5
 	//中断被屏蔽了
+	#if USE_MINI_FC_FLOW_BOARD
+	USART_InitStructure.USART_BaudRate = br_num;//²¨ÌØÂÊÉèÖÃ
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//×Ö³¤Îª8Î»Êý¾Ý¸ñÊ½
+	USART_InitStructure.USART_StopBits = USART_StopBits_2;//Ò»¸öÍ£Ö¹Î»
+	USART_InitStructure.USART_Parity = USART_Parity_Even;//ÎÞÆæÅ¼Ð£ÑéÎ»
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//ÎÞÓ²¼þÊý¾ÝÁ÷¿ØÖÆ
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//ÊÕ·¢Ä£Ê½	
+	#else
 	USART_InitStructure.USART_BaudRate = br_num;       //波特率可以通过地面站配置
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;  //8位数据
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;   //在帧结尾传输1个停止位
 	USART_InitStructure.USART_Parity = USART_Parity_No;    //禁用奇偶校验
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //硬件流控制失能
 	USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;  //发送、接收使能
+	#endif
 	USART_Init(UART5, &USART_InitStructure);
 	
 	//使能UART5接收中断
@@ -810,10 +913,16 @@ u8 RxBufferNum5 = 0;
 u8 RxBufferCnt5 = 0;
 u8 RxLen5 = 0;
 static u8 _data_len5 = 0,_data_cnt5 = 0;
+u8 sbus_data_i_check[50];
 void UART5_IRQHandler(void)
 { //OSIntEnter(); 
-	u8 com_data;
-	
+	u8 com_data,i;
+	static u8 state,state1;
+	static uint8_t byteCNT = 0,byteCNT1;
+
+	static uint32_t lastTime = 0;
+	uint32_t curTime;
+	uint32_t interval = 0;
 	if(UART5->SR & USART_SR_ORE)//ORE中断
 	{
 		com_data = UART5->DR;
@@ -825,6 +934,37 @@ void UART5_IRQHandler(void)
 		USART_ClearITPendingBit(UART5,USART_IT_RXNE);//清除中断标志
 
 		com_data = UART5->DR;
+		#if USE_MINI_FC_FLOW_BOARD	
+		Feed_Rc_Dog(2);
+		Rc_Get_SBUS.lose_cnt=0;
+		Rc_Get_SBUS.connect=1;
+		oldx_sbus_rx(com_data);
+		//for check input
+		switch(state1)
+		{
+			case 0:
+			if(com_data==0x0f)	
+			{
+			for(i=0;i<50;i++)
+				sbus_data_i_check[i++]=0;
+			byteCNT1=0;sbus_data_i_check[byteCNT1++]=com_data;state1=1;}
+				break;
+		  case 1:
+				if(byteCNT1>49||com_data==0x0f)
+				{
+				state1=0;
+				byteCNT1=0;
+				}else{		
+				sbus_data_i_check[byteCNT1++]=com_data;   
+		  	}
+			  break;
+		}
+		
+    if(channels[16]==500||channels[16]==503){
+		Rc_Get_SBUS.update=1;Rc_Get_SBUS.lose_cnt_rx=0; }
+		if(Rc_Get_SBUS.lose_cnt_rx++>100){
+		Rc_Get_SBUS.update=0;}
+		#else
 		#if SONAR_USE_FC1
 		Ultra_Get(com_data);
 		#endif
@@ -865,6 +1005,7 @@ void UART5_IRQHandler(void)
 		}
 		else
 			RxState5 = 0;
+		#endif
 	}
 	//发送（进入移位）中断
 	if( USART_GetITStatus(UART5,USART_IT_TXE ) )

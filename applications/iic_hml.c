@@ -29,6 +29,15 @@ void IIC_Init(void)
 *******************************************************************************/
 void IIC_Start(void)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	SDA_OUT_F();     //sda线输出
+	IIC_SDA_F=1;	  	  
+	IIC_SCL_F=1;
+	Delay_us(4);
+ 	IIC_SDA_F=0;//START:when CLK is high,DATA change form high to low 
+	Delay_us(4);
+	IIC_SCL_F=0;//钳住I2C总线，准备发送或接收数据 
+#else	
 	SDA_OUT();     //sda线输出
 	IIC_SDA=1;	  	  
 	IIC_SCL=1;
@@ -36,6 +45,7 @@ void IIC_Start(void)
  	IIC_SDA=0;//START:when CLK is high,DATA change form high to low 
 	Delay_us(4);
 	IIC_SCL=0;//钳住I2C总线，准备发送或接收数据 
+#endif
 }
 
 /**************************实现函数********************************************
@@ -44,13 +54,23 @@ void IIC_Start(void)
 *******************************************************************************/	  
 void IIC_Stop(void)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	SDA_OUT_F();//sda线输出
+	IIC_SCL_F=0;
+	IIC_SDA_F=0;//STOP:when CLK is high DATA change form low to high
+ 	Delay_us(4);
+	IIC_SCL_F=1; 
+	IIC_SDA_F=1;//发送I2C总线结束信号
+	Delay_us(4);		
+#else	
 	SDA_OUT();//sda线输出
 	IIC_SCL=0;
 	IIC_SDA=0;//STOP:when CLK is high DATA change form low to high
  	Delay_us(4);
 	IIC_SCL=1; 
 	IIC_SDA=1;//发送I2C总线结束信号
-	Delay_us(4);							   	
+	Delay_us(4);		
+#endif	
 }
 
 /**************************实现函数********************************************
@@ -61,6 +81,24 @@ void IIC_Stop(void)
 *******************************************************************************/
 u8 IIC_Wait_Ack(void)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	u8 ucErrTime=0;
+	SDA_IN_F();      //SDA设置为输入  
+	IIC_SDA_F=1;Delay_us(1);	   
+	IIC_SCL_F=1;Delay_us(1);	 
+	while(READ_SDA_F)
+	{
+		ucErrTime++;
+		if(ucErrTime>50)
+		{
+			IIC_Stop();
+			return 1;
+		}
+	  Delay_us(1);
+	}
+	IIC_SCL_F=0;//时钟输出0 	   
+	return 0;  
+#else	
 	u8 ucErrTime=0;
 	SDA_IN();      //SDA设置为输入  
 	IIC_SDA=1;Delay_us(1);	   
@@ -77,6 +115,7 @@ u8 IIC_Wait_Ack(void)
 	}
 	IIC_SCL=0;//时钟输出0 	   
 	return 0;  
+#endif	
 } 
 
 /**************************实现函数********************************************
@@ -85,6 +124,15 @@ u8 IIC_Wait_Ack(void)
 *******************************************************************************/
 void IIC_Ack(void)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	IIC_SCL_F=0;
+	SDA_OUT_F();
+	IIC_SDA=0;
+	Delay_us(2);
+	IIC_SCL_F=1;
+	Delay_us(2);
+	IIC_SCL_F=0;
+#else	
 	IIC_SCL=0;
 	SDA_OUT();
 	IIC_SDA=0;
@@ -92,6 +140,7 @@ void IIC_Ack(void)
 	IIC_SCL=1;
 	Delay_us(2);
 	IIC_SCL=0;
+#endif	
 }
 	
 /**************************实现函数********************************************
@@ -100,6 +149,15 @@ void IIC_Ack(void)
 *******************************************************************************/	    
 void IIC_NAck(void)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	IIC_SCL_F=0;
+	SDA_OUT();
+	IIC_SDA_F=1;
+	Delay_us(2);
+	IIC_SCL_F=1;
+	Delay_us(2);
+	IIC_SCL_F=0;
+#else	
 	IIC_SCL=0;
 	SDA_OUT();
 	IIC_SDA=1;
@@ -107,6 +165,7 @@ void IIC_NAck(void)
 	IIC_SCL=1;
 	Delay_us(2);
 	IIC_SCL=0;
+#endif	
 }					 				     
 
 /**************************实现函数********************************************
@@ -114,7 +173,22 @@ void IIC_NAck(void)
 *功　　能:	    IIC发送一个字节
 *******************************************************************************/		  
 void IIC_Send_Byte(u8 txd)
-{                        
+{ 
+#if USE_MINI_FC_FLOW_BOARD
+    u8 t;   
+	SDA_OUT_F(); 	    
+    IIC_SCL_F=0;//拉低时钟开始数据传输
+    for(t=0;t<8;t++)
+    {              
+        IIC_SDA_F=(txd&0x80)>>7;
+        txd<<=1; 	  
+		Delay_us(2);   
+		IIC_SCL_F=1;
+		Delay_us(2); 
+		IIC_SCL_F=0;	
+		Delay_us(2);
+    }	
+#else	
     u8 t;   
 	SDA_OUT(); 	    
     IIC_SCL=0;//拉低时钟开始数据传输
@@ -127,7 +201,8 @@ void IIC_Send_Byte(u8 txd)
 		Delay_us(2); 
 		IIC_SCL=0;	
 		Delay_us(2);
-    }	 
+    }	
+#endif		
 } 	 
    
 /**************************实现函数********************************************
@@ -136,6 +211,24 @@ void IIC_Send_Byte(u8 txd)
 *******************************************************************************/  
 u8 IIC_Read_Byte(unsigned char ack)
 {
+#if USE_MINI_FC_FLOW_BOARD
+	unsigned char i,receive=0;
+	SDA_IN_F();//SDA设置为输入
+    for(i=0;i<8;i++ )
+	{
+        IIC_SCL_F=0; 
+        Delay_us(2);
+		IIC_SCL_F=1;
+        receive<<=1;
+        if(READ_SDA_F)receive++;   
+		Delay_us(2); 
+    }					 
+    if (ack)
+        IIC_Ack(); //发送ACK 
+    else
+        IIC_NAck();//发送nACK  
+    return receive;
+#else	
 	unsigned char i,receive=0;
 	SDA_IN();//SDA设置为输入
     for(i=0;i<8;i++ )
@@ -152,6 +245,7 @@ u8 IIC_Read_Byte(unsigned char ack)
     else
         IIC_NAck();//发送nACK  
     return receive;
+#endif		
 }
 
 /**************************实现函数********************************************

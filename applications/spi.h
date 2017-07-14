@@ -26,8 +26,11 @@
 #define SPI_SPEED_256 		7
 						  	    													  
 void SPI2_Init(void);			 //初始化SPI1口
-void SPI2_SetSpeed(u8 SpeedSet); //设置SPI1速度   
-u8 SPI2_ReadWriteByte(u8 TxData);//SPI1总线读写一个字节
-		 
+u8 Spi_RW(u8 TxData);//SPI1总线读写一个字节
+#define SPI_CE_H()   GPIO_SetBits(GPIOB, GPIO_Pin_8) 
+#define SPI_CE_L()   GPIO_ResetBits(GPIOB, GPIO_Pin_8)
+
+#define SPI_CSN_H()  GPIO_SetBits(GPIOB, GPIO_Pin_12)
+#define SPI_CSN_L()  GPIO_ResetBits(GPIOB, GPIO_Pin_12) 
 #endif
 

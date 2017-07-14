@@ -312,7 +312,7 @@ void ANO_DT_Data_Exchange(void)
     if(temp2<0)
     temp2=-temp2+1;			
 		ANO_DT_Send_PID(6,imu_board.k_flow_sel,temp1,temp2,
-											0,0,0,
+											k_sensitivity[0],k_sensitivity[1],0,
 											0,0,UART_UP_LOAD_SEL_FORCE/1000);
 		f.send_pid1=0;
 		}
@@ -559,6 +559,9 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		if(temp2>1000)imu_board.flow_module_offset_y=-(temp2-1000)*0.001;
 		else imu_board.flow_module_offset_y=(temp2)*0.001;
 		
+		
+		k_sensitivity[0] = 0.001*( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
+		k_sensitivity[1] = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
 		
 		UART_UP_LOAD_SEL_FORCE=    ( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
 		if(f.send_check == 0)

@@ -514,9 +514,24 @@
               <FilePath>.\drivers\time.c</FilePath>
             </File>
             <File>
+              <FileName>nrf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\nrf.c</FilePath>
+            </File>
+            <File>
               <FileName>spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>rc_mine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\rc_mine.c</FilePath>
+            </File>
+            <File>
+              <FileName>sbus_oldx.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>.\applications\sbus_oldx.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -647,11 +662,6 @@
               <FileName>rtGetNaN.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\rtGetNaN.c</FilePath>
-            </File>
-            <File>
-              <FileName>baro_ekf_oldx.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\applications\baro_ekf_oldx.lib</FilePath>
             </File>
             <File>
               <FileName>kf_oldx.lib</FileName>

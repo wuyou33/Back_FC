@@ -1,12 +1,10 @@
-#include "spi.h"
 
+#include "include.h"
+#include "spi_nrf.h"							//nrf24l01??spi.h??u8 Spi_RW(u8 dat)??
 
-
-//以下是SPI模块的初始化代码，配置成主机模式 						  
-//SPI口初始化
-//这里针是对SPI1的初始化
-void SPI2_Init(void)
-{	GPIO_InitTypeDef GPIO_InitStructure;
+void Spi1_Init(void)
+{ 
+		GPIO_InitTypeDef GPIO_InitStructure;
 		SPI_InitTypeDef  SPI_InitStructure;
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);//使能GPIOF时钟
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIOF时钟
@@ -77,3 +75,4 @@ u8 Spi_RW(u8 dat)
 	/* Return the byte read from the SPI bus */ 
 	return SPI_I2S_ReceiveData(SPI2); 
 }
+

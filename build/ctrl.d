@@ -1,5 +1,5 @@
 .\build\ctrl.o: applications\ctrl.c
-.\build\ctrl.o: applications\ctrl.h
+.\build\ctrl.o: applications\flash.h
 .\build\ctrl.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\build\ctrl.o: .\Libraries\CMSIS\Include\core_cm4.h
 .\build\ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -24,6 +24,7 @@
 .\build\ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
 .\build\ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\build\ctrl.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
+.\build\ctrl.o: applications\ctrl.h
 .\build\ctrl.o: applications\eso.h
 .\build\ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ctrl.o: .\drivers\pwm_out.h
@@ -33,7 +34,6 @@
 .\build\ctrl.o: applications\mymath.h
 .\build\ctrl.o: .\drivers\mpu6050.h
 .\build\ctrl.o: .\applications\include.h
-.\build\ctrl.o: .\applications\flash.h
 .\build\ctrl.o: .\applications\scheduler.h
 .\build\ctrl.o: .\drivers\time.h
 .\build\ctrl.o: .\applications\init.h

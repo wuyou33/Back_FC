@@ -10,6 +10,7 @@
 #include "ultrasonic.h"
 #include "bmp.h"
 #include "spi.h"
+#include "nrf.h"
 _SYS_INIT sys_init;
 u8 mcuID[3];
 u8 ble_imu_force;
@@ -31,7 +32,11 @@ u8 All_Init()
 	PWM_Out_Init(400);				//初始化电调输出功能	
 	PWM_AUX_Out_Init(50);
 	#if EN_ATT_CAL_FC
+	#if USE_MINI_FC_FLOW_BOARD
+	MPU6050_Init(20);
+	#else
 	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
+	#endif
 	#endif
 	LED_Init();								//LED功能初始
 	Delay_ms(100);						//延时
@@ -63,10 +68,14 @@ u8 All_Init()
 	#if EN_DMA_UART3
 	MYDMA_Config(DMA1_Stream3,DMA_Channel_4,(u32)&USART3->DR,(u32)SendBuff3,SEND_BUF_SIZE3+2,2);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
   #endif
+	#if USE_MINI_FC_FLOW_BOARD
+	Uart5_Init(100000);	
+  #else
 	#if !SONAR_USE_FC1
   Uart5_Init(115200L);      // 图像Odroid
 	#else
 	Uart5_Init(9600);      // 超声波
+	#endif
 	#endif
 	Delay_ms(100);
 	#if EN_DMA_UART4 
@@ -95,6 +104,11 @@ u8 All_Init()
 	#endif
 	READ_PARM();//读取参数
 	Para_Init();//参数初始
+	#if USE_MINI_FC_FLOW_BOARD
+	SPI2_Init();		
+	Nrf24l01_Init(MODEL_RX2,40);
+	Nrf24l01_Check();
+	#endif
 	//TIM3_Int_Init(1000-1,8400-1);
 	//-------------系统默认参数
 	mode_oldx.en_eso_h_in=1;

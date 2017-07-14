@@ -1,5 +1,6 @@
 
 
+#include "flash.h"
 #include "ctrl.h"
 #include "height_ctrl.h"
 #include "fly_mode.h"
@@ -247,8 +248,8 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
 	ctrl_1.err_d.y = ( ctrl_1.PID[PIDPITCH].kd *( -10 *ctrl_1.damp.y) *( 0.002f/T ) );
 	ctrl_1.err_d.z = ( ctrl_1.PID[PIDYAW].kd   *( -10 *ctrl_1.damp.z) *( 0.002f/T ) );
 	//自抗扰
-  OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200,ctrl_1.PID[PIDPITCH].kp,thr_view);
-	OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200,ctrl_1.PID[PIDROLL].kp,thr_view);
+  OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200,ctrl_1.PID[PIDPITCH].kp*k_sensitivity[0],thr_view);
+	OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200,ctrl_1.PID[PIDROLL].kp*k_sensitivity[0],thr_view);
   
 	ctrl_1.err_i.z += ctrl_1.PID[PIDYAW].ki 	*(ctrl_1.err.z - ctrl_1.damp.z) *T;
   ctrl_1.eliminate_I.z = Thr_Weight *CTRL_1_INT_LIMIT ;	
@@ -270,13 +271,13 @@ if(eso_att_inner_c[PITr].b0==0){
 
 	if(eso_att_inner_c[PITr].b0!=0){//ADRC
 	ctrl_1.err_i.x=ctrl_1.err_i.y=0;	
-	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp  *( ctrl_1.err_d.x +eso_att_inner_c[ROLr].u ) );
-	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp *( ctrl_1.err_d.y +eso_att_inner_c[PITr].u ) );
+	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp *k_sensitivity[0] *( ctrl_1.err_d.x +eso_att_inner_c[ROLr].u ) );
+	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp *k_sensitivity[0]*( ctrl_1.err_d.y +eso_att_inner_c[PITr].u ) );
 	}else{	/* 角速度PID输出 */
-	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp  *( ctrl_1.err.x + ctrl_1.err_d.x + ctrl_1.err_i.x ) );
-	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp *( ctrl_1.err.y + ctrl_1.err_d.y + ctrl_1.err_i.y ) );
+	ctrl_1.out.x = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.x),0,1)*except_AS.x + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDROLL].kp*k_sensitivity[0]  *( ctrl_1.err.x + ctrl_1.err_d.x + ctrl_1.err_i.x ) );
+	ctrl_1.out.y = 2 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.y),0,1)*except_AS.y + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDPITCH].kp*k_sensitivity[0] *( ctrl_1.err.y + ctrl_1.err_d.y + ctrl_1.err_i.y ) );
 	}		
-	ctrl_1.out.z = 3 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.z),0,1)*except_AS.z + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDYAW].kp   *( ctrl_1.err.z + ctrl_1.err_d.z + ctrl_1.err_i.z  ) );
+	ctrl_1.out.z = 3 *( ctrl_1.FB *LIMIT((0.45f + 0.55f*ctrl_2.err_weight.z),0,1)*except_AS.z + ( 1 - ctrl_1.FB ) *ctrl_1.PID[PIDYAW].kp *k_sensitivity[1]  *( ctrl_1.err.z + ctrl_1.err_d.z + ctrl_1.err_i.z  ) );
 
 	
 	Thr_Ctrl(T);// 高度控制
@@ -316,8 +317,8 @@ void Thr_Ctrl(float T)
 	
 	if(!fly_ready&&500 + CH_filter[THRr]<100)
 	force_Thr_low=0;
-	if((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
-    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode_oldx.att_pid_tune==0)//||(fly_ready&&!Rc_Get_PWM.update))
+	if(((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
+    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode_oldx.att_pid_tune==0)||(fly_ready&&!Rc_Get_PWM.update))
 		cnt_for_low++;
 	else
 		cnt_for_low=0;

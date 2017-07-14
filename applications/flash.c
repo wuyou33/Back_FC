@@ -95,11 +95,20 @@ void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead)
 #define SIZE_PARAM 50*2
 u8 FLASH_READ_BUF[SIZE_PARAM]={0};
 u8 FLASH_Buffer[SIZE_PARAM]={0};
+float k_sensitivity[2]={1,1};//感度
 u32 FLASH_SIZE=16*1024*1024;	//FLASH 大小为16字节
 u16 LENGTH_OF_DRONE=330;//飞行器轴距
 int H_INT; //悬停油门
 float SONAR_HEIGHT=0.054+0.015;//超声波安装高度
 u8 need_init_mems=0;//mems flash error
+
+u16 SBUS_MIN =954;
+u16 SBUS_MAX =2108;
+u16 SBUS_MID =1524;
+u16 SBUS_MIN_A =954;
+u16 SBUS_MAX_A =2108;
+u16 SBUS_MID_A =1524;
+
 void READ_PARM(void)
 {
 #if FLASH_USE_STM32
@@ -143,8 +152,26 @@ mpu6050_fc.Gain_3d.z =(float)((vs16)((FLASH_READ_BUF[49]<<8|FLASH_READ_BUF[48]))
 
 mpu6050_fc.att_off[0]=(float)((vs16)((FLASH_READ_BUF[51]<<8|FLASH_READ_BUF[50])))/100.;
 mpu6050_fc.att_off[1]=(float)((vs16)((FLASH_READ_BUF[53]<<8|FLASH_READ_BUF[52])))/100.;
+
+
+k_sensitivity[0]=(float)((vs16)((FLASH_READ_BUF[55]<<8|FLASH_READ_BUF[54])))/100.;
+k_sensitivity[1]=(float)((vs16)((FLASH_READ_BUF[57]<<8|FLASH_READ_BUF[56])))/100.;
+
+//	
+SBUS_MIN=(vs16)(FLASH_READ_BUF[59]<<8|FLASH_READ_BUF[58]);
+SBUS_MAX=(vs16)(FLASH_READ_BUF[61]<<8|FLASH_READ_BUF[60]);
+SBUS_MID=(vs16)(FLASH_READ_BUF[63]<<8|FLASH_READ_BUF[62]);
+//	
+SBUS_MIN_A=(vs16)(FLASH_READ_BUF[65]<<8|FLASH_READ_BUF[64]);
+SBUS_MAX_A=(vs16)(FLASH_READ_BUF[67]<<8|FLASH_READ_BUF[66]);
+SBUS_MID_A=(vs16)(FLASH_READ_BUF[69]<<8|FLASH_READ_BUF[68]);
+
+if(k_sensitivity[0]<=0||k_sensitivity[0]>5)
+	k_sensitivity[0]=1;
+if(k_sensitivity[1]<=0||k_sensitivity[1]>5)
+	k_sensitivity[1]=1;
 u8 need_init=0;
-if(LENGTH_OF_DRONE<200||LENGTH_OF_DRONE>1200){
+if(LENGTH_OF_DRONE<100||LENGTH_OF_DRONE>1200){
  LENGTH_OF_DRONE=330;//飞行器轴距
  need_init=1;	
 }
@@ -272,6 +299,32 @@ _temp=(int16_t)(mpu6050_fc.att_off[1]*100);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 
+_temp=(int16_t)(k_sensitivity[0]*100);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)(k_sensitivity[1]*100);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+
+_temp=(int16_t)SBUS_MIN;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)SBUS_MAX;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)SBUS_MID;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)SBUS_MIN_A;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)SBUS_MAX_A;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)SBUS_MID_A;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
 
 #if FLASH_USE_STM32
 STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);

@@ -3,21 +3,37 @@
 #include "stm32f4xx.h"
 #include "include.h"
 
+//#if USE_MINI_FC_FLOW_BOARD
+#define PIN_SCL_F 5
+#define PIN_SDA_F 4
+//#else
+#define PIN_SCL 4
+#define PIN_SDA 5
+//#endif
 
 #define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //输出 
 #define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //输入 
 
 #define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //输出 
 #define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //输入 
-   	   		   
-#define SDA_IN()  {GPIOC->MODER&=~(3<<(5*2));GPIOC->MODER|=0<<5*2;}	//PB9输入模式
-#define SDA_OUT() {GPIOC->MODER&=~(3<<(5*2));GPIOC->MODER|=1<<5*2;} //PB9输出模式
+   
+#define SDA_IN_F()  {GPIOC->MODER&=~(3<<(PIN_SDA_F*2));GPIOC->MODER|=0<<PIN_SDA_F*2;}	//PB9输入模式
+#define SDA_OUT_F() {GPIOC->MODER&=~(3<<(PIN_SDA_F*2));GPIOC->MODER|=1<<PIN_SDA_F*2;} //PB9输出模式
 
 
 //IO操作函数	 
-#define IIC_SCL    PCout(4) //SCL
-#define IIC_SDA    PCout(5) //SDA	 
-#define READ_SDA   PCin(5)  //输入SDA 
+#define IIC_SCL_F    PCout(PIN_SCL_F) //SCL
+#define IIC_SDA_F    PCout(PIN_SDA_F) //SDA	 
+#define READ_SDA_F   PCin(PIN_SDA_F)  //输入SDA 
+
+#define SDA_IN()  {GPIOC->MODER&=~(3<<(PIN_SDA*2));GPIOC->MODER|=0<<PIN_SDA*2;}	//PB9输入模式
+#define SDA_OUT() {GPIOC->MODER&=~(3<<(PIN_SDA*2));GPIOC->MODER|=1<<PIN_SDA*2;} //PB9输出模式
+
+
+//IO操作函数	 
+#define IIC_SCL    PCout(PIN_SCL) //SCL
+#define IIC_SDA    PCout(PIN_SDA) //SDA	 
+#define READ_SDA   PCin(PIN_SDA)  //输入SDA 
 
 //IIC所有操作函数
 void IIC_Init(void);                //初始化IIC的IO口				 

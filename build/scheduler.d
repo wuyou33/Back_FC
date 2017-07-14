@@ -56,4 +56,6 @@
 .\build\scheduler.o: applications\anotc_baro_ctrl.h
 .\build\scheduler.o: applications\filter.h
 .\build\scheduler.o: applications\mymath.h
+.\build\scheduler.o: applications\rc_mine.h
 .\build\scheduler.o: applications\alt_fushion.h
+.\build\scheduler.o: applications\sbus.h

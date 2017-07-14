@@ -72,7 +72,7 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
+		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN ;
 		GPIO_Init(GPIOB, &GPIO_InitStructure); 
 
 		GPIO_PinAFConfig(GPIOB, GPIO_PinSource4, GPIO_AF_TIM3);
@@ -432,6 +432,7 @@ void CH_out_Mapping_Fun(u16 *out,u16 *mapped )
 	}
 }
 u8 sel=0;
+int16_t pwm_test=0;
 void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 {
 	u8 i;

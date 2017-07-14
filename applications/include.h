@@ -20,7 +20,8 @@ extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
 //================系统===================
-
+#define USE_MINI_FC_FLOW_BOARD 1 //使用MINI——OLDX——FLOW板子
+#define USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS 1
 #define USE_RECIVER_MINE 0  
 #define EN_ATT_CAL_FC 1  //姿态使用FC解算
 #define USE_ANO_GROUND 1  //实验匿名地面站 否则使用  安卓APP 和 OLDX-PC上位机
@@ -28,8 +29,8 @@ extern u8 mcuID[3];
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
 
-#define USE_M100_IMU 1
-#define USE_FLOW_PI 1
+#define USE_M100_IMU 0  
+#define USE_FLOW_PI 0  //使用OLDX光流模块
 #define TUNING_X 1   //0->y 1->x   
 #define TUNING_Z 1   //higher than tuning x or y
 #define SONAR_USE_FC 0  //FC采集超声波USE IDLE 串口
@@ -51,7 +52,7 @@ extern u8 mcuID[3];
 #define NVIC_UART2_P			3		//串口2中断
 #define NVIC_UART2_S			1
 //================传感器===================
-#define IMU_HML_ADD_500 1           
+#define IMU_HML_ADD_500 0          
 #define ACC_ADJ_EN 									//是否允许校准加速度计,(定义则允许)
 
 #define OFFSET_AV_NUM 	50					//校准偏移量时的平均次数。

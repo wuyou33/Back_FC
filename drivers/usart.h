@@ -46,9 +46,11 @@ typedef struct int16_rcget{
 	      int16_t HEIGHT_MODE;
 	      int16_t POS_MODE;
 	      u8 update,Heart,Heart_rx,Heart_error;
+	      u16 lose_cnt,lose_cnt_rx;
+	      u8 connect;
 				int16_t RST;}RC_GETDATA;
 
-extern RC_GETDATA Rc_Get,Rc_Get_PWM;//接收到的RC数据,1000~2000
+extern RC_GETDATA Rc_Get,Rc_Get_PWM,Rc_Get_SBUS;//接收到的RC数据,1000~2000
 				
 				
 struct _float{
@@ -427,4 +429,32 @@ Flight status val	status name
 }M100;
 extern M100 m100;
 extern u16 nrf_uart_cnt;
+
+
+
+struct _QR{
+float x,y,z,pit,rol,yaw;
+float spdx,spdy,spdz;
+u8 check,use_spd,connect;
+float yaw_off;
+u8 insert;
+u16 loss_cnt;
+};
+extern struct _QR qr;
+
+
+struct _FLOW_PI{
+float x,y,z,z_o,pit,rol,yaw;
+float spdx,spdy,spdz;
+float yaw_off;
+u16 loss_cnt;
+u8 check,use_spd,connect,insert;
+struct _QR sensor;
+float acc[3];
+float gyro[3];
+int mark_map[10][5];	
+};
+extern struct _FLOW_PI pi_flow;
+extern int debug_pi_flow[20];
+
 #endif
