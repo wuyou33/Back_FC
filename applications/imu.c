@@ -76,6 +76,9 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 		yaw_mag = fast_atan2( ( mag_sim_3d.y/mag_norm ) , ( mag_sim_3d.x/mag_norm) ) *57.3f;
 		
 	}
+	#if USE_MINI_FC_FLOW_BOARD
+	  yaw_mag=Yaw_fc1;
+	#endif
 	//=============================================================================
 	// 计算等效重力向量
 	reference_v.x = 2*(ref_q[1]*ref_q[3] - ref_q[0]*ref_q[2]);

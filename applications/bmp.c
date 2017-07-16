@@ -117,6 +117,7 @@ void MS561101BA_readPROM(void)
 			i2cRead(MS5611_ADDR, MS561101BA_PROM_BASE_ADDR + (i * MS561101BA_PROM_REG_SIZE),2, i2cret); 
 			PROM_C[i]=i2cret[0]<<8 | i2cret[1];
 		#else
+		
 			IIC_Start();
 			IIC_Send_Byte(MS5611_ADDR);
 			IIC_Wait_Ack();

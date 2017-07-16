@@ -19,8 +19,13 @@ void IIC_Init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
   GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化
+	#if USE_MINI_FC_FLOW_BOARD
+	IIC_SCL_F=1;
+	IIC_SDA_F=1;
+	#else
 	IIC_SCL=1;
 	IIC_SDA=1;
+	#endif
 }
 
 /**************************实现函数********************************************
@@ -127,7 +132,7 @@ void IIC_Ack(void)
 #if USE_MINI_FC_FLOW_BOARD
 	IIC_SCL_F=0;
 	SDA_OUT_F();
-	IIC_SDA=0;
+	IIC_SDA_F=0;
 	Delay_us(2);
 	IIC_SCL_F=1;
 	Delay_us(2);
@@ -151,7 +156,7 @@ void IIC_NAck(void)
 {
 #if USE_MINI_FC_FLOW_BOARD
 	IIC_SCL_F=0;
-	SDA_OUT();
+	SDA_OUT_F();
 	IIC_SDA_F=1;
 	Delay_us(2);
 	IIC_SCL_F=1;

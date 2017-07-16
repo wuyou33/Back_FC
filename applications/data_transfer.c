@@ -312,8 +312,8 @@ void ANO_DT_Data_Exchange(void)
     if(temp2<0)
     temp2=-temp2+1;			
 		ANO_DT_Send_PID(6,imu_board.k_flow_sel,temp1,temp2,
-											k_sensitivity[0],k_sensitivity[1],0,
-											0,0,UART_UP_LOAD_SEL_FORCE/1000);
+											k_sensitivity[0],k_sensitivity[1],k_sensitivity[2],
+											0,(float)LENGTH_OF_DRONE/1000.,(float)UART_UP_LOAD_SEL_FORCE/1000.);
 		f.send_pid1=0;
 		}
 	 }
@@ -396,7 +396,6 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		if(*(data_buf+4)==0X01)
 		{
 			mpu6050_fc.Acc_CALIBRATE = 1;
-			//mpu6050.Cali_3d = 1;
 		}
 		else if(*(data_buf+4)==0X02)
 			mpu6050_fc.Gyro_CALIBRATE = 1;
@@ -562,7 +561,9 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		
 		k_sensitivity[0] = 0.001*( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
 		k_sensitivity[1] = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
+		k_sensitivity[2] = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 		
+		LENGTH_OF_DRONE=    ( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
 		UART_UP_LOAD_SEL_FORCE=    ( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
 		if(f.send_check == 0)
 		{

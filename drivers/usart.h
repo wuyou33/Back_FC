@@ -225,7 +225,7 @@ struct _PID1 circle;
 };
 extern struct _PID_SET pid;
 
-struct _MODE
+typedef struct
 {
 u8 thr_fix;
 u8 en_pid_out_pit;
@@ -273,6 +273,7 @@ u8 height_upload;
 u8 en_h_mode_switch;
 u8 en_dj_cal;
 u8 en_sd_save;
+u8 cal_rc;
 u8 en_break;
 u8 use_dji;
 u8 en_marker;
@@ -310,8 +311,10 @@ u8 att_ident1;
 //flow
 u8 en_flow_gro_fix;
 u8 flow_size;
-};
-	
+u8 show_qr_origin;
+}_MODE;
+
+extern _MODE mode_oldx;
 
 typedef struct{
 	unsigned int x;//目标的x坐标

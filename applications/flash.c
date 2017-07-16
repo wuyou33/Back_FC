@@ -95,7 +95,7 @@ void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead)
 #define SIZE_PARAM 50*2
 u8 FLASH_READ_BUF[SIZE_PARAM]={0};
 u8 FLASH_Buffer[SIZE_PARAM]={0};
-float k_sensitivity[2]={1,1};//感度
+float k_sensitivity[3]={1,1,1};//感度
 u32 FLASH_SIZE=16*1024*1024;	//FLASH 大小为16字节
 u16 LENGTH_OF_DRONE=330;//飞行器轴距
 int H_INT; //悬停油门
@@ -147,7 +147,7 @@ mpu6050_fc.Off_3d.y=(vs16)(FLASH_READ_BUF[41]<<8|FLASH_READ_BUF[40]);
 mpu6050_fc.Off_3d.z=(vs16)(FLASH_READ_BUF[43]<<8|FLASH_READ_BUF[42]);
 	
 mpu6050_fc.Gain_3d.x =(float)((vs16)((FLASH_READ_BUF[45]<<8|FLASH_READ_BUF[44])))/1000.;
-mpu6050_fc.Gain_3d.y=(float)((vs16)((FLASH_READ_BUF[47]<<8|FLASH_READ_BUF[46])))/1000.;
+mpu6050_fc.Gain_3d.y =(float)((vs16)((FLASH_READ_BUF[47]<<8|FLASH_READ_BUF[46])))/1000.;
 mpu6050_fc.Gain_3d.z =(float)((vs16)((FLASH_READ_BUF[49]<<8|FLASH_READ_BUF[48])))/1000.;
 
 mpu6050_fc.att_off[0]=(float)((vs16)((FLASH_READ_BUF[51]<<8|FLASH_READ_BUF[50])))/100.;
@@ -166,16 +166,22 @@ SBUS_MIN_A=(vs16)(FLASH_READ_BUF[65]<<8|FLASH_READ_BUF[64]);
 SBUS_MAX_A=(vs16)(FLASH_READ_BUF[67]<<8|FLASH_READ_BUF[66]);
 SBUS_MID_A=(vs16)(FLASH_READ_BUF[69]<<8|FLASH_READ_BUF[68]);
 
+k_sensitivity[2]=(float)((vs16)((FLASH_READ_BUF[71]<<8|FLASH_READ_BUF[70])))/100.;
+
+
+//----------------------------------------------------------
 if(k_sensitivity[0]<=0||k_sensitivity[0]>5)
 	k_sensitivity[0]=1;
 if(k_sensitivity[1]<=0||k_sensitivity[1]>5)
 	k_sensitivity[1]=1;
+if(k_sensitivity[2]<=0||k_sensitivity[2]>5)
+	k_sensitivity[2]=1;
 u8 need_init=0;
 if(LENGTH_OF_DRONE<100||LENGTH_OF_DRONE>1200){
  LENGTH_OF_DRONE=330;//飞行器轴距
  need_init=1;	
 }
-if(SONAR_HEIGHT<0||SONAR_HEIGHT>2){
+if(SONAR_HEIGHT<0||SONAR_HEIGHT>0.5){
 	SONAR_HEIGHT=0.054+0.015;
 	 need_init=1;	
  }
@@ -323,6 +329,10 @@ _temp=(int16_t)SBUS_MAX_A;
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 _temp=(int16_t)SBUS_MID_A;
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+
+_temp=(int16_t)(k_sensitivity[2]*100);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 

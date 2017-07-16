@@ -165,13 +165,13 @@ void Height_Ctrl1(float T,float thr)
 				{
 				mode_oldx.height_in_speed=1;
 				ultra_pid_use.kp =ultra_pid_safe.kp;ultra_pid_use.ki =ultra_pid_safe.ki; ultra_pid_use.kd =ultra_pid_safe.kd;  
-				wz_speed_pid_use.kp =wz_speed_pid_safe.kp;wz_speed_pid_use.ki =wz_speed_pid_safe.ki; wz_speed_pid_use.kd =wz_speed_pid_safe.kd;  
+				wz_speed_pid_use.kp =wz_speed_pid_safe.kp*k_sensitivity[2];wz_speed_pid_use.ki =wz_speed_pid_safe.ki; wz_speed_pid_use.kd =wz_speed_pid_safe.kd;  
 				wz_speed_pid_use.fp=wz_speed_pid_safe.fp;
 				}
 				else
 				{
 				ultra_pid_use.kp =ultra_pid.kp;ultra_pid_use.ki =ultra_pid.ki; ultra_pid_use.kd =ultra_pid.kd;  
-				wz_speed_pid_use.kp =wz_speed_pid.kp;wz_speed_pid_use.ki =wz_speed_pid.ki; wz_speed_pid_use.kd =wz_speed_pid.kd; 
+				wz_speed_pid_use.kp =wz_speed_pid.kp*k_sensitivity[2];wz_speed_pid_use.ki =wz_speed_pid.ki; wz_speed_pid_use.kd =wz_speed_pid.kd; 
 				wz_speed_pid_use.fp=wz_speed_pid.fp;	
 				}
 				 //------------------------SPD CONTOLLER------------------
@@ -399,7 +399,7 @@ void Ultra_Ctrl1(float T,float thr)//Œª÷√ª∑PID
 	#if EN_ATT_CAL_FC
 	tilted_fix_sonar=LIMIT((ALT_POS_BMP_UKF_OLDX/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-ALT_POS_BMP_UKF_OLDX),0,0.5);
-	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*0)*1000;
+	ultra_dis_tmp=  (ALT_POS_BMP_UKF_OLDX+tilted_fix_sonar*1)*1000;
 	#else
 	tilted_fix_sonar=LIMIT((ALT_POS_SONAR2/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 							cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-ALT_POS_SONAR2),0,0.5);

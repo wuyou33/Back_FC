@@ -631,10 +631,10 @@ void Send_IMU_TO_FLOW(void)
 	_temp=acc_3d_step;
 	data_to_send[_cnt++]=BYTE0(_temp);
 
-	_temp =(vs16)(acc_body[0]*100);	
+	_temp =(vs16)(acc_body[0]/10);	
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp =(vs16)(acc_body[1]*100);	
+	_temp =(vs16)(acc_body[1]/10);	
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	_temp =(vs16)(acc_body[2]*100);	
@@ -935,7 +935,7 @@ void UART5_IRQHandler(void)
 
 		com_data = UART5->DR;
 		#if USE_MINI_FC_FLOW_BOARD	
-		Feed_Rc_Dog(2);
+		
 		Rc_Get_SBUS.lose_cnt=0;
 		Rc_Get_SBUS.connect=1;
 		oldx_sbus_rx(com_data);
@@ -960,7 +960,7 @@ void UART5_IRQHandler(void)
 			  break;
 		}
 		
-    if(channels[16]==500||channels[16]==503){
+    if(channels[16]==500||channels[16]==503){Feed_Rc_Dog(2);
 		Rc_Get_SBUS.update=1;Rc_Get_SBUS.lose_cnt_rx=0; }
 		if(Rc_Get_SBUS.lose_cnt_rx++>100){
 		Rc_Get_SBUS.update=0;}
@@ -2861,7 +2861,8 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-	
+  _temp=mode_oldx.cal_rc;
+	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 		for( i=cnt_reg;i<nrf_uart_cnt;i++)

@@ -235,7 +235,7 @@ void Duty_10ms()
 											data_per_uart1(
 											ALT_POS_BMP_UKF_OLDX*100,baroAlt/10,baro.relative_height/10,
 											Rc_Get_PWM.Heart,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
-											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,0,
+											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,pi_flow.z_o*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://BMP UKF
 											data_per_uart1(

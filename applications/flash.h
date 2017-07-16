@@ -33,7 +33,7 @@ extern float SONAR_HEIGHT;
 extern u16 LENGTH_OF_DRONE;
 extern int H_INT;
 extern u8 need_init_mems;
-extern float k_sensitivity[2];//感度
+extern float k_sensitivity[3];//感度
 
 extern u16 SBUS_MIN ;//=954;
 extern u16 SBUS_MAX ;//=2108;

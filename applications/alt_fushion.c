@@ -14,7 +14,7 @@
 #include "oldx_kf2.h"
 float acc_z_acc[3];
 #define EN_ACC_TIME_TRIG 1
-u8 ACC_FORWARD_BMP=3;
+u8 ACC_FORWARD_BMP=2;
 u8 ACC_FORWARD=0;
 u8 en_bmp_avoid_wind=0;
 float baro_compensate(float dT,float kup,float kdw,float vz,float lim)
