@@ -13,7 +13,7 @@
 #include "eso.h"
 #include "oldx_kf2.h"
 float acc_z_acc[3];
-#define EN_ACC_TIME_TRIG 1
+#define EN_ACC_TIME_TRIG 0
 u8 ACC_FORWARD_BMP=2;
 u8 ACC_FORWARD=0;
 u8 en_bmp_avoid_wind=0;
@@ -208,9 +208,9 @@ static u8 m100_connect_r;
 static float off_m100;	
 if(m100.m100_connect)	
 off_m100=	(float)(baroAlt-baro.relative_height)/1000.;
-if(Rc_Get_PWM.AUX2>1500)
-posz=(float)(baroAlt)/1000.;
-else
+//if(Rc_Get_PWM.AUX2>1500)
+//posz=(float)(baroAlt)/1000.;
+//else
 posz=(float)(baro.relative_height)/1000.+off_m100;	
 input_flag=1;
 m100_connect_r=m100.m100_connect;

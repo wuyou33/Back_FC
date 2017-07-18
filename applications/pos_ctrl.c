@@ -21,9 +21,9 @@ void CalcEarthRadius(double lat) {
 }
 
 
- void CalcGlobalLocation(float posNorth,float posEast,float local_Lat,float local_Lon,float *GPS_W_F,float* GPS_J_F){ 
-    *GPS_W_F=(float)posNorth/(float)(r1+0.1)+local_Lat;
-    *GPS_J_F=(float)posEast/(float)(r2+0.1)+local_Lon;
+ void CalcGlobalLocation(float posNorth,float posEast,float local_Lat,float local_Lon,double *GPS_W_F,double* GPS_J_F){ 
+    *GPS_W_F=(double)posNorth/(double)(r1+0.1)+local_Lat;
+    *GPS_J_F=(double)posEast/(double)(r2+0.1)+local_Lon;
 }
 
 
@@ -273,7 +273,7 @@ void Positon_control(float T)// Î»ÖÃ¿ØÖÆ
 //		nav_spd_pid.flt_nav=1;
 //	else
 //		nav_spd_pid.flt_nav=0.3;
-	
+	 if(m100.STATUS>1)
 		CalcGlobalLocation(POS_UKF_Y,POS_UKF_X,m100.Init_Lat+off_GPS[0],m100.Init_Lon+off_GPS[1],&m100.Lat,&m100.Lon);
 	
 /*

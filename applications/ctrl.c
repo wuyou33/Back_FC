@@ -248,6 +248,7 @@ void CTRL_1(float T)  //x roll,y pitch,z yaw
 	ctrl_1.err_d.y = ( ctrl_1.PID[PIDPITCH].kd *( -10 *ctrl_1.damp.y) *( 0.002f/T ) );
 	ctrl_1.err_d.z = ( ctrl_1.PID[PIDYAW].kd   *( -10 *ctrl_1.damp.z) *( 0.002f/T ) );
 	//自抗扰
+	
   OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[PITr],except_AS.y,-mpu6050_fc.Gyro_deg.y,eso_att_inner_c[PITr].u,T,200,ctrl_1.PID[PIDPITCH].kp*k_sensitivity[0],thr_view);
 	OLDX_ATT_CONTRL_INNER_ESO(&eso_att_inner_c[ROLr],except_AS.x,mpu6050_fc.Gyro_deg.x,eso_att_inner_c[ROLr].u,T,200,ctrl_1.PID[PIDROLL].kp*k_sensitivity[0],thr_view);
   

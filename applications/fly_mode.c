@@ -1,5 +1,6 @@
 #include "fly_mode.h"
 #include "rc.h"
+#include "ak8975.h"
  ERO ero;
 u8 mode_value[10];
 u8 mode_state,mode_state_old;
@@ -58,6 +59,24 @@ void mode_check(float *ch_in,u8 *mode_value)
     else
 		mode_oldx.flow_hold_position=1;	//光流	
 
+		static u8 state_cal_en,mode_reg;
+		static u16 cnt1,cnt_time;
+		switch(state_cal_en)
+		{
+			case 0:
+				if(mode_oldx.flow_hold_position!=mode_reg)
+				{cnt1=0;state_cal_en=1;cnt_time=0;}
+				break;
+		  case 1:
+				if(mode_oldx.flow_hold_position!=mode_reg)
+				{cnt1=0;state_cal_en=1;cnt_time++;cnt1=0;}
+				if(cnt1++>2.22/0.05)
+				{cnt1=0;state_cal_en=0;}
+				else if(cnt_time>8*2)
+				{cnt1=0;state_cal_en=0;cnt_time=0;ak8975_fc.Mag_CALIBRATED=1;}	
+			break;
+		}
+		mode_reg=mode_oldx.flow_hold_position;
     #if  USE_M100_IMU
 		mode_oldx.flow_hold_position=mode_oldx.flow_hold_position&&m100.m100_connect;	
     #endif		

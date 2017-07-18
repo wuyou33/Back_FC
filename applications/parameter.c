@@ -60,7 +60,7 @@ void Para_ResetToFactorySetup(void)
  
  //adrc
  eso_att_inner_c[PITr].eso_dead=eso_att_inner_c[ROLr].eso_dead=1;
- eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=20;
+ //eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=0;//20;
  eso_att_inner_c[PITr].not_use_px4=eso_att_inner_c[ROLr].not_use_px4=1;
  
  k_pid=LIMIT(LENGTH_OF_DRONE/320.,0.25,2);

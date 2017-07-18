@@ -78,7 +78,22 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	}
 	#if USE_MINI_FC_FLOW_BOARD
 	  yaw_mag=Yaw_fc1;
+	#else
+	static float yaw_imu_off;
+	static u8 imu_flag;
+	if(!NAV_BOARD_CONNECT)
+		yaw_mag=Yaw_fc1;
+	else
+	  yaw_imu_off=Yaw;
+	
+	if(NAV_BOARD_CONNECT==0&&imu_flag==1)
+	yaw_mag=Yaw_fc1=yaw_imu_off+21;
+	
+	imu_flag=NAV_BOARD_CONNECT;
+	
 	#endif
+
+	
 	//=============================================================================
 	// 计算等效重力向量
 	reference_v.x = 2*(ref_q[1]*ref_q[3] - ref_q[0]*ref_q[2]);
@@ -122,7 +137,7 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	norm_acc = my_sqrt(ax*ax + ay*ay + az*az);   
   if(norm_acc==0)
 		norm_acc=1;
-
+  
 	if(ABS(ax)<4400 && ABS(ay)<4400 && ABS(az)<4400 )
 	{	
 		//把加计的三维向量转成单位向量。

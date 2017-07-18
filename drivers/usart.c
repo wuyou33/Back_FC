@@ -208,7 +208,7 @@ int debug_pi_flow[20];
 	#if !USE_MINI_FC_FLOW_BOARD
   if(*(data_buf+2)==0x12)//FLOW_MINE_frame
   { float temp_pos[2];
-		LEDRGB();//LED显示
+		//LEDRGB();//LED显示
 		uart_time[0]=Get_Cycle_T(GET_T_IMU_UKF)/1000000.0f;
 	  imu_loss_cnt=0;
     NAV_BOARD_CONNECT=1;
@@ -222,7 +222,7 @@ int debug_pi_flow[20];
 		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+17)<<8)|*(data_buf+18))/1000.;//m
 		float temp=(float)(int16_t)((*(data_buf+19)<<8)|*(data_buf+20))/1000.;//m
 		#if !SONAR_USE_FC&&!SONAR_USE_FC1
-		if(temp<4.5){ultra.measure_ok=1;
+		if(temp<3){ultra.measure_ok=1;
 	  m100.H_G=ALT_POS_SONAR2 = temp;}
 		#endif
 		ALT_VEL_BMP=(float)(int16_t)((*(data_buf+21)<<8)|*(data_buf+22))/1000.;//m
@@ -329,8 +329,9 @@ int debug_pi_flow[20];
 		flow_matlab_data[2]=(float)((int16_t)(*(data_buf+32)<<8)|*(data_buf+33))/1000.;
 		flow_matlab_data[3]=(float)((int16_t)(*(data_buf+34)<<8)|*(data_buf+35))/1000.;
 		baro_matlab_data[1]=((int16_t)(*(data_buf+36)<<8)|*(data_buf+37));
-		m100.m100_connect=*(data_buf+38);
-	
+		#if USE_M100_IMU
+		m100.STATUS=m100.m100_connect=*(data_buf+38);
+	  #endif
 	}		
 	else if(*(data_buf+2)==0x11)//Att
   { uart_time[2]= Get_Cycle_T(GET_T_FLOW_UART)/1000000.0f;	
@@ -369,6 +370,10 @@ int debug_pi_flow[20];
 		
 		r1=((u32)(*(data_buf+16)<<24)|(*(data_buf+17)<<16)|(*(data_buf+18)<<8)|*(data_buf+19));
 		r2=((u32)(*(data_buf+20)<<24)|(*(data_buf+21)<<16)|(*(data_buf+22)<<8)|*(data_buf+23));
+		#if !USE_M100_IMU
+		m100.STATUS=*(data_buf+24);
+		m100.GPS_STATUS=*(data_buf+25);
+		#endif
 	}	
 	//-------------
 	#else
@@ -2861,8 +2866,7 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	_temp=mode_oldx.en_sd_save;
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
-  _temp=mode_oldx.cal_rc;
-	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
+
 	
 	SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 		for( i=cnt_reg;i<nrf_uart_cnt;i++)
@@ -3216,6 +3220,12 @@ switch(sel){
 	SendBuff4[nrf_uart_cnt++]=BYTE0(_temp);
 	}
 	SendBuff4[nrf_uart_cnt++]=mode_oldx.en_sd_save;
+	SendBuff4[nrf_uart_cnt++]=mode_oldx.cal_rc;
+	SendBuff4[nrf_uart_cnt++]=mode_oldx.mems_state;
+	if(m100.STATUS>0)
+	SendBuff4[nrf_uart_cnt++]=m100.GPS_STATUS;
+	else
+	SendBuff4[nrf_uart_cnt++]=0;
 	
   SendBuff4[cnt_reg+3] =(nrf_uart_cnt-cnt_reg)-4;
 	for( i=cnt_reg;i<nrf_uart_cnt;i++)

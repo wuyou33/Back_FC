@@ -167,8 +167,7 @@ SBUS_MAX_A=(vs16)(FLASH_READ_BUF[67]<<8|FLASH_READ_BUF[66]);
 SBUS_MID_A=(vs16)(FLASH_READ_BUF[69]<<8|FLASH_READ_BUF[68]);
 
 k_sensitivity[2]=(float)((vs16)((FLASH_READ_BUF[71]<<8|FLASH_READ_BUF[70])))/100.;
-
-
+eso_att_inner_c[PITr].b0=eso_att_inner_c[ROLr].b0=(float)((vs16)((FLASH_READ_BUF[73]<<8|FLASH_READ_BUF[72])))/10.;
 //----------------------------------------------------------
 if(k_sensitivity[0]<=0||k_sensitivity[0]>5)
 	k_sensitivity[0]=1;
@@ -333,6 +332,9 @@ FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 
 _temp=(int16_t)(k_sensitivity[2]*100);
+FLASH_Buffer[cnt++]=BYTE0(_temp);
+FLASH_Buffer[cnt++]=BYTE1(_temp);
+_temp=(int16_t)(eso_att_inner_c[PITr].b0*10);
 FLASH_Buffer[cnt++]=BYTE0(_temp);
 FLASH_Buffer[cnt++]=BYTE1(_temp);
 

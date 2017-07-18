@@ -307,11 +307,14 @@ u8 test3;
 u8 test4;	
 u8 mode_fly;
 u8 h_is_fix;
+u8 mems_state;
 u8 att_ident1;
 //flow
 u8 en_flow_gro_fix;
 u8 flow_size;
 u8 show_qr_origin;
+//test
+u8 fc_test1;
 }_MODE;
 
 extern _MODE mode_oldx;
@@ -411,7 +414,7 @@ void clear_nrf_uart(void);
  typedef struct
 {
  float Pit,Rol,Yaw;
- float Lat,Lon;
+ double Lat,Lon;
  float H,H_Spd,H_G;	
  float q[4];
  u8 GPS_STATUS;	//>3  5->Best

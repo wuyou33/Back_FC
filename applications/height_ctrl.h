@@ -79,5 +79,7 @@ extern _st_height_pid_v wz_speed_pid_v;
 extern _st_height_pid wz_speed_pid;
 extern _st_height_pid_v ultra_ctrl;
 extern _st_height_pid ultra_pid;
+
+int height_test(float T);
 #endif
 

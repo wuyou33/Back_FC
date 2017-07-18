@@ -248,12 +248,14 @@ void ANO_DT_Data_Exchange(void)
 //		#elif MAXMOTORS == 4
 //		ANO_DT_Send_MotoPWM(motor_out[0],motor_out[1],motor_out[2],motor_out[3],0,0,0,0);
 //		#endif
+			#if USE_M100_IMU
 	    if(m100.m100_connect)
 				m100.GPS_STATUS=10;
 			else
 			  m100.GPS_STATUS=3;
-		 float temp_j;
-		 float temp_w;
+			#endif
+		 long temp_j;
+		 long temp_w;
 		 if(!m100.Lat&&!m100.Lon)	
 		 {
 		 temp_j=(int)(116.39122*10000000)	;
@@ -266,7 +268,7 @@ void ANO_DT_Data_Exchange(void)
 		 #if USE_HT_GROUND 
 		 
 		 #else
-		 ANO_DT_Send_Location(m100.m100_connect,m100.GPS_STATUS,temp_j,temp_w,0);
+		 ANO_DT_Send_Location(m100.STATUS,m100.GPS_STATUS,temp_j,temp_w,0);
 		 #endif
 		 //ANO_DT_Send_Location(test_up[0],test_up[1],116.123123*10000000,38.123123*10000000,test_up[2]);
 		}
@@ -384,7 +386,7 @@ u16 flash_save_en_cnt = 0;
 //u16 RX_CH[CH_NUM];
 u8 acc_3d_calibrate_f,acc_3d_step;
 void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
-{
+{ u8 mode;
 	u8 sum = 0;
 	for(u8 i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
@@ -392,13 +394,15 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
 	
 	if(*(data_buf+2)==0X01)
-	{
+	{  mode=*(data_buf+4);
 		if(*(data_buf+4)==0X01)
 		{
 			mpu6050_fc.Acc_CALIBRATE = 1;
 		}
 		else if(*(data_buf+4)==0X02)
 			mpu6050_fc.Gyro_CALIBRATE = 1;
+		else if(*(data_buf+4)==0X05)
+			mode_oldx.cal_rc=!mode_oldx.cal_rc;
 		else if(*(data_buf+4)==0X03)
 		{
 			mpu6050_fc.Acc_CALIBRATE = 1;		

@@ -194,16 +194,16 @@ void Height_Ctrl1(float T,float thr)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
 					 } 
 					 else{
-				     if(!hold_alt_flag||mode_oldx.height_safe)//||
+				     if((!hold_alt_flag||mode_oldx.height_safe)||(height_ctrl_mode==1))
 							// (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
            }
 						 
-					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode_oldx.height_safe&&0)//智能起飞油门限制
-						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
-					 if(ALT_POS_SONAR2>4&&height_ctrl_mode==2)
+//					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode_oldx.height_safe&&0)//智能起飞油门限制
+//						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
+					 if(ALT_POS_SONAR2>3&&height_ctrl_mode==2)
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-1000,0);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 
 			}//---end of speed control
@@ -425,9 +425,16 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 //			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*0.6f *3.14f *T ) ) ) *(ultra_dis_tmp- ultra_dis_lpf) ;
 //		}	
 	ultra_ctrl.now=ultra_dis_lpf=  ultra_dis_tmp;	
-	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&fabs(smart.rc.THROTTLE-1500)>25))
+	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&ABS(smart.rc.THROTTLE-1500)>25))
 	exp_height=ultra_dis_lpf;
-		
+	#if defined(HEIGHT_TEST) 
+	 if(Rc_Get_PWM.RST>1500)
+	  mode_oldx.fc_test1=1;
+	 else
+		mode_oldx.fc_test1=0;
+	 if(mode_oldx.fc_test1)
+	    exp_height=height_test(T);
+	#endif
 	ultra_ctrl.exp=exp_height;
 	
 		
@@ -459,3 +466,22 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	ultra_ctrl.err_old = ultra_ctrl.err;
 }
 
+int height_test(float T)//不要在该函数用delay实现延时
+{
+static u8 state;
+static int out=0;	
+static u16 cnt;	
+	switch(state)
+	{
+	  case 0:
+			 if(cnt++>4.0/T)
+			 {out=400;cnt=0;state=1;}
+		break;
+	  case 1:
+			 if(cnt++>4.0/T)
+			 {out=600;cnt=0;state=0;}
+	  break;	
+	}
+
+return LIMIT(out,300,1800);
+}	

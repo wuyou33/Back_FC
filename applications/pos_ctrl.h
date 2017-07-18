@@ -16,7 +16,7 @@
 #define DEG_TO_RAD		(M_PI / 180.0f)
  void CalcEarthRadius(double lat) ;
  void CalcGlobalDistance(double lat, double lon,float local_Lat,float local_Lon,float *posNorth,float *posEast ) ;
- void CalcGlobalLocation(float posNorth,float posEast,float local_Lat,float local_Lon,float *GPS_W_F,float* GPS_J_F);
+ void CalcGlobalLocation(float posNorth,float posEast,float local_Lat,float local_Lon,double *GPS_W_F,double* GPS_J_F);
 extern float yaw_qr_off,r1,r2;
 typedef struct
 { float exp;

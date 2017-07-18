@@ -152,6 +152,10 @@ void Duty_10ms()
 							}					
 				//flow_debug_stop=0;			
 				//BLE UPLOAD《----------------------蓝牙调试
+			 #if defined(HEIGHT_TEST) 
+        UART_UP_LOAD_SEL=2;
+				flow_debug_stop=0;			
+       #endif							
 			 if(UART_UP_LOAD_SEL_FORCE!=0)
           UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
 					if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
@@ -428,7 +432,11 @@ void Duty_20ms()
 }
 
 void Duty_50ms()//遥控 模式设置
-{
+{   
+	  if(ak8975_fc.Mag_CALIBRATED==1)
+			mode_oldx.mems_state=31;	
+	  else
+			mode_oldx.mems_state=0; 
 		//---------------use now
 		//------------0 1   |   2 3       KEY_SEL
 		#if USE_RECIVER_MINE		
@@ -486,10 +494,10 @@ void Duty_50ms()//遥控 模式设置
 		#if USE_M100_IMU
 		mode_oldx.flow_f_use_ukfm=1;
 		#else
-		if(Rc_Get_PWM.RST>1500)
+//		if(Rc_Get_PWM.RST>1500)
 		mode_oldx.flow_f_use_ukfm=1;
-		else
-		mode_oldx.flow_f_use_ukfm=2;
+//		else
+//		mode_oldx.flow_f_use_ukfm=2;
 		#endif
 //	  if(Rc_Get_PWM.AUX1>1500)
 //		mode_oldx.show_qr_origin=1;//mode_oldx.auto_fly_up=1;
@@ -501,7 +509,7 @@ void Duty_50ms()//遥控 模式设置
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
 	static u8 hml_cnt;	
-  if(!NAV_BOARD_CONNECT||yaw_use_fc)		
+  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)		
   if(hml_cnt++>2-1){hml_cnt=0;		
 	ANO_AK8975_Read();
 	}
@@ -526,7 +534,18 @@ void Duty_50ms()//遥控 模式设置
 	circle.use_spd=circle.connect&&mode_oldx.flow_sel;
 	
 	static u8 led_cnt;
-	if(led_cnt++>1.5/0.05){led_cnt=0;LEDRGB();}
+	if(led_cnt++>0.68/0.05){led_cnt=0;
+	if(NAV_BOARD_CONNECT)
+	LEDRGB();
+	else
+	#if USE_MINI_BOARD
+	GPIO_ResetBits(GPIOC,GPIO_Pin_1);
+	#else
+	GPIO_ResetBits(GPIOD,GPIO_Pin_12);
+	#endif	
+	}
+	
+	
 }
 
 
