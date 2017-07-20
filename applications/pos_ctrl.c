@@ -195,7 +195,7 @@ void Positon_control(float T)// Œª÷√øÿ÷∆
 	if(!init){init=1;
 		//pos
 		nav_pos_ctrl[X].mode=2;
-		nav_pos_pid.kp=0.3;
+		nav_pos_pid.kp=0.1;//3;
 		nav_pos_pid.ki=0.00;
 		nav_pos_pid.kd=0.0;
 		nav_pos_pid.dead=0.001;

@@ -733,7 +733,7 @@ void Send_PID(void)
 	
 	Send_Data_GOL_LINK(data_to_send, _cnt);
 }  
-
+u8 feed_imu_dog=1;
 struct IMU_PAR imu_board;
 void Send_IMU_PARM(void)
 {u8 i;	u8 sum = 0;
@@ -756,6 +756,10 @@ void Send_IMU_PARM(void)
 	data_to_send[_cnt++]=BYTE0(_temp);
  	_temp = imu_board.flow_set_yaw*10;
 	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = mode_oldx.px4_map;
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = feed_imu_dog;
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	data_to_send[3] = _cnt-4;

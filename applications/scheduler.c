@@ -442,12 +442,13 @@ void Duty_50ms()//遥控 模式设置
 		#if USE_RECIVER_MINE		
 		mode_oldx.flow_hold_position=KEY_SEL[0];
 		mode_oldx.height_safe=KEY_SEL[1];
+		mode_oldx.en_pid_sb_set=KEY_SEL[2];
     #else
 	  mode_oldx.show_qr_origin=KEY_SEL[0];
     mode_oldx.en_sd_save=KEY_SEL[1];		
     #endif
-		
-		mode_oldx.en_pid_sb_set=KEY_SEL[2];
+	
+
 //-------------------------------------------------	
 		#if !USE_RECIVER_MINE
 			#if !USE_TOE_IN_UNLOCK
@@ -488,10 +489,10 @@ void Duty_50ms()//遥控 模式设置
 		else
 		mode_oldx.rc_control_flow_pos_sel=0; 
 					
-   // mode_oldx.flow_f_use_ukfm=2;	    //2 -> origin 1-> KF mine
+	    
 	  mode_oldx.test4=1;//acc
 	  //------------7 6 5 4  |  3 2 1 0  KEY
-		#if USE_M100_IMU
+		#if USE_M100_IMU//2 -> origin 1-> KF mine
 		mode_oldx.flow_f_use_ukfm=1;
 		#else
 //		if(Rc_Get_PWM.RST>1500)
@@ -503,8 +504,16 @@ void Duty_50ms()//遥控 模式设置
 //		mode_oldx.show_qr_origin=1;//mode_oldx.auto_fly_up=1;
 //		else
 //		mode_oldx.show_qr_origin=0;	
-		  
- 
+//px4 mapper		
+//		if(Rc_Get_PWM.AUX2>1500) 
+//   		mode_oldx.px4_map=1;
+//		else
+//		  mode_oldx.px4_map=0;
+
+		if(Rc_Get_PWM.AUX2>1500) 
+   		mode_oldx.en_sd_save=1;
+		else
+		  mode_oldx.en_sd_save=0;
 	mode_oldx.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集

@@ -235,6 +235,7 @@ u8 en_pid_fuzzy_p;
 u8 en_pid_sb_set;
 u8 trig_flow_spd;
 u8 trig_h_spd;
+u8 px4_map;
 u8 en_fuzzy_angle_pid;
 u8 en_sensor_equal_flp;
 u8 pit_rol_pid_out_flp;	

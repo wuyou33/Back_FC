@@ -379,7 +379,8 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	exp_height=ALT_POS_BMP_UKF_OLDX*1000;}
   #endif
 	mode_safe_reg=mode_oldx.height_safe;
-	
+	#if defined(HEIGHT_TEST) 
+	#else
 	if(smart.rc.POS_MODE==0){
 	if(height_ctrl_mode==2&&!mode_oldx.height_safe&&ALT_POS_SONAR2*1000>SONAR_HEIGHT*1.5&&mode_oldx.h_is_fix){//超声波模式期望高度固定为1.2m
 	if(circle.connect)
@@ -387,6 +388,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else
 	exp_height=1000;	
   }}
+	#endif
 	
 	if(height_ctrl_mode==1||mode_oldx.height_safe)
 	#if EN_ATT_CAL_FC	

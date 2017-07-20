@@ -18,7 +18,7 @@ int main(void)
 {
  Init_Finish = All_Init();		
 	while(1)
-	{
+	{  
 		Duty_Loop(); 
 	}
 }

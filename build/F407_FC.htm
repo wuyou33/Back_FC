@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\build\F407_FC.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\build\F407_FC.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Tue Jul 18 15:41:03 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Thu Jul 20 18:50:45 2017
 <BR><P>
 <H3>Maximum Stack Usage =       1496 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -341,7 +341,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_Loop
 </UL>
 
-<P><STRONG><a name="[97]"></a>Duty_50ms</STRONG> (Thumb, 596 bytes, Stack size 16 bytes, scheduler.o(.text))
+<P><STRONG><a name="[97]"></a>Duty_50ms</STRONG> (Thumb, 622 bytes, Stack size 16 bytes, scheduler.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 176<LI>Call Chain = Duty_50ms &rArr; ANO_AK8975_Read &rArr; ANO_AK8975_Read_Mag_Data &rArr; ANO_AK8975_CalOffset_Mag &rArr; WRITE_PARM &rArr; STMFLASH_Write &rArr; FLASH_EraseSector &rArr; FLASH_WaitForLastOperation
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mode_check
@@ -356,7 +356,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_Loop
 </UL>
 
-<P><STRONG><a name="[9c]"></a>Duty_Loop</STRONG> (Thumb, 300 bytes, Stack size 8 bytes, scheduler.o(.text))
+<P><STRONG><a name="[9c]"></a>Duty_Loop</STRONG> (Thumb, 302 bytes, Stack size 8 bytes, scheduler.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 1496<LI>Call Chain = Duty_Loop &rArr; Duty_10ms &rArr; baro_ctrl &rArr; ukf_baro_task1 &rArr; kf_oldx &rArr; rt_powd_snf &rArr; __hardfp_pow &rArr; sqrt &rArr; _dsqrt &rArr; __fpl_dnaninf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_50ms
@@ -2548,7 +2548,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Positon_control
 </UL>
 
-<P><STRONG><a name="[95]"></a>Positon_control</STRONG> (Thumb, 8816 bytes, Stack size 168 bytes, pos_ctrl.o(.text))
+<P><STRONG><a name="[95]"></a>Positon_control</STRONG> (Thumb, 8820 bytes, Stack size 168 bytes, pos_ctrl.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 640<LI>Call Chain = Positon_control &rArr; OLDX_POS_CONTROL_ESO &rArr; OLDX_ESO_2N_POS &rArr; fal &rArr; __hardfp_pow &rArr; sqrt &rArr; _dsqrt &rArr; __fpl_dnaninf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Cycle_T
@@ -2842,7 +2842,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GOL_LINK_TASK
 </UL>
 
-<P><STRONG><a name="[18a]"></a>Send_IMU_PARM</STRONG> (Thumb, 300 bytes, Stack size 72 bytes, usart.o(.text))
+<P><STRONG><a name="[18a]"></a>Send_IMU_PARM</STRONG> (Thumb, 340 bytes, Stack size 72 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = Send_IMU_PARM &rArr; Send_Data_GOL_LINK &rArr; UsartSend_GOL_LINK
 </UL>
 <BR>[Calls]<UL><LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_Data_GOL_LINK
@@ -2875,7 +2875,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;All_Init
 </UL>
 
-<P><STRONG><a name="[18b]"></a>Data_Receive_Anl5</STRONG> (Thumb, 1006 bytes, Stack size 24 bytes, usart.o(.text))
+<P><STRONG><a name="[18b]"></a>Data_Receive_Anl5</STRONG> (Thumb, 1016 bytes, Stack size 24 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Data_Receive_Anl5
 </UL>
 <BR>[Calls]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;To_180_degrees
@@ -2883,7 +2883,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART5_IRQHandler
 </UL>
 
-<P><STRONG><a name="[42]"></a>UART5_IRQHandler</STRONG> (Thumb, 332 bytes, Stack size 16 bytes, usart.o(.text))
+<P><STRONG><a name="[42]"></a>UART5_IRQHandler</STRONG> (Thumb, 372 bytes, Stack size 16 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = UART5_IRQHandler &rArr; Data_Receive_Anl5
 </UL>
 <BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ClearITPendingBit
@@ -2892,7 +2892,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f4xx.o(RESET)
 </UL>
-<P><STRONG><a name="[aa]"></a>Usart1_Init</STRONG> (Thumb, 320 bytes, Stack size 40 bytes, usart.o(.text))
+<P><STRONG><a name="[aa]"></a>Usart1_Init</STRONG> (Thumb, 276 bytes, Stack size 40 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 108<LI>Call Chain = Usart1_Init &rArr; USART_Init &rArr; RCC_GetClocksFreq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
@@ -2911,7 +2911,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;All_Init
 </UL>
 
-<P><STRONG><a name="[2fe]"></a>Send_Status</STRONG> (Thumb, 1230 bytes, Stack size 28 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[2fe]"></a>Send_Status</STRONG> (Thumb, 1228 bytes, Stack size 28 bytes, usart.o(.text), UNUSED)
 
 <P><STRONG><a name="[18c]"></a>Send_GPS</STRONG> (Thumb, 784 bytes, Stack size 56 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
@@ -3099,8 +3099,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Usart1_Send_DMA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[1a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Version
-<LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Status
+<BR>[Called By]<UL><LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Status
 <LI><a href="#[1a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_RCData
 <LI><a href="#[1a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Speed
 <LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_QR1
@@ -3115,6 +3114,7 @@ Global Symbols
 <LI><a href="#[1ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_User
 <LI><a href="#[1ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_MotoPWM
 <LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Power
+<LI><a href="#[1a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Send_Version
 </UL>
 
 <P><STRONG><a name="[1a0]"></a>ANO_DT_Send_PID</STRONG> (Thumb, 562 bytes, Stack size 64 bytes, data_transfer.o(.text))
