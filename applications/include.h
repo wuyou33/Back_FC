@@ -20,9 +20,10 @@ extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
 //================测试程序==============
-//#define  HEIGHT_TEST
-//#define  POS_TEST
-//#define  POS_SPD_TEST
+//#define  HEIGHT_TEST  // 高度自动控制
+//#define  POS_TEST     // 位置自动控制
+//#define  POS_SPD_TEST // 速度自动控制
+#define  AUTO_DOWN    // 自动降落
 //================系统===================
 #define USE_MINI_FC_FLOW_BOARD 0 //使用MINI——OLDX——FLOW板子
 #define USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS 1

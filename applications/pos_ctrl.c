@@ -27,6 +27,25 @@ void CalcEarthRadius(double lat) {
 }
 
 
+// input lat/lon in degrees, returns distance in meters
+float navCalcDistance(double lat1, double lon1, double lat2, double lon2) {
+    float n = (lat1 - lat2) * r1;
+    float e = (lon1 - lon2) * r2;
+    return __sqrtf(n*n + e*e);
+}
+
+// input lat/lon in degrees, returns bearing in radians
+float navCalcBearing(double lat1, double lon1, double lat2, double lon2) {
+    float n = (float)((lat2 - lat1) * (double)DEG_TO_RAD * r1);
+    float e = (float)((lon2 - lon1) * (double)DEG_TO_RAD * r2);
+    float ret = atan2f(e, n);
+
+    if (!isfinite(ret))
+        ret = 0.0f;
+
+    return ret;
+}
+
 
 CIRCLE circle,track;
 MARKER marker;
@@ -247,6 +266,7 @@ void Positon_control(float T)// 位置控制
 				break;
 			}	
   }
+	
 	if(!pos_exp_test){
 	if(ALT_POS_SONAR2<SONAR_HEIGHT*1.45||!fly_ready||mode_oldx.flow_hold_position==0)
 	{reset_nav_pos(Y);reset_nav_pos(X);}
@@ -265,14 +285,10 @@ void Positon_control(float T)// 位置控制
 	mode_flow_hold_position_reg=mode_oldx.flow_hold_position;
 	
 	if(mode_oldx.flow_f_use_ukfm==1||mode_oldx.flow_f_use_ukfm==2)
-		nav_pos_ctrl[X].mode=2;//golable mode
+		nav_pos_ctrl[X].mode=2;//globle mode
 	else if(mode_oldx.flow_f_use_ukfm==0)
 		nav_pos_ctrl[X].mode=1;
 	
-//	if(mode.flow_hold_position==2)
-//		nav_spd_pid.flt_nav=1;
-//	else
-//		nav_spd_pid.flt_nav=0.3;
 	 if(m100.STATUS>1)
 		CalcGlobalLocation(POS_UKF_Y,POS_UKF_X,m100.Init_Lat+off_GPS[0],m100.Init_Lon+off_GPS[1],&m100.Lat,&m100.Lon);
 	
@@ -413,14 +429,14 @@ else
 	 nav_spd_ctrl[X].exp=temp_pos_out[X];
 	 } 
 	
-	
-  if(mode_oldx.flow_hold_position!=2){//速度阶越测试
+  if(mode_oldx.flow_hold_position!=2){
 	 nav_spd_ctrl[Y].exp*=0.0;
 	 nav_spd_ctrl[X].exp*=0.0;}
+	
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;
-	switch(state_tune_spd){
+	switch(state_tune_spd){//速度阶越测试
 	case 0:	
 	if(mode_oldx.trig_flow_spd)
 	{state_tune_spd=1;cnt_s1=0;flag_way=!flag_way;}
@@ -576,6 +592,16 @@ else
 }
 
 
+float cycle_control[2];
+void CIRCLE_CONTROL(float x,float y,float T){
+	
+
+	
+	
+	
+	
+	
+}
 //--------------------------------------自动起飞降落 视觉导航状态机
 u8 mode_change;
 u8 state_v;
@@ -587,6 +613,7 @@ u16 AUTO_DOWN_CUARVE1[]={1500-150,1500-150,1500-100,1500-100,1500-80,1500-80};
 
 void AUTO_LAND_FLYUP(float T)
 { 
+//------------------------------state switch---------------------------------	
 	switch(state_v)
 	{
 		case SG_LOW_CHECK:
@@ -603,7 +630,7 @@ void AUTO_LAND_FLYUP(float T)
 			else
 			state_v=SD_HOLD;	
 			}
-			if((mode_oldx.flow_hold_position!=0)&&(mode_oldx.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready))
+			if((mode_oldx.auto_fly_up==0&&ALT_POS_SONAR2>SONAR_HEIGHT*1.25&&fly_ready))
 			state_v=SD_HOLD1;	
 			
 			if(force_pass){force_pass=0;cnt[0]=0;state_v=SG_MID_CHECK;}
@@ -623,17 +650,19 @@ void AUTO_LAND_FLYUP(float T)
 		case SU_UP1:
 			if(cnt[0]++>5/T||ALT_POS_SONAR2>AUTO_UP_POS_Z)
 				{cnt[0]=0;state_v=SD_HOLD;}	
-			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 //if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+				if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}
 		break;
 		case SD_HOLD1:
-      if(mode_oldx.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
+      if(mode_oldx.auto_fly_up)
 		    cnt[0]++;
 			else
 				cnt[0]=0;
 			if(cnt[0]>0.25/T)
 			{cnt[0]=0;state_v=SD_HOLD;}
 		  
-     if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     // if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+     if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;
     case SD_HOLD:
       if(!mode_oldx.auto_fly_up&&fabs(CH_filter[THR])<DEAD_NAV_RC)
@@ -643,7 +672,8 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>1.5/T)
 			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
 		 
-      if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land				
+     // if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+     if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;				
 			
 		//--------------------------
@@ -651,13 +681,15 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
 				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
 				
-			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			// if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}
     break;
 		case SD_CIRCLE_SLOW_DOWN:
 			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
 				{cnt[0]=0;state_v=SD_CHECK_G;}	
 				
-			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			// if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+			if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			 
     break;
 		case SD_CHECK_G:
 			if((fabs(ALT_VEL_BMP_UKF_OLDX)<GROUND_SPEED_CHECK&&ALT_POS_SONAR2<SONAR_HEIGHT*1.35))
@@ -667,7 +699,8 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.5/T||fabs(acc_3d_hg.z)>1234)
 			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
 			
-			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land	
+			 //if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+			 if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;
 		case SD_SHUT_DOWN:
 		  if((!mode_oldx.auto_fly_up&&!fly_ready&&ALT_POS_SONAR2<SONAR_HEIGHT*1.25&&(CH_filter[THR]<-500+100))||!fly_ready )
@@ -681,11 +714,16 @@ void AUTO_LAND_FLYUP(float T)
 		break;
 		
 	}
-//-------------------------------------------------------------
+	
+	
+//----------------------------error----------------------------
+#if defined(AUTO_DOWN)
+#else	
 	 if(Rc_Get_PWM.AUX1>1500)
 	  state_v=SD_HOLD;
 	 else
 		state_v=SD_SAFE;
+#endif	 
 //----------------------------output---------------------------
 	  if(state_v==SG_LOW_CHECK)
 		smart.rc.POS_MODE=0;	
@@ -698,7 +736,7 @@ void AUTO_LAND_FLYUP(float T)
 		smart.spd.x=smart.spd.y=0;
 		smart.spd.z=AUTO_FLY_SPD_Z;
 		}
-		else if(state_v==SD_HOLD1||state_v==SD_HOLD){//direct fly up
+		else if(state_v==SD_HOLD1||state_v==SD_HOLD){//air
     smart.pos.x=smart_in.pos.x;			
 		smart.pos.y=smart_in.pos.y;		
 		smart.pos.z=smart_in.pos.z;	
@@ -730,9 +768,9 @@ void AUTO_LAND_FLYUP(float T)
 	  }
     else if(state_v== SD_CIRCLE_SLOW_DOWN||state_v== SD_CHECK_G)
 		{
-		smart.spd.x=0;			
-		smart.spd.y=0;				
-		smart.spd.z=-AUTO_DOWN_SPD_Z;	
+		smart.spd.x=0;//修改该控制量由视觉信息可实现，视觉导航			
+		smart.spd.y=0;//修改该控制量由视觉信息可实现，视觉导航							
+		smart.spd.z=-AUTO_DOWN_SPD_Z;//悬停测试将其改为0 
 	
 		smart.rc.RST=3;		
 		smart.rc.POS_MODE=SMART_MODE_SPD;

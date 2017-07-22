@@ -102,14 +102,7 @@ void Duty_5ms()
 		outer_loop_time=temp;
 	
  	CTRL_2( outer_loop_time ); // 外环角度控制
-	
-//	float temp1 =(float) Get_Cycle_T(GET_T_BARO_UKF)/1000000.;							
-//	if(temp1<0.001)
-//	baro_task_time=0.005;	
-//	else
-//	baro_task_time=temp1;
-
-//	baro_ctrl(baro_task_time,&hc_value);//高度融合			
+			
 }
 
 
@@ -121,7 +114,7 @@ void Duty_10ms()
 {
 	static u8 cnt_bmp;
 	static u8 cnt[4];					 		
-				//To  Odroid 图像模块
+//-------------------------------To  Odroid 图像模块---------------------------------------
 				if(cnt[0]++>2){cnt[0]=0;
 						#if EN_DMA_UART3 
 					if(DMA_GetFlagStatus(DMA1_Stream3,DMA_FLAG_TCIF3)!=RESET)//等待DMA2_Steam7传输完成
@@ -136,7 +129,7 @@ void Duty_10ms()
 						#endif
 							}			
 				
-				//To  IMU模块	
+//--------------------------------------To  IMU模块--------------------------------------------	
 				if(1||cnt[1]++>0){cnt[1]=0;	
 				  #if EN_DMA_UART2 					
 					if(DMA_GetFlagStatus(DMA1_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA2_Steam7传输完成
@@ -150,11 +143,18 @@ void Duty_10ms()
 								 GOL_LINK_TASK();	
 					#endif
 							}					
-				//flow_debug_stop=0;			
-				//BLE UPLOAD《----------------------蓝牙调试
+
+//-----------------------------------------------BLE UPLOAD---------------------------蓝牙调试
+				//flow_debug_stop=0;//强制FC蓝牙输出			
 			 #if defined(HEIGHT_TEST) 
         UART_UP_LOAD_SEL=2;
-				flow_debug_stop=0;			
+				flow_debug_stop=0;	
+	     #elif defined(POS_SPD_TEST)	
+				UART_UP_LOAD_SEL=3;
+				flow_debug_stop=0;
+       #elif defined(POS_TEST)
+				UART_UP_LOAD_SEL=5;
+				flow_debug_stop=0;							
        #endif							
 			 if(UART_UP_LOAD_SEL_FORCE!=0)
           UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
@@ -235,37 +235,43 @@ void Duty_10ms()
 										else{//DEBUG-------------------------Normal mode_oldx--------------------------------
 								    switch(UART_UP_LOAD_SEL)
 											{
-											case 0://BMP UKF
+											case 0://气压计融合
 											data_per_uart1(
 											ALT_POS_BMP_UKF_OLDX*100,baroAlt/10,baro.relative_height/10,
 											Rc_Get_PWM.Heart,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
 											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,pi_flow.z_o*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
-											case 1://BMP UKF
+											case 1://速度，加速度，高度和控制
 											data_per_uart1(
 											nav_spd_ctrl[Y].pid_out*10,nav_spd_ctrl[X].pid_out*10,ALT_POS_SONAR2*100,
 											VEL_UKF_Y*100,VEL_UKF_X*100,ultra_speed/10,
 											acc_body[Y]/100.,acc_body[X]/100.,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
-											case 2://BMP UKF
+											case 2://高度控制，速度z控制和速度xy
 											data_per_uart1(
 											ALT_POS_BMP_UKF_OLDX*1000,ultra_ctrl.exp,ultra_ctrl.now,
 											0, wz_speed_pid_v.exp,wz_speed_pid_v.now,
 											VEL_UKF_Y*100,VEL_UKF_X*100,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
-											case 3://BMP UKF
+											case 3://速度xy测试
 											data_per_uart1(
-											0,flow_matlab_data[0]*100,flow_matlab_data[1]*100,
+											0,flow_matlab_data[X]*100,flow_matlab_data[Y]*100,
 											nav_spd_ctrl[X].now,nav_spd_ctrl[X].exp,0,
 											nav_spd_ctrl[Y].now,nav_spd_ctrl[Y].exp,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
-											case 4://BMP UKF
+											case 4://接收机信号
 											data_per_uart1(
 											Rc_Get_PWM.ROLL,Rc_Get_PWM.PITCH,Rc_Get_PWM.YAW,
 											Rc_Get_PWM.THROTTLE, flow_matlab_data[2]*100,flow_matlab_data[3]*100,
 											VEL_UKF_Y*100,VEL_UKF_X*100,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
-											case 5:
+											case 5://位置xy测试
+											data_per_uart1(
+											0,nav_pos_ctrl[X].now*100,nav_pos_ctrl[Y].now*100,
+											nav_pos_ctrl[X].now*100,nav_pos_ctrl[X].exp*100,0,
+											nav_pos_ctrl[Y].now*100,nav_pos_ctrl[Y].exp*100,0,
+											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
+											case 6:
 											data_per_uart1(
 											baro.h_flt*1000,0,hc_value.fusion_height,
 											baro.v_flt*100,hc_value.fusion_speed/10,ultra_speed/10,
@@ -446,8 +452,7 @@ void Duty_50ms()//遥控 模式设置
     #else
 	  mode_oldx.show_qr_origin=KEY_SEL[0];
     mode_oldx.en_sd_save=KEY_SEL[1];		
-    #endif
-	
+    #endif	
 
 //-------------------------------------------------	
 		#if !USE_RECIVER_MINE
@@ -472,36 +477,47 @@ void Duty_50ms()//遥控 模式设置
 				#endif
 			#endif
 		#endif
-		if(ALT_POS_SONAR2<4.5&&height_ctrl_mode==2&&NS==2 )
-		mode_oldx.test3=1;
-		else
-		mode_oldx.test3=0;
-		
+		//-----------------------------constant parameter--------------------------
 		if(mode_oldx.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))
 		mode_oldx.h_is_fix=1;		
 		else
 		mode_oldx.h_is_fix=0;	
 		
-		if(mode_oldx.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
+		if(mode_oldx.flow_hold_position==2&&circle.connect&&(state_v==SD_HOLD||state_v==SD_HOLD1))//树莓派连接是航点	
 		mode_oldx.rc_control_flow_pos_sel=3;
-		else if(mode_oldx.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))	
+		else if(mode_oldx.flow_hold_position==2&&(state_v==SD_HOLD||state_v==SD_HOLD1))//只有光流是圆形轨迹	
 		mode_oldx.rc_control_flow_pos_sel=2;
 		else
 		mode_oldx.rc_control_flow_pos_sel=0; 
-					
-	    
-	  mode_oldx.test4=1;//acc
+					    
+	  mode_oldx.test4=1;//position control with acc_loop
 	  //------------7 6 5 4  |  3 2 1 0  KEY
 		#if USE_M100_IMU//2 -> origin 1-> KF mine
 		mode_oldx.flow_f_use_ukfm=1;
 		#else
-//		if(Rc_Get_PWM.RST>1500)
 		mode_oldx.flow_f_use_ukfm=1;
-//		else
-//		mode_oldx.flow_f_use_ukfm=2;
 		#endif
+    //-------------------飞控测试模式汇总----------------
+	  #if defined(AUTO_DOWN)
+	  if(Rc_Get_PWM.RST>1500)
+		mode_oldx.auto_fly_up=1;
+		else
+		mode_oldx.auto_fly_up=0;	
+		#elif defined(POS_SPD_TEST)
+	  if(Rc_Get_PWM.RST>1500)
+		mode_oldx.trig_flow_spd=1;
+		else
+		mode_oldx.trig_flow_spd=0;	
+		#elif defined(HEIGHT_TEST) 
+	  if(Rc_Get_PWM.RST>1500)
+	  mode_oldx.fc_test1=1;
+	  else
+		mode_oldx.fc_test1=0;
+		#endif
+		
+		
 //	  if(Rc_Get_PWM.AUX1>1500)
-//		mode_oldx.show_qr_origin=1;//mode_oldx.auto_fly_up=1;
+//		mode_oldx.show_qr_origin=1;
 //		else
 //		mode_oldx.show_qr_origin=0;	
 //px4 mapper		
@@ -509,11 +525,12 @@ void Duty_50ms()//遥控 模式设置
 //   		mode_oldx.px4_map=1;
 //		else
 //		  mode_oldx.px4_map=0;
-
-		if(Rc_Get_PWM.AUX2>1500) 
-   		mode_oldx.en_sd_save=1;
-		else
-		  mode_oldx.en_sd_save=0;
+//sd save
+//		if(Rc_Get_PWM.AUX2>1500) 
+//   		mode_oldx.en_sd_save=1;
+//		else
+//		  mode_oldx.en_sd_save=0;
+		
 	mode_oldx.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
@@ -532,7 +549,7 @@ void Duty_50ms()//遥控 模式设置
 	#endif
 	#endif
 	
-//-------------------------超时判断	
+//-------------------------超时判断-----------------------------------	
 	if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
 	if(imu_loss_cnt++>1500/50){NAV_BOARD_CONNECT=0;}
 		
@@ -546,12 +563,14 @@ void Duty_50ms()//遥控 模式设置
 	if(led_cnt++>0.68/0.05){led_cnt=0;
 	if(NAV_BOARD_CONNECT)
 	LEDRGB();
-	else
+	else{
+	module.sonar=module.laser=module.gps=module.flow=0;	
 	#if USE_MINI_BOARD
 	GPIO_ResetBits(GPIOC,GPIO_Pin_1);
 	#else
 	GPIO_ResetBits(GPIOD,GPIO_Pin_12);
 	#endif	
+	}
 	}
 	
 	

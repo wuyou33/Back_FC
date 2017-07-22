@@ -430,10 +430,6 @@ void Ultra_Ctrl1(float T,float thr)//Î»ÖÃ»·PID
 	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&ABS(smart.rc.THROTTLE-1500)>25))
 	exp_height=ultra_dis_lpf;
 	#if defined(HEIGHT_TEST) 
-	 if(Rc_Get_PWM.RST>1500)
-	  mode_oldx.fc_test1=1;
-	 else
-		mode_oldx.fc_test1=0;
 	 if(mode_oldx.fc_test1)
 	    exp_height=height_test(T);
 	#endif

@@ -68,18 +68,18 @@ static void navUkfRotateVecByRevMatrix(float *vr, float *v, float *m) {
     vr[1] = m[0*3 + 1]*v[0] + m[1*3 + 1]*v[1] + m[2*3 + 1]*v[2];
     vr[2] = m[0*3 + 2]*v[0] + m[1*3 + 2]*v[1] + m[2*3 + 2]*v[2];
 }
-
+#define H_HIST 40
 void feed_acc_buf(float *in)
 {
 u8 i,j;	
-float reg[3][20];	
+float reg[3][H_HIST]={0};	
 static u8 cnt;
  for(i=0;i<3;i++)
-	for(j=0;j<20;j++)
+	for(j=0;j<H_HIST;j++)
    reg[i][j]=acc_body_buf[i][j];
 	
  for(i=0;i<3;i++)
-	for(j=0;j<20-1;j++)
+	for(j=1;j<H_HIST-1;j++)
    acc_body_buf[i][j]=reg[i][j-1];	
 	
 	acc_body_buf[0][0]=in[0];
@@ -366,8 +366,8 @@ float acc_body_temp[3];
 	OLDX_KF2(Z_kf,r_sonar_new[3],r_sonar_new,flag_sensor,X_kf_baro,state_correct_baro,T);
   
 	#if EN_ACC_TIME_TRIG
-	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0]+(ACC_FORWARD-1)*T*X_kf_baro[1]+1/2*pow((ACC_FORWARD-1)*T,2)*X_kf_baro[2];
-	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1]+(ACC_FORWARD-1)*T*X_kf_baro[2];
+	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0]+(ACC_FORWARD)*T*X_kf_baro[1]+1/2*pow((ACC_FORWARD)*T,2)*(acc_bmp+X_kf_baro[2]);
+	ALT_VEL_BMP_UKF_OLDX=X_kf_baro[1]+(ACC_FORWARD)*T*(acc_bmp+X_kf_baro[2]);
 	ALT_ACC_BMP_UKF_OLDX=X_kf_baro[2];	
 	#else
 	ALT_POS_BMP_UKF_OLDX=X_kf_baro[0];

@@ -26,6 +26,10 @@ typedef struct
 extern ERO ero;
 extern u8 mode_value[],mode_state;
 
-
+typedef struct 
+{
+ u8 gps,flow,sonar,bmp,laser,pi;
+}MOUDLE;
+extern MOUDLE module;
 void mode_check(float *ch_in,u8 *mode_value);
 #endif

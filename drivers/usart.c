@@ -286,6 +286,11 @@ int debug_pi_flow[20];
 		circle.y=(int16_t)((*(data_buf+25)<<8)|*(data_buf+26));//m
 		circle.z=(int16_t)((*(data_buf+27)<<8)|*(data_buf+28));//m
 		#endif
+	module.sonar=	*(data_buf+29);
+	module.gps=	*(data_buf+30);
+	module.flow=	*(data_buf+31);
+	module.laser=	*(data_buf+32);
+
 	}		
 	else if(*(data_buf+2)==0x02)//CAL
   { 
@@ -2203,35 +2208,20 @@ float rate_gps_board;
 		sum += *(data_buf+i);
 	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
 	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
-	if(*(data_buf+2)==0x01)//SONAR
-  {
-	//rate_gps_board=(float)((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));///10.;
-//	sonar_avoid[0]=((int16_t)(*(data_buf+4)<<8)|*(data_buf+5));
-//	sonar_avoid[1]=((int16_t)(*(data_buf+6)<<8)|*(data_buf+7));
-//	sonar_avoid[2]=((int16_t)(*(data_buf+8)<<8)|*(data_buf+9));
-//	sonar_avoid[3]=((int16_t)(*(data_buf+10)<<8)|*(data_buf+11));
-//	sonar_avoid[4]=((int16_t)(*(data_buf+12)<<8)|*(data_buf+13));
-//	sonar_avoid[5]=((int16_t)(*(data_buf+14)<<8)|*(data_buf+15));
-//	sonar_avoid[6]=((int16_t)(*(data_buf+16)<<8)|*(data_buf+17));
-//	sonar_avoid[7]=((int16_t)(*(data_buf+18)<<8)|*(data_buf+19));
-//	sonar_avoid_c[0]=((int16_t)(*(data_buf+20)<<8)|*(data_buf+21));
-//	sonar_avoid_c[1]=((int16_t)(*(data_buf+22)<<8)|*(data_buf+23));	
-	//sys.avoid=1;
-	}	
-	else if(*(data_buf+2)==0x02)//SLAM_frame
+  if(*(data_buf+2)==0x02)//Circle
   {
 
 	circle.connect=1;
 	circle.lose_cnt=0;
-	circle.check=(*(data_buf+4));///10.;
+	circle.check=(*(data_buf+4));
   rc_value_temp=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6));
 	if(rc_value_temp<320)
-	circle.x=rc_value_temp;//Moving_Median(16,3,rc_value_temp);
-	circle.y=(int16_t)(*(data_buf+7));//Moving_Median(17,3,((int16_t)(*(data_buf+7))));
-	circle.control[0]=(int8_t)(*(data_buf+8));
-	circle.control[1]=(int8_t)(*(data_buf+9));
-	circle.r=(int8_t)(*(data_buf+10));
-	track.check=(int8_t)(*(data_buf+11));
+	circle.x=rc_value_temp;
+	rc_value_temp=((int16_t)(*(data_buf+7)<<8)|*(data_buf+8));
+	if(rc_value_temp<240)
+	circle.y=rc_value_temp;
+	circle.r=(int8_t)(*(data_buf+9));
+
 	}			
 	else if(*(data_buf+2)==0x03)//SLAM_frame
   {
@@ -3367,10 +3357,10 @@ void sd_publish(void)
 	sd_save[cnt++]=Rol_fc*100;
 	sd_save[cnt++]=Yaw_fc*100;
 
-	sd_save[cnt++]=flow_matlab_data[2]*1000;
-	sd_save[cnt++]=flow_matlab_data[3]*1000;
-	sd_save[cnt++]=0;
-	sd_save[cnt++]=0;
+	sd_save[cnt++]=VEL_UKF_X*100;//flow_matlab_data[2]*1000;
+	sd_save[cnt++]=VEL_UKF_Y*100;//flow_matlab_data[3]*1000;
+	sd_save[cnt++]=POS_UKF_X*100;
+	sd_save[cnt++]=POS_UKF_Y*100;
 	sd_save[cnt++]=0;
 	break;
 	}

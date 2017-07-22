@@ -268,9 +268,8 @@ void ANO_DT_Data_Exchange(void)
 		 #if USE_HT_GROUND 
 		 
 		 #else
-		 ANO_DT_Send_Location(m100.STATUS,m100.GPS_STATUS,temp_j,temp_w,0);
+		 ANO_DT_Send_Location(state_v,m100.GPS_STATUS,temp_j,temp_w,0);
 		 #endif
-		 //ANO_DT_Send_Location(test_up[0],test_up[1],116.123123*10000000,38.123123*10000000,test_up[2]);
 		}
 		if(f.send_pid1){
 	  state_mine=3;}

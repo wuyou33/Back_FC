@@ -27,10 +27,10 @@ u8 All_Init()
 	SysTick_Configuration(); 	//滴答时钟
 	cpuidGetId();
 	I2c_Soft_Init();					//初始化模拟I2C
-	Delay_ms(100);						//延时
-	//while(1);
+	Delay_ms(66);						//启动延时
 	PWM_Out_Init(400);				//初始化电调输出功能	
 	PWM_AUX_Out_Init(50);
+	Delay_ms(8888);						//启动延时
 	#if EN_ATT_CAL_FC
 	#if USE_MINI_FC_FLOW_BOARD
 	MPU6050_Init(20);
