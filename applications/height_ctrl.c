@@ -384,9 +384,9 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(smart.rc.POS_MODE==0){
 	if(height_ctrl_mode==2&&!mode_oldx.height_safe&&ALT_POS_SONAR2*1000>SONAR_HEIGHT*1.5&&mode_oldx.h_is_fix){//超声波模式期望高度固定为1.2m
 	if(circle.connect)
-	exp_height=1000;
+	exp_height=1500;
 	else
-	exp_height=1000;	
+	exp_height=1500;	
   }}
 	#endif
 	

@@ -676,7 +676,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.25/T)
 			{cnt[0]=0;state_v=SD_HOLD;}
 		  
-     // if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+      //if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
      if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;
     case SD_HOLD:
@@ -687,23 +687,28 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>1.5/T)
 			{cnt[0]=0;state_v=SD_HIGH_FAST_DOWN;}
 		 
-     // if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+     //if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
      if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;				
 			
 		//--------------------------
     case SD_HIGH_FAST_DOWN:
-			if(cnt[0]++>6/T||ALT_POS_SONAR2<AUTO_DOWN_POS_Z)
+			if(cnt[0]++>6/T||fabs(ALT_POS_SONAR2-AUTO_DOWN_POS_Z)<0.26)
 				{cnt[0]=0;state_v=SD_CIRCLE_SLOW_DOWN;}	
 				
-			// if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
+			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land		
 			 if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}
     break;
 		case SD_CIRCLE_SLOW_DOWN:
-			if(cnt[0]++>2/T||ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
+			if(ALT_POS_SONAR2<SONAR_HEIGHT*1.35)
+			 cnt[0]++;
+      else 			
+			 cnt[0]=0; 
+			
+			if(cnt[0]>1.0/T)
 				{cnt[0]=0;state_v=SD_CHECK_G;}	
 				
-			// if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
 			if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			 
     break;
 		case SD_CHECK_G:
@@ -714,7 +719,7 @@ void AUTO_LAND_FLYUP(float T)
 			if(cnt[0]>0.5/T||fabs(acc_3d_hg.z)>1234)
 			{cnt[0]=0;state_v=SD_SHUT_DOWN;}
 			
-			 //if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
+			 if(mode_oldx.flow_hold_position==0||!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}//restart until land
 			 if(!fly_ready ){if(cnt[3]++>0.25/T){state_v=SD_SAFE;cnt[3]=0;}}			
     break;
 		case SD_SHUT_DOWN:

@@ -901,7 +901,7 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	track.check=circle.check=(*(data_buf+4));///10.;
 	circle.x=(int16_t)((*(data_buf+5)<<8)|*(data_buf+6));
 	circle.y=(int16_t)((*(data_buf+7)<<8)|*(data_buf+8));
-	circle.z=(int16_t)((*(data_buf+9)<<8)|*(data_buf+10));
+	circle.r=(int16_t)((*(data_buf+9)<<8)|*(data_buf+10));
 	}
 	else if(*(data_buf+2)==0x22)//QR MAP2
 	{

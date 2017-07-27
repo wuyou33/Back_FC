@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\build\F407_FC.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\build\F407_FC.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Sun Jul 09 20:46:24 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060183: Last Updated: Thu Jul 27 14:36:55 2017
 <BR><P>
 <H3>Maximum Stack Usage =       1496 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -2611,8 +2611,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AUTO_LAND_FLYUP
 </UL>
 
-<P><STRONG><a name="[94]"></a>AUTO_LAND_FLYUP</STRONG> (Thumb, 2900 bytes, Stack size 48 bytes, pos_ctrl.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = AUTO_LAND_FLYUP &rArr; __aeabi_dmul
+<P><STRONG><a name="[94]"></a>AUTO_LAND_FLYUP</STRONG> (Thumb, 2966 bytes, Stack size 40 bytes, pos_ctrl.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = AUTO_LAND_FLYUP &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CIRCLE_CONTROL
 <LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_fabs
@@ -2622,7 +2622,7 @@ Global Symbols
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_cdcmple
 <LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2d
 <LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ddiv
-<LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
+<LI><a href="#[131]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dsub
 </UL>
 <BR>[Called By]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_20ms
 </UL>
@@ -2911,7 +2911,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;All_Init
 </UL>
 
-<P><STRONG><a name="[18f]"></a>Data_Receive_Anl5</STRONG> (Thumb, 1098 bytes, Stack size 24 bytes, usart.o(.text))
+<P><STRONG><a name="[18f]"></a>Data_Receive_Anl5</STRONG> (Thumb, 1096 bytes, Stack size 24 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Data_Receive_Anl5
 </UL>
 <BR>[Calls]<UL><LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;To_180_degrees
@@ -2919,7 +2919,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART5_IRQHandler
 </UL>
 
-<P><STRONG><a name="[42]"></a>UART5_IRQHandler</STRONG> (Thumb, 358 bytes, Stack size 16 bytes, usart.o(.text))
+<P><STRONG><a name="[42]"></a>UART5_IRQHandler</STRONG> (Thumb, 356 bytes, Stack size 16 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = UART5_IRQHandler &rArr; Data_Receive_Anl5
 </UL>
 <BR>[Calls]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ClearITPendingBit
@@ -2960,24 +2960,24 @@ Global Symbols
 
 <P><STRONG><a name="[304]"></a>Send_PID2</STRONG> (Thumb, 332 bytes, Stack size 20 bytes, usart.o(.text), UNUSED)
 
-<P><STRONG><a name="[191]"></a>Send_Senser</STRONG> (Thumb, 874 bytes, Stack size 40 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[191]"></a>Send_Senser</STRONG> (Thumb, 882 bytes, Stack size 40 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
 <LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2iz
 </UL>
 
-<P><STRONG><a name="[192]"></a>Send_GPS_Ublox</STRONG> (Thumb, 774 bytes, Stack size 48 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[192]"></a>Send_GPS_Ublox</STRONG> (Thumb, 730 bytes, Stack size 48 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
 <LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2iz
 </UL>
 
-<P><STRONG><a name="[305]"></a>Send_DEBUG1</STRONG> (Thumb, 222 bytes, Stack size 24 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[305]"></a>Send_DEBUG1</STRONG> (Thumb, 260 bytes, Stack size 24 bytes, usart.o(.text), UNUSED)
 
 <P><STRONG><a name="[85]"></a>APP_LINK</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, usart.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_10ms
 </UL>
 
-<P><STRONG><a name="[193]"></a>Data_app</STRONG> (Thumb, 1120 bytes, Stack size 40 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[193]"></a>Data_app</STRONG> (Thumb, 1124 bytes, Stack size 40 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
 <LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
@@ -2992,7 +2992,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f4xx.o(RESET)
 </UL>
-<P><STRONG><a name="[195]"></a>Data_Receive_Anl4</STRONG> (Thumb, 2582 bytes, Stack size 40 bytes, usart.o(.text))
+<P><STRONG><a name="[195]"></a>Data_Receive_Anl4</STRONG> (Thumb, 2588 bytes, Stack size 40 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = Data_Receive_Anl4 &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;my_deathzoom_rc
@@ -3007,7 +3007,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART4_IRQHandler
 </UL>
 
-<P><STRONG><a name="[41]"></a>UART4_IRQHandler</STRONG> (Thumb, 336 bytes, Stack size 8 bytes, usart.o(.text))
+<P><STRONG><a name="[41]"></a>UART4_IRQHandler</STRONG> (Thumb, 340 bytes, Stack size 8 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = UART4_IRQHandler &rArr; Data_Receive_Anl4 &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ClearITPendingBit
@@ -3055,7 +3055,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[34]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_IRQHandler
 </UL>
 
-<P><STRONG><a name="[34]"></a>USART3_IRQHandler</STRONG> (Thumb, 344 bytes, Stack size 8 bytes, usart.o(.text))
+<P><STRONG><a name="[34]"></a>USART3_IRQHandler</STRONG> (Thumb, 354 bytes, Stack size 8 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = USART3_IRQHandler &rArr; Ultra_Get &rArr; insert_sonar_value_and_get_mode_value &rArr; sonar_bubble_sort
 </UL>
 <BR>[Calls]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ClearITPendingBit
@@ -3072,7 +3072,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[19a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_Data_GPS
 </UL>
 
-<P><STRONG><a name="[19b]"></a>Send_IMU_TO_GPS</STRONG> (Thumb, 830 bytes, Stack size 72 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[19b]"></a>Send_IMU_TO_GPS</STRONG> (Thumb, 770 bytes, Stack size 72 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[19a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_Data_GPS
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CPU_LINK_TASK
@@ -3105,11 +3105,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_10ms
 </UL>
 
-<P><STRONG><a name="[306]"></a>data_per_uart2</STRONG> (Thumb, 748 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[306]"></a>data_per_uart2</STRONG> (Thumb, 740 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
 
-<P><STRONG><a name="[307]"></a>data_per_uart3</STRONG> (Thumb, 624 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[307]"></a>data_per_uart3</STRONG> (Thumb, 622 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
 
-<P><STRONG><a name="[8f]"></a>data_per_uart4</STRONG> (Thumb, 7492 bytes, Stack size 56 bytes, usart.o(.text))
+<P><STRONG><a name="[8f]"></a>data_per_uart4</STRONG> (Thumb, 7494 bytes, Stack size 56 bytes, usart.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = data_per_uart4 &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
@@ -3120,7 +3120,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_10ms
 </UL>
 
-<P><STRONG><a name="[8e]"></a>sd_publish</STRONG> (Thumb, 1630 bytes, Stack size 0 bytes, usart.o(.text))
+<P><STRONG><a name="[8e]"></a>sd_publish</STRONG> (Thumb, 1620 bytes, Stack size 0 bytes, usart.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_10ms
 </UL>
 
@@ -4474,7 +4474,6 @@ Global Symbols
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Positon_control
 <LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IMUupdate
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CTRL_2
-<LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AUTO_LAND_FLYUP
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ANO_DT_Data_Exchange
 <LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_20ms
 <LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Duty_10ms
@@ -4878,7 +4877,8 @@ Global Symbols
 <P><STRONG><a name="[131]"></a>__aeabi_dsub</STRONG> (Thumb, 0 bytes, Stack size 32 bytes, daddsub_clz.o(x$fpl$dsub))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = __aeabi_dsub
 </UL>
-<BR>[Called By]<UL><LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Ultra_Ctrl1
+<BR>[Called By]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AUTO_LAND_FLYUP
+<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Ultra_Ctrl1
 <LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Height_Ctrl1
 <LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;All_Out
 <LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Nav_pos_set_test
@@ -5089,7 +5089,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_IMU_TO_GPS
 </UL>
 
-<P><STRONG><a name="[19e]"></a>Send_Data_GOL_LINK_NAV</STRONG> (Thumb, 26 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
+<P><STRONG><a name="[19e]"></a>Send_Data_GOL_LINK_NAV</STRONG> (Thumb, 92 bytes, Stack size 16 bytes, usart.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UsartSend_GOL_LINK_NAV
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Send_IMU_NAV

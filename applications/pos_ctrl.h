@@ -128,7 +128,7 @@ extern u8 mode_change;
 #define DEAD_NAV_RC 50
 #define AUTO_FLY_SPD_Z 0.4 //m/s
 #define AUTO_UP_POS_Z 0.68  //m
-#define AUTO_DOWN_POS_Z LIMIT(SONAR_HEIGHT*1.5,0.25,1) //m
+#define AUTO_DOWN_POS_Z LIMIT(1.5,0.25,2) //m
 #define AUTO_DOWN_SPD_Z 0.4 //m/s
 #define GROUND_SPEED_CHECK 0.3  //m/s
 //------------
