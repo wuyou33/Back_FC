@@ -234,6 +234,7 @@ u8 en_pid_out_yaw;
 u8 en_pid_fuzzy_p;
 u8 en_pid_sb_set;
 u8 trig_flow_spd;
+u8 return_home;
 u8 trig_h_spd;
 u8 px4_map;
 u8 en_fuzzy_angle_pid;
@@ -433,6 +434,7 @@ Flight status val	status name
  int Rc_pit,Rc_rol,Rc_yaw,Rc_thr,Rc_mode,Rc_gear;
  u8 m100_connect;
  double Init_Lat,Init_Lon;
+ float Y_Pos_local,X_Pos_local;
 }M100;
 extern M100 m100;
 extern u16 nrf_uart_cnt;

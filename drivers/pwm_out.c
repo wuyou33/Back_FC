@@ -443,7 +443,11 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 	#endif
 	for(i=0;i<MAXMOTORS;i++)
 	{
+		#if defined(DEBUG_MODE)
+		  pwm_tem[i] = 0 ;
+		#else
 			pwm_tem[i] = pwm[i] ;
+		#endif
 			pwm_tem[i] = LIMIT(pwm_tem[i],min,max);
 	}
 	

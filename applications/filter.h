@@ -18,7 +18,7 @@ typedef struct
 void anotc_filter_1(float base_hz,float gain_hz,float dT,float in,_filter_1_st *f1);
 void Moving_Average1(float in,float moavarray[],u16 len ,u16 fil_cnt[2],float *out);
 void Moving_Average(float moavarray[],u16 len ,u16 *fil_cnt,float in,float *out);
-s32 Moving_Median(s32 moavarray[],u16 len ,u16 *fil_p,s32 in);
+float Moving_Median(u8 item,u8 width_num,float in);
 #define _xyz_f_t xyz_f_t
 void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out);
 double IIR_I_Filter(double InData, double *x, double *y, double *b, short nb, double *a, short na);

@@ -1,7 +1,7 @@
 #ifndef _MINIMAXTRIX_H_
 #define _MINIMAXTRIX_H_
 
-#include "../HARDWARE/MATH/miniMatrix.h"
+#include "miniMatrix.h"
 
 //////////////////////////////////////////////////////////////////////////
 //

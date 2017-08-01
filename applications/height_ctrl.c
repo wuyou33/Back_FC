@@ -163,7 +163,6 @@ void Height_Ctrl1(float T,float thr)
 				thr_use=thr;//最终使用遥感量
 				if(mode_oldx.height_safe)//安全模式下PID参数选择
 				{
-				mode_oldx.height_in_speed=1;
 				ultra_pid_use.kp =ultra_pid_safe.kp;ultra_pid_use.ki =ultra_pid_safe.ki; ultra_pid_use.kd =ultra_pid_safe.kd;  
 				wz_speed_pid_use.kp =wz_speed_pid_safe.kp*k_sensitivity[2];wz_speed_pid_use.ki =wz_speed_pid_safe.ki; wz_speed_pid_use.kd =wz_speed_pid_safe.kd;  
 				wz_speed_pid_use.fp=wz_speed_pid_safe.fp;
@@ -194,15 +193,12 @@ void Height_Ctrl1(float T,float thr)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
 					 } 
 					 else{
-				     if((!hold_alt_flag||mode_oldx.height_safe)||(height_ctrl_mode==1))
-							// (height_ctrl_mode==1&&(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)))
+				     if((!hold_alt_flag||mode_oldx.height_safe)||(height_ctrl_mode==1&&mode_oldx.height_in_speed==1))
 						 ultra_ctrl_out_use=EXP_Z_SPEED;
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
            }
 						 
-//					 if((ALT_POS_SONAR2<SONAR_HEIGHT&&(NAV_BOARD_CONNECT||ultra.measure_ok))&&ultra_ctrl_out_use<0&&!mode_oldx.height_safe&&0)//智能起飞油门限制
-//						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-100,1000);
 					 if(ALT_POS_SONAR2>3&&height_ctrl_mode==2)
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-1000,0);
 						 height_speed_ctrl1(in_timer_high,thr_use,LIMIT(ultra_ctrl_out_use,-1000,1000),ultra_speed);	//速度环 

@@ -5,6 +5,7 @@
 #include "height_ctrl.h"
 #include "fly_mode.h"
 #include "quar.h"
+#include "eso.h"
 ctrl_t ctrl_1;
 ctrl_t ctrl_2;
 

@@ -48,7 +48,7 @@ u8 All_Init()
 	
 	Cycle_Time_Init();
   Usart1_Init(115200L);			//蓝牙
-	//Usart1_Init(57600L);			//3DR
+	Usart1_Init(38400L);			//3DR
 	#if EN_DMA_UART1 
 	MYDMA_Config(DMA2_Stream7,DMA_Channel_4,(u32)&USART1->DR,(u32)SendBuff1,SEND_BUF_SIZE1+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif

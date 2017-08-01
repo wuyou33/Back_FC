@@ -112,79 +112,130 @@ void anotc_filter_1(float base_hz,float gain_hz,float dT,float in,_filter_1_st *
 }
 
 
-s32 Moving_Median(s32 moavarray[],u16 len ,u16 *fil_p,s32 in)
-{
-	u16 width_num;
-	u16 now_p;
-	float t;
-	s8 pn=0;
-	u16 start_p,i;
-	s32 sum = 0;
+#define MED_WIDTH_NUM 50
+#define MED_FIL_ITEM  30
 
-	width_num = len ;
+float med_filter_tmp[MED_FIL_ITEM][MED_WIDTH_NUM ];
+float med_filter_out[MED_FIL_ITEM];
+
+u8 med_fil_cnt[MED_FIL_ITEM];
+// 1  2  3                                9
+float Moving_Median(u8 item,u8 width_num,float in)
+{
+	u8 i,j;
+	float t;
+	float tmp[MED_WIDTH_NUM];
 	
-	if( ++*fil_p >= width_num )	
+	if(item >= MED_FIL_ITEM || width_num >= MED_WIDTH_NUM )
 	{
-		*fil_p = 0; //now
-	}
-	
-	now_p = *fil_p ;	
-	
-	moavarray[ *fil_p ] = in;
-	
-	if(now_p<width_num-1) //保证比较不越界
-	{
-		while(moavarray[now_p] > moavarray[now_p + 1])
-		{
-			t = moavarray[now_p];
-			moavarray[now_p] = moavarray[now_p + 1];
-			moavarray[now_p + 1] = t;
-			pn = 1;
-			now_p ++;
-			if(now_p == (width_num-1))
-			{
-				break;
-			}
-		}
-	}
-	
-	if(now_p>0)  //保证比较不越界
-	{
-		while(moavarray[now_p] < moavarray[now_p - 1])
-		{
-			t = moavarray[now_p];
-			moavarray[now_p] = moavarray[now_p - 1];
-			moavarray[now_p - 1] = t;
-			pn = -1;
-			now_p--;
-			if(now_p == 0)
-			{
-				break;
-			}
-		}
-	
-	}
-	
-	if(*fil_p == 0 && pn == 1)
-	{
-		*fil_p = width_num - 1;
-	}
-	else if(*fil_p == width_num - 1 && pn == -1)
-	{
-		*fil_p = 0;
+		return 0;
 	}
 	else
 	{
-		*fil_p -= pn;
+		if( ++med_fil_cnt[item] >= width_num )	
+		{
+			med_fil_cnt[item] = 0;
+		}
+		
+		med_filter_tmp[item][ med_fil_cnt[item] ] = in;
+		
+		for(i=0;i<width_num;i++)
+		{
+			tmp[i] = med_filter_tmp[item][i];
+		}
+		
+		for(i=0;i<width_num-1;i++)
+		{
+			for(j=0;j<(width_num-1-i);j++)
+			{
+				if(tmp[j] > tmp[j+1])
+				{
+					t = tmp[j];
+					tmp[j] = tmp[j+1];
+					tmp[j+1] = t;
+				}
+			}
+		}
+
+		
+		return ( tmp[(u16)width_num/2] );
 	}
-	
-	start_p = (u16)(0.25f * width_num );
-	for(i = 0; i < width_num/2;i++)
-	{
-		sum += moavarray[start_p + i];
-	}
-	return (sum/(width_num/2));
 }
+
+
+//s32 Moving_Median(s32 moavarray[],u16 len ,u16 *fil_p,s32 in)
+//{
+//	u16 width_num;
+//	u16 now_p;
+//	float t;
+//	s8 pn=0;
+//	u16 start_p,i;
+//	s32 sum = 0;
+
+//	width_num = len ;
+//	
+//	if( ++*fil_p >= width_num )	
+//	{
+//		*fil_p = 0; //now
+//	}
+//	
+//	now_p = *fil_p ;	
+//	
+//	moavarray[ *fil_p ] = in;
+//	
+//	if(now_p<width_num-1) //保证比较不越界
+//	{
+//		while(moavarray[now_p] > moavarray[now_p + 1])
+//		{
+//			t = moavarray[now_p];
+//			moavarray[now_p] = moavarray[now_p + 1];
+//			moavarray[now_p + 1] = t;
+//			pn = 1;
+//			now_p ++;
+//			if(now_p == (width_num-1))
+//			{
+//				break;
+//			}
+//		}
+//	}
+//	
+//	if(now_p>0)  //保证比较不越界
+//	{
+//		while(moavarray[now_p] < moavarray[now_p - 1])
+//		{
+//			t = moavarray[now_p];
+//			moavarray[now_p] = moavarray[now_p - 1];
+//			moavarray[now_p - 1] = t;
+//			pn = -1;
+//			now_p--;
+//			if(now_p == 0)
+//			{
+//				break;
+//			}
+//		}
+//	
+//	}
+//	
+//	if(*fil_p == 0 && pn == 1)
+//	{
+//		*fil_p = width_num - 1;
+//	}
+//	else if(*fil_p == width_num - 1 && pn == -1)
+//	{
+//		*fil_p = 0;
+//	}
+//	else
+//	{
+//		*fil_p -= pn;
+//	}
+//	
+//	start_p = (u16)(0.25f * width_num );
+//	for(i = 0; i < width_num/2;i++)
+//	{
+//		sum += moavarray[start_p + i];
+//	}
+//	return (sum/(width_num/2));
+//}
 
 
 

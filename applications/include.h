@@ -20,17 +20,22 @@ extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
 //================测试程序==============
+//--------------任选1个------------------
 //#define  HEIGHT_TEST  // 高度自动控制
 //#define  POS_TEST     // 位置自动控制
-//#define  POS_SPD_TEST // 速度自动控制
-#define  AUTO_DOWN    // 自动降落
+#define  POS_SPD_TEST   // 速度自动控制
+//#define  AUTO_DOWN    // 自动降落
+//#define  AUTO_MAPPER   // 自动测绘
+//#define  PID_TUNNING   // 姿态调参模式
+//#define  AUTO_HOME     // 回航测试
+//#define  DEBUG_MODE    //测试模式 PWM不输出 可与其他模式互选
 //================系统===================
 #define USE_MINI_FC_FLOW_BOARD 0 //使用MINI——OLDX——FLOW板子
 #define USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS 1
 #define USE_RECIVER_MINE 0  
 #define EN_ATT_CAL_FC 1  //姿态使用FC解算
 #define USE_ANO_GROUND 1  //实验匿名地面站 否则使用  安卓APP 和 OLDX-PC上位机
-#define USE_HT_GROUND  0
+#define USE_HT_GROUND  0  //与匿名互选 则使用HTlink协议
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
 

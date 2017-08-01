@@ -145,7 +145,7 @@ void Duty_10ms()
 							}					
 
 //-----------------------------------------------BLE UPLOAD---------------------------蓝牙调试
-				//flow_debug_stop=0;//强制FC蓝牙输出			
+	//		flow_debug_stop=0;//强制FC蓝牙输出			
 			 #if defined(HEIGHT_TEST) 
         UART_UP_LOAD_SEL=2;
 				flow_debug_stop=0;	
@@ -154,7 +154,10 @@ void Duty_10ms()
 				flow_debug_stop=0;
        #elif defined(POS_TEST)
 				UART_UP_LOAD_SEL=5;
-				flow_debug_stop=0;							
+				flow_debug_stop=0;			
+			 #elif defined(AUTO_DOWN)
+				UART_UP_LOAD_SEL=2;
+				flow_debug_stop=0;								
        #endif							
 			 if(UART_UP_LOAD_SEL_FORCE!=0)
           UART_UP_LOAD_SEL=UART_UP_LOAD_SEL_FORCE;				 
@@ -237,8 +240,8 @@ void Duty_10ms()
 											{
 											case 0://气压计融合
 											data_per_uart1(
-											ALT_POS_BMP_UKF_OLDX*100,baroAlt/10,baro.relative_height/10,
-											Rc_Get_PWM.Heart,ALT_VEL_BMP_UKF_OLDX*100,X_kf_baro_bmp[1]*100,
+											ALT_POS_BMP_UKF_OLDX*100,hc_value.fusion_height/10,baro.h_flt*100,
+											ALT_VEL_BMP_UKF_OLDX*100,ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,
 											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,pi_flow.z_o*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://速度，加速度，高度和控制
@@ -329,7 +332,8 @@ void Duty_10ms()
 		else
 		baro_task_time=temp1;
     
-	  baro_ctrl(baro_task_time,&hc_value);//高度融合									
+	  baro_ctrl(baro_task_time,&hc_value);//高度融合		
+    Positon_control(baro_task_time);//位置控制	
 }
 
 void Duty_20ms()
@@ -343,10 +347,9 @@ void Duty_20ms()
 		pos_time=0.02;	
 		else
 		pos_time=temp;
-		
-		
+			
 		AUTO_LAND_FLYUP(pos_time);//自动降落
-	  Positon_control(pos_time);//位置控制
+	 	
 		#if USE_MINI_FC_FLOW_BOARD
 			#if USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS
 			temps=((channels[0])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
@@ -443,6 +446,8 @@ void Duty_50ms()//遥控 模式设置
 			mode_oldx.mems_state=31;	
 	  else
 			mode_oldx.mems_state=0; 
+		
+		mode_oldx.baro_f_use_ukfm=0;//1->use gps height
 		//---------------use now
 		//------------0 1   |   2 3       KEY_SEL
 		#if USE_RECIVER_MINE		
@@ -490,7 +495,7 @@ void Duty_50ms()//遥控 模式设置
 		else
 		mode_oldx.rc_control_flow_pos_sel=0; 
 					    
-	  mode_oldx.test4=1;//position control with acc_loop
+	  
 	  //------------7 6 5 4  |  3 2 1 0  KEY
 		#if USE_M100_IMU//2 -> origin 1-> KF mine
 		mode_oldx.flow_f_use_ukfm=1;
@@ -499,39 +504,60 @@ void Duty_50ms()//遥控 模式设置
 		#endif
     //-------------------飞控测试模式汇总----------------
 	  #if defined(AUTO_DOWN)
-	  if(Rc_Get_PWM.RST>1500)
+	  if(Rc_Get_PWM.AUX1>1500)
 		mode_oldx.auto_fly_up=1;
 		else
 		mode_oldx.auto_fly_up=0;	
 		#elif defined(POS_SPD_TEST)
-	  if(Rc_Get_PWM.RST>1500)
+	  if(Rc_Get_PWM.AUX1>1500)
 		mode_oldx.trig_flow_spd=1;
 		else
 		mode_oldx.trig_flow_spd=0;	
 		#elif defined(HEIGHT_TEST) 
-	  if(Rc_Get_PWM.RST>1500)
+	  if(Rc_Get_PWM.AUX1>1500)
 	  mode_oldx.fc_test1=1;
 	  else
 		mode_oldx.fc_test1=0;
+		#elif defined(AUTO_MAPPER)		
+		if(Rc_Get_PWM.AUX1>1500) 
+   	mode_oldx.px4_map=1;
+		else
+		mode_oldx.px4_map=0;
+		#elif defined(AUTO_HOME)		
+		if(Rc_Get_PWM.AUX1>1500) 
+   	mode_oldx.return_home=1;
+		else
+		mode_oldx.return_home=0;
 		#endif
+	
+		//mode_oldx.test4=0;//1-->position control with acc_loop
+		if(Rc_Get_PWM.AUX2>1500) 
+   	mode_oldx.test4=1;// bmp use height
+		else
+		mode_oldx.test4=0;		
 		
+		mode_oldx.height_in_speed=0;
+//		if(Rc_Get_PWM.AUX2>1500) 
+//   	mode_oldx.height_in_speed=0;// bmp use height
+//		else
+//		mode_oldx.height_in_speed=1;
 		
 //	  if(Rc_Get_PWM.AUX1>1500)
 //		mode_oldx.show_qr_origin=1;
 //		else
 //		mode_oldx.show_qr_origin=0;	
-//px4 mapper		
-//		if(Rc_Get_PWM.AUX2>1500) 
-//   		mode_oldx.px4_map=1;
-//		else
-//		  mode_oldx.px4_map=0;
+
 //sd save
 //		if(Rc_Get_PWM.AUX2>1500) 
 //   		mode_oldx.en_sd_save=1;
 //		else
 //		  mode_oldx.en_sd_save=0;
-		
+//-------------------------------------------------------------------------------------------		
+	#if defined(PID_TUNNING)	
+	mode_oldx.att_pid_tune=1;
+  #else		
 	mode_oldx.att_pid_tune=KEY[6]&&KEY[5]&&KEY[3]&&KEY[2]&&KEY[1]&&KEY[0];
+	#endif
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
 	static u8 hml_cnt;	

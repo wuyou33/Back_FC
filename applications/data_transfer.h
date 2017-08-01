@@ -52,5 +52,11 @@ void ANO_DT_Send_QR2(float x,float y,float z);
 
 //HT
 void HT_DT_Send_ATT(float pit,float rol,float yaw,float h);
+void HT_DT_Send_HUD(u8 fly_mode,u8 lock,u8 rc_mode,float bat,float fly_speed);
+void HT_DT_Send_RC(u16 rc1,u16 rc2,u16 rc3,u16 rc4,u16 rc5,u16 rc6,u16 rc7,u16 rc8,u16 rc9,u16 rc10);
+void HT_DT_Send_GPS(float lon,float lat,u8 star_num,u8 latw,u8 lonw);
+void HT_DT_Send_MOTOR(u16 m1,u16 m2,u16 m3,u16 m4,u16 m5,u16 m6,u16 m7,u16 m8);
+void HT_DT_Send_SONAR(float l,float f,float b,float d,float r);
+void HT_DT_Send_SENSOR(int ax,int ay,int az,int gx,int gy,int gz,int hx,int hy,int hz,int spdx,int spdy,int spdz,int sonar,int bmp);
 #endif
 

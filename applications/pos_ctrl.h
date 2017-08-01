@@ -44,7 +44,7 @@ typedef struct
 
 #define SPD_TO_MAX_AS 		2000.0f										
 #define ACC_TO_MAX_AS     1000.0f
-#define MAX_CTRL_POS_SPEED 	 	666.0f									//允许的最大控制角速度
+#define MAX_CTRL_POS_SPEED 	 	1666.0f									//允许的最大控制角速度
 #define MAX_CTRL_POS_ACC 	 	9800.0f									//允许的最大控制角速度
 #define NAV_POS_INT        500//mm/s  
 #define NAV_SPD_INT 		0.5f *MAX_CTRL_POS_SPEED		//内环积分幅度
@@ -104,6 +104,9 @@ void AUTO_LAND_FLYUP(float T);
 extern float nav_land[3], nav[2];;
 extern u8 state_v;
 extern u8 mode_change;
+#define WAY_POINT_NUM 20
+extern double home_lat,home_lon,way_point[3][WAY_POINT_NUM];
+extern u8 way_point_to_go;
 //state
 #define SG_LOW_CHECK 0
 #define SG_MID_CHECK 1
@@ -123,7 +126,8 @@ extern u8 mode_change;
 #define SD_CHECK_G 20
 #define SD_SHUT_DOWN 21
 #define SD_SAFE 22
-
+#define SD_HOME 23
+#define SD_WAY_POINT 24
 //------------parameter
 #define DEAD_NAV_RC 50
 #define AUTO_FLY_SPD_Z 0.4 //m/s
@@ -131,6 +135,9 @@ extern u8 mode_change;
 #define AUTO_DOWN_POS_Z LIMIT(1.5,0.25,2) //m
 #define AUTO_DOWN_SPD_Z 0.4 //m/s
 #define GROUND_SPEED_CHECK 0.3  //m/s
+
+
+#define AUTO_HOME_POS_Z 8 //m
 //------------
 #define SMART_MODE_POS 3
 #define SMART_MODE_SPD 2

@@ -55,3 +55,4 @@
 .\build\usart.o: .\applications\mymath.h
 .\build\usart.o: drivers\led.h
 .\build\usart.o: .\applications\sbus.h
+.\build\usart.o: .\applications\filter.h

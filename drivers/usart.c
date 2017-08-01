@@ -12,6 +12,7 @@
 #include "mymath.h"
 #include "led.h"
 #include "sbus.h"
+#include "filter.h"
 ///TX
 void Uart5_Send(unsigned char *DataToSend ,u8 data_num)
 {
@@ -199,6 +200,7 @@ int debug_pi_flow[20];
  void Data_Receive_Anl(u8 *data_buf,u8 num)
 { double zen,xiao;
 	vs16 rc_value_temp;
+	float temp_pos[2];
 	u8 sum = 0;
 	u8 i;
 	for( i=0;i<(num-1);i++)
@@ -206,8 +208,50 @@ int debug_pi_flow[20];
 	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
 	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
 	#if !USE_MINI_FC_FLOW_BOARD
-  if(*(data_buf+2)==0x12)//FLOW_MINE_frame
-  { float temp_pos[2];
+	if(*(data_buf+2)==0x88)//ALL
+  {
+	  uart_time[3]=Get_Cycle_T(GET_T_IMU_UKF)/1000000.0f;
+		imu_loss_cnt=0;
+    NAV_BOARD_CONNECT=1;
+		
+		m100.Pit=Pitch=(float)((int16_t)(*(data_buf+4)<<8)|*(data_buf+5))/10.;
+    m100.Rol=Roll=(float)((int16_t)(*(data_buf+6)<<8)|*(data_buf+7))/10.;
+		m100.Yaw=Yaw=(float)((int16_t)(*(data_buf+8)<<8)|*(data_buf+9))/10.;
+		
+		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+10)<<8)|*(data_buf+11))/1000.;//m
+		float temp=(float)(int16_t)((*(data_buf+12)<<8)|*(data_buf+13))/1000.;//m
+		#if !SONAR_USE_FC&&!SONAR_USE_FC1
+			if(temp<3){ultra.measure_ok=1;
+			m100.H_G=ALT_POS_SONAR2 = temp;}
+		#endif
+		ALT_VEL_BMP_EKF=Moving_Median(0,6,(float)(int16_t)((*(data_buf+14)<<8)|*(data_buf+15))/1000.);//m
+		ALT_POS_BMP_EKF=(float)(int32_t)((*(data_buf+16)<<24)|(*(data_buf+17)<<16)|(*(data_buf+18)<<8)|*(data_buf+19))/1000.;//m
+
+		m100.X_Pos_local=POS_UKF_X=(float)(int16_t)((*(data_buf+20)<<8)|*(data_buf+21))/1000.;//m  ->0
+		m100.Y_Pos_local=POS_UKF_Y=(float)(int16_t)((*(data_buf+22)<<8)|*(data_buf+23))/1000.;//m  ->1
+		
+		m100.X_Spd_b=VEL_UKF_X=Moving_Median(1,6,(float)(int16_t)((*(data_buf+24)<<8)|*(data_buf+25))/1000.);//m
+		m100.Y_Spd_b=VEL_UKF_Y=Moving_Median(2,6,(float)(int16_t)((*(data_buf+26)<<8)|*(data_buf+27))/1000.);//m			
+		
+    now_position[LON]=POS_UKF_X;//m  lon->0 X
+		now_position[LAT]=POS_UKF_Y;//m  lat->1 Y			
+		
+		zen=(*(data_buf+28)<<8)|*(data_buf+29);
+		xiao=(double)((u32)(*(data_buf+30)<<24)|(*(data_buf+31)<<16)|(*(data_buf+32)<<8)|*(data_buf+33))/1000000000.;
+		m100.Init_Lon=zen+xiao;
+		zen=(*(data_buf+34)<<8)|*(data_buf+35);
+		xiao=(double)((u32)(*(data_buf+36)<<24)|(*(data_buf+37)<<16)|(*(data_buf+38)<<8)|*(data_buf+39))/1000000000.;
+		m100.Init_Lat=zen+xiao;
+		
+		r1=((u32)(*(data_buf+40)<<24)|(*(data_buf+41)<<16)|(*(data_buf+42)<<8)|*(data_buf+43));
+		r2=((u32)(*(data_buf+44)<<24)|(*(data_buf+45)<<16)|(*(data_buf+46)<<8)|*(data_buf+47));
+		#if !USE_M100_IMU
+		m100.STATUS=*(data_buf+48);
+		m100.GPS_STATUS=*(data_buf+49);
+		#endif
+	}
+  else if(*(data_buf+2)==0x12)//FLOW_MINE_frame
+  { 
 		//LEDRGB();//LED显示
 		uart_time[0]=Get_Cycle_T(GET_T_IMU_UKF)/1000000.0f;
 	  imu_loss_cnt=0;
@@ -628,9 +672,6 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
 	#if SONAR_USE_FC||SONAR_USE_FC1
-	if(height_ctrl_mode==2&&1)
-	_temp =(vs16)(ALT_VEL_BMP_UKF_OLDX*1000);	
-	else
 	_temp =(vs16)(ALT_POS_SONAR2*1000);
 	#else
 	_temp=0;
@@ -638,7 +679,7 @@ void Send_IMU_TO_FLOW(void)
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
-	_temp =(vs16)(baro.h_flt);	
+	_temp =(vs16)(baro.relative_height);	
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	_temp=acc_3d_step;
@@ -2528,12 +2569,12 @@ BLE_DEBUG[14]=press;
 BLE_DEBUG[15]=IMUpersec;
 
 
-	
+#if USE_HT_GROUND				
 SendBuff1[SendBuff1_cnt++]=0xa5;
 SendBuff1[SendBuff1_cnt++]=0x5a;
 SendBuff1[SendBuff1_cnt++]=14+8;
 SendBuff1[SendBuff1_cnt++]=0xA2;
-#if !USE_ANO_GROUND			
+#if !USE_ANO_GROUND
 if(ax<0)ax=32768-ax;
 ctemp=ax>>8;
 SendBuff1[SendBuff1_cnt++]=ctemp;
@@ -2673,6 +2714,7 @@ temp+=ctemp;
 
 SendBuff1[SendBuff1_cnt++]=(temp%256);
 SendBuff1[SendBuff1_cnt++]=(0xaa);
+#endif
 #endif
 }
 

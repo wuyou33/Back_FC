@@ -75,7 +75,10 @@ float insert_bmp_value_and_get_mode_value(float insert)
 	return bmp_temp[bmp_count / 2];
 }
 
-
+float W_GPS_DEAD=0.16;//m/s
+float W_BMP_DEAD=0.35;
+float K_BMP_FIX=6;
+u8 test_wind=0;
 float sonar_weight;
 float k_w_bmp=1;
 float bmp_w;
@@ -115,8 +118,60 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 	    }
 			else
 			{
-			height_value->fusion_speed = my_deathzoom(LIMIT( (ALT_VEL_BMP_EKF*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,0);
-			height_value->fusion_height = ALT_POS_BMP_EKF*1000;
+			static u8 state;
+			static u16 cnt;	
+			static float off_gps_alt;
+			float temp;	
+       switch(state)
+			 {
+				 case 0:
+					   if(m100.GPS_STATUS>=6&&m100.STATUS>=2&&m100.Lat>30&&m100.Lon>30)
+							  cnt++;
+				     if(cnt>200)
+						 { cnt=0;state=1; off_gps_alt=ALT_POS_BMP_EKF-ALT_POS_BMP_UKF_OLDX;}
+						 
+							 temp=ALT_POS_BMP_UKF_OLDX;//bmp
+				 break;
+			   case 1:
+					    if(!(m100.GPS_STATUS>=6&&m100.STATUS>=2&&m100.Lat>30&&m100.Lon>30))
+							  state=0;
+							
+				      temp=ALT_POS_BMP_EKF-off_gps_alt;//gps	  
+				 break;
+			 
+			 }
+			
+			float spd_ero_gps_bmp=0;
+			float pos_ero_bmp_fushion=0;
+			if((m100.GPS_STATUS>=6&&m100.STATUS>=2&&m100.Lat>30&&m100.Lon>30)||test_wind) 
+			spd_ero_gps_bmp=ALT_VEL_BMP_UKF_OLDX-ALT_POS_BMP_EKF;
+			
+      pos_ero_bmp_fushion=(float)baro.h_flt-ALT_VEL_BMP_UKF_OLDX;
+			
+			float temp_v;
+			static float w_gps;
+			static float w_bmp;
+			w_gps+=-( 1 / ( 1 + 1 / ( 3.0 *3.14f *dT ) ) ) * (w_gps- LIMIT(my_deathzoom_21(fabs(spd_ero_gps_bmp),0.3*W_GPS_DEAD)/W_GPS_DEAD,0,1) );
+			w_gps=LIMIT(w_gps,0,1);
+			
+			w_bmp+=-( 1 / ( 1 + 1 / ( 3.0 *3.14f *dT ) ) ) * (w_bmp- LIMIT(my_deathzoom_21(fabs(pos_ero_bmp_fushion),0.3*W_BMP_DEAD)/W_BMP_DEAD,0,1) );
+			w_bmp=LIMIT(w_bmp,0,1);
+			
+			//spd
+			temp_v=ALT_VEL_BMP_UKF_OLDX*(1-w_gps)+ALT_VEL_BMP_EKF*w_gps;
+			static float temp_p;
+			//pos
+			temp_p=temp_p-( 1 / ( 1 + 1 / ( K_BMP_FIX *3.14f *dT ) ) ) * (temp_p- ALT_POS_BMP_UKF_OLDX )*(1-w_gps/2-w_bmp/2);//*(1-w_bmp)
+				+ALT_VEL_BMP_EKF*dT*LIMIT(w_gps/2+w_bmp/2,0,1);
+			
+			height_value->fusion_speed = my_deathzoom(LIMIT( (temp_v*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,0);
+			
+			if(height_ctrl_mode==2&&NS==2)	
+			height_value->fusion_height = ALT_POS_BMP_UKF_OLDX*1000;	
+			else
+		  //height_value->fusion_height = temp_p*1000;
+			height_value->fusion_height = ALT_POS_BMP_UKF_OLDX*1000;	
+			
 			}	
 			
 			m100.H=(float)height_value->fusion_height/1000.;

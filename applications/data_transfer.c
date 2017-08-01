@@ -1,11 +1,3 @@
-/******************** (C) COPYRIGHT 2014 ANO Tech ********************************
-  * 作者   ：匿名科创
- * 文件名  ：data_transfer.c
- * 描述    ：数据传输
- * 官网    ：www.anotc.com
- * 淘宝    ：anotc.taobao.com
- * 技术Q群 ：190169595
-**********************************************************************************/
 
 #include "data_transfer.h"
 #include "usart.h"
@@ -75,18 +67,28 @@ float off_flow_pos[2]={0};//{-2.5,-2.5};
 void ANO_DT_Data_Exchange(void)
 { static float pos_off[2];
 	static u8 cnt1;
+	#if USE_HT_GROUND 
 	#define rate 10
+	#else
+	#define rate 10
+	#endif
+	#if USE_HT_GROUND 
+	#define rate1 1
+	#else
+	#define rate1 1
+	#endif
+	
 	static u8 cnt = 0;
-	static u8 senser_cnt 	= 10/rate;
-	static u8 senser2_cnt = 50/rate;
-	static u8 user_cnt 	  = 10/rate;
-	static u8 status_cnt 	= 15/rate;
-	static u8 rcdata_cnt 	= 20/rate;
-	static u8 motopwm_cnt	= 20/rate;
-	static u8 power_cnt		=	50/rate;
-	static u8 speed_cnt   = 50/rate;
-	static u8 location_cnt   = 200/rate;
-	static u8 qr_cnt=20/rate;
+	static u8 senser_cnt 	= rate1*10/rate;
+	static u8 senser2_cnt = rate1*50/rate;
+	static u8 user_cnt 	  = rate1*10/rate;
+	static u8 status_cnt 	= rate1*15/rate;
+	static u8 rcdata_cnt 	= rate1*20/rate;
+	static u8 motopwm_cnt	= rate1*20/rate;
+	static u8 power_cnt		=	rate1*50/rate;
+	static u8 speed_cnt   = rate1*50/rate;
+	static u8 location_cnt   = rate1*200/rate;
+	static u8 qr_cnt=rate1*20/rate;
 	
 	if((cnt % qr_cnt) == (qr_cnt-1))
 		f.send_qr = 1;
@@ -133,7 +135,10 @@ void ANO_DT_Data_Exchange(void)
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.msg_id)
 	{
+		#if !USE_HT_GROUND 
 		ANO_DT_Send_Msg(f.msg_id,f.msg_data);
+		#else
+		#endif
 		f.msg_id = 0;
 	}
 	
@@ -151,7 +156,9 @@ void ANO_DT_Data_Exchange(void)
 	if(f.send_check)//for PID
 	{
 		f.send_check = 0;
+		#if !USE_HT_GROUND 
 		ANO_DT_Send_Check(checkdata_to_send,checksum_to_send);
+		#endif
 	}
 	else 
 	{ 
@@ -162,6 +169,7 @@ void ANO_DT_Data_Exchange(void)
 		 if(cnt1){cnt1=0;	 
 		 #if USE_HT_GROUND 
 		 HT_DT_Send_ATT(Pit_fc,Rol_fc,Yaw_fc,0.001f *ultra_dis_lpf);
+		 HT_DT_Send_HUD(fly_mode,!fly_ready+1,1,11.5,sqrt(pow(VEL_UKF_X,2)+pow(VEL_UKF_X,2)));	 
 		 #else 
 		 ANO_DT_Send_Status(Rol_fc,Pit_fc,Yaw_fc,(0.1f *ultra_dis_lpf),fly_mode,fly_ready);	
 		 #endif	 
@@ -186,7 +194,10 @@ void ANO_DT_Data_Exchange(void)
 			 #endif
 		 }else {sel[0]=0;
 		#if USE_HT_GROUND 
-
+		if(!fly_ready)	 	 
+    HT_DT_Send_RC(CH[2]+1500,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,m100.GPS_STATUS,state_v);
+		else
+		HT_DT_Send_RC(thr_value+1000,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,m100.GPS_STATUS,state_v);	
     #else			 
 		if(!fly_ready)	 
 		ANO_DT_Send_RCData(CH[2]+1500,CH[3]+1500,CH[0]+1500,CH[1]+1500,CH[4]+1500,CH[5]+1500,CH[6]+1500,CH[7]+1500,0 +1500,0 +1500);
@@ -226,19 +237,29 @@ void ANO_DT_Data_Exchange(void)
 	  break;
 	 case 2:
 		if(sel[2]==0){sel[2]=1;
-		#if USE_HT_GROUND 
-
-    #else			
-		ANO_DT_Send_Senser2(baro.h_flt*100,ALT_POS_SONAR2*100);//原始数据
-		#endif	
-		 }else if(sel[2]==1){sel[2]=2;
-		#if USE_HT_GROUND 
-
-    #else			 
-	  ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
+			#if USE_HT_GROUND 
+			 HT_DT_Send_SENSOR(mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
+												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,
+												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z,
+												VEL_UKF_X*100,VEL_UKF_Y*100,ALT_VEL_BMP_UKF_OLDX*100,
+												ALT_POS_SONAR2*100,baro.h_flt*100);
+			#else			
+			ANO_DT_Send_Senser2(baro.h_flt*100,ALT_POS_SONAR2*100);//原始数据
+			#endif	
+			}else if(sel[2]==1){sel[2]=2;
+			#if USE_HT_GROUND  
+			#if MAXMOTORS == 8
+			HT_DT_Send_MOTOR(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],motor_out[6],motor_out[7]);
+			#elif MAXMOTORS == 6
+			HT_DT_Send_MOTOR(motor_out[0],motor_out[1],motor_out[2],motor_out[3],motor_out[4],motor_out[5],0,0);
+			#elif MAXMOTORS == 4
+			HT_DT_Send_MOTOR(motor_out[0],motor_out[1],motor_out[2],motor_out[3],0,0,0,0);
+			#endif		 
+			#else			 
+			ANO_DT_Send_Senser( mpu6050_fc.Acc.x,mpu6050_fc.Acc.y,mpu6050_fc.Acc.z,
 												mpu6050_fc.Gyro.x,mpu6050_fc.Gyro.y,mpu6050_fc.Gyro.z,
 												ak8975.Mag_Val.x,ak8975.Mag_Val.y,ak8975.Mag_Val.z);
-		 #endif
+			#endif
 		 }
 	  else {sel[2]=0;
 //		#if MAXMOTORS == 8
@@ -266,7 +287,7 @@ void ANO_DT_Data_Exchange(void)
 		 temp_w=(int)(m100.Lat*10000000)	;
 		 }
 		 #if USE_HT_GROUND 
-		 
+		 HT_DT_Send_GPS(temp_j,temp_w,m100.GPS_STATUS,1,2);
 		 #else
 		 ANO_DT_Send_Location(state_v,m100.GPS_STATUS,temp_j,temp_w,0);
 		 #endif
@@ -289,18 +310,18 @@ void ANO_DT_Data_Exchange(void)
 		ANO_DT_Send_PID(2,ctrl_2.PID[PIDROLL].kp,ctrl_2.PID[PIDROLL].ki,ctrl_2.PID[PIDROLL].kd,
 											0,0,0,
 											ctrl_2.PID[PIDYAW].kp,ctrl_2.PID[PIDYAW].ki,ctrl_2.PID[PIDYAW].kd);}
-	 else if(sel[3]==2){sel[3]=3;
+	 else if(sel[3]==2){sel[3]=3;//H spd       H   pos     Pos spd
 	  ANO_DT_Send_PID(3,wz_speed_pid.kp,wz_speed_pid.ki,wz_speed_pid.kd,
 											ultra_pid.kp,ultra_pid.ki,ultra_pid.kd,
 											nav_spd_pid.kp,nav_spd_pid.ki,nav_spd_pid.kd);
 	  }
-    else if(sel[3]==3){sel[3]=4;
+    else if(sel[3]==3){sel[3]=4;//Pos pos    Pos pos eso Pos spd eso
 		ANO_DT_Send_PID(4,nav_pos_pid.kp,nav_pos_pid.ki,nav_pos_pid.kd,
 											(float)eso_pos[X].b0/1000.,(float)eso_pos[Zr].b0/1000.,(float)eso_pos[X].eso_dead/1000.,
 											(float)eso_pos_spd[Zr].b0/1000.,nav_spd_pid.flt_nav,(float)eso_pos_spd[Zr].eso_dead/1000.);
 		}
-		else if(sel[3]==4){sel[3]=5;
-		ANO_DT_Send_PID(5,nav_spd_pid.kp,nav_spd_pid.ki,nav_spd_pid.kd,
+		else if(sel[3]==4){sel[3]=5;//					 Pos spd fp  Pos acc
+		ANO_DT_Send_PID(5,(float)eso_pos_spd[X].b0/1000.,0,0,
 											nav_spd_pid.f_kp,nav_spd_pid.flt_nav_kd,(float)nav_spd_pid.dead/1000.,
 											nav_acc_pid.f_kp,nav_acc_pid.kp,(float)nav_acc_pid.dead/1000.);								
 		}
@@ -382,7 +403,6 @@ void ANO_DT_Data_Receive_Prepare(u8 data)
 //校验通过后对数据进行解析，实现相应功能
 //此函数可以不用用户自行调用，由函数Data_Receive_Prepare自动调用
 u16 flash_save_en_cnt = 0;
-//u16 RX_CH[CH_NUM];
 u8 acc_3d_calibrate_f,acc_3d_step;
 void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 { u8 mode;
@@ -531,9 +551,9 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 	}	
 	if(*(data_buf+2)==0X14)								//PID5 for Pos spd &acc
 	{
-		nav_spd_pid.kp  = 0.001*( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
-		nav_spd_pid.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
-		nav_spd_pid.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
+		eso_pos_spd[Y].b0=eso_pos_spd[X].b0  = ( (vs16)(*(data_buf+4)<<8)|*(data_buf+5) );
+		//nav_spd_pid.ki  = 0.001*( (vs16)(*(data_buf+6)<<8)|*(data_buf+7) );
+		//nav_spd_pid.kd  = 0.001*( (vs16)(*(data_buf+8)<<8)|*(data_buf+9) );
 
 		nav_spd_pid.f_kp = 0.001*( (vs16)(*(data_buf+10)<<8)|*(data_buf+11) );
 		nav_spd_pid.flt_nav_kd = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
@@ -566,6 +586,7 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		k_sensitivity[1] = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
 		k_sensitivity[2] = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 		
+		
 		LENGTH_OF_DRONE=    ( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
 		UART_UP_LOAD_SEL_FORCE=    ( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
 		if(f.send_check == 0)
@@ -574,6 +595,13 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 			checkdata_to_send = *(data_buf+2);
 			checksum_to_send = sum;
 		}
+	}
+	
+		if(*(data_buf+2)==0X21)								//way_point 
+	{
+	
+		
+		
 	}
 }
 
@@ -1072,13 +1100,13 @@ void HT_DT_Send_ATT(float pit,float rol,float yaw,float h)
 	data_to_send[_cnt++]=0x0C;
 	data_to_send[_cnt++]=0x01; //用户数据
 
-	_temp = (s16)(pit*100);            //1
-	data_to_send[_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=BYTE0(_temp);
 	_temp = (s16)(rol*100);            //1
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (s16)(yaw*100);            //1
+	_temp = (s16)(pit*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)((-yaw)*100);            //1
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	_temp = (s16)(h*100);            //1
@@ -1089,8 +1117,281 @@ void HT_DT_Send_ATT(float pit,float rol,float yaw,float h)
 	for(u8 i=0;i<_cnt;i++)
 		sum += data_to_send[i];
 	
-	data_to_send[_cnt++]=sum;
+	data_to_send[_cnt++]=sum%2;
 
 	ANO_DT_Send_Data(data_to_send, _cnt);
 }
-/******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
+
+
+//飞行模式
+//自稳 1
+//定高 2
+//定点 3
+//自动 4
+//降落 5
+//绕圈 6
+//返航 7
+//解锁状态
+//已解锁 1
+//锁定  2
+//控制模式
+//RC控制 1
+//PC控制 2
+
+void HT_DT_Send_HUD(u8 fly_mode,u8 lock,u8 rc_mode,float bat,float fly_speed)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x0B;
+	data_to_send[_cnt++]=0x02; //用户数据
+
+	_temp = fly_mode;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = lock;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc_mode;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(bat*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(fly_speed*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+
+void HT_DT_Send_RC(u16 rc1,u16 rc2,u16 rc3,u16 rc4,u16 rc5,u16 rc6,u16 rc7,u16 rc8,u16 rc9,u16 rc10)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x18;
+	data_to_send[_cnt++]=0x03; //用户数据
+
+	_temp = rc1;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc2;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc3;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc4;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc5;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc6;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc7;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc8;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc9;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = rc10;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+
+void HT_DT_Send_GPS(float lon,float lat,u8 star_num,u8 latw,u8 lonw)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	vs32 _temp1;
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x0F;
+	data_to_send[_cnt++]=0x05; //用户数据
+
+	_temp1 =(vs32)lon;            //1
+	data_to_send[_cnt++]=BYTE3(_temp1);
+	data_to_send[_cnt++]=BYTE2(_temp1);
+	data_to_send[_cnt++]=BYTE1(_temp1);
+	data_to_send[_cnt++]=BYTE0(_temp1);
+	_temp1 =(vs32)lat;            //1
+	data_to_send[_cnt++]=BYTE3(_temp1);
+	data_to_send[_cnt++]=BYTE2(_temp1);
+	data_to_send[_cnt++]=BYTE1(_temp1);
+	data_to_send[_cnt++]=BYTE0(_temp1);
+	_temp = star_num;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = latw;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);	
+	_temp = lonw;            //1
+	data_to_send[_cnt++]=BYTE0(_temp);
+	
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+
+void HT_DT_Send_MOTOR(u16 m1,u16 m2,u16 m3,u16 m4,u16 m5,u16 m6,u16 m7,u16 m8)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x14;
+	data_to_send[_cnt++]=0x06; //用户数据
+
+	_temp = (vs16)m1;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m2;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m3;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m4;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m5;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m6;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m7;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (vs16)m8;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+
+	
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+
+void HT_DT_Send_SONAR(float l,float f,float b,float d,float r)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x0E;
+	data_to_send[_cnt++]=0x04; //用户数据
+
+	_temp = (s16)(l*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(f*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(b*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(d*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (s16)(r*100);            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}
+
+
+void HT_DT_Send_SENSOR(int ax,int ay,int az,int gx,int gy,int gz,int hx,int hy,int hz,int spdx,int spdy,int spdz,int sonar,int bmp)
+{ u8 i;
+	u8 _cnt=0;
+	vs16 _temp;
+	vs32 _temp1;
+	data_to_send[_cnt++]=0xFE; 
+	data_to_send[_cnt++]=0x22;
+	data_to_send[_cnt++]=0x09; //用户数据
+
+	_temp = ax;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = ay;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = az;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = gx;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = gy;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = gz;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = hx;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = hy;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = hz;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = spdx;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = spdy;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = spdz;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = sonar;            //1
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp1 = bmp;            //1
+	data_to_send[_cnt++]=BYTE3(_temp1);
+	data_to_send[_cnt++]=BYTE2(_temp1);
+	data_to_send[_cnt++]=BYTE1(_temp1);
+	data_to_send[_cnt++]=BYTE0(_temp1);
+	u8 sum = 0;
+	for(u8 i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	
+	data_to_send[_cnt++]=sum%2;
+
+	ANO_DT_Send_Data(data_to_send, _cnt);
+}

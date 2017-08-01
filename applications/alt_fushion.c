@@ -14,7 +14,7 @@
 #include "oldx_kf2.h"
 float acc_z_acc[3];
 #define EN_ACC_TIME_TRIG 0
-u8 ACC_FORWARD_BMP=2;
+u8 ACC_FORWARD_BMP=0;
 u8 ACC_FORWARD=0;
 u8 en_bmp_avoid_wind=0;
 float baro_compensate(float dT,float kup,float kdw,float vz,float lim)
@@ -38,6 +38,124 @@ float baro_compensate(float dT,float kup,float kdw,float vz,float lim)
 	}
 	return (com_val);
 }
+
+
+void navUkfQuatToMatrix(float *m, float *q, int normalize) {
+    float sqw = q[0]*q[0];
+    float sqx = q[1]*q[1];
+    float sqy = q[2]*q[2];
+    float sqz = q[3]*q[3];
+    float tmp1, tmp2;
+    float invs;
+
+    // get the invert square length
+    if (normalize)
+	invs = 1.0f / (sqx + sqy + sqz + sqw);
+    else
+	invs = 1.0f;
+
+    // rotation matrix is scaled by inverse square length
+    m[0*3 + 0] = ( sqx - sqy - sqz + sqw) * invs;
+    m[1*3 + 1] = (-sqx + sqy - sqz + sqw) * invs;
+    m[2*3 + 2] = (-sqx - sqy + sqz + sqw) * invs;
+
+    tmp1 = q[1]*q[2];
+    tmp2 = q[3]*q[0];
+    m[1*3 + 0] = 2.0f * (tmp1 + tmp2) * invs;
+    m[0*3 + 1] = 2.0f * (tmp1 - tmp2) * invs;
+
+    tmp1 = q[1]*q[3];
+    tmp2 = q[2]*q[0];
+    m[2*3 + 0] = 2.0f * (tmp1 - tmp2) * invs;
+    m[0*3 + 2] = 2.0f * (tmp1 + tmp2) * invs;
+
+    tmp1 = q[2]*q[3];
+    tmp2 = q[1]*q[0];
+    m[2*3 + 1] = 2.0f * (tmp1 + tmp2) * invs;
+    m[1*3 + 2] = 2.0f * (tmp1 - tmp2) * invs;
+}
+
+void MatrixOpp(float a[], float result[])  
+{  
+    int const M=3;     //?????  
+    int const N =2*M;  //???????  
+    float b[M][N];    //????  
+    int i,j,k;  
+    for(i=0;i<M;i++)  
+    {  
+        for(j=0;j<M;j++)  
+        {  
+            b[i][j]=a[i*M+j];  
+        }  
+    }  
+    /*****************????***********************/  
+    for(i=0;i<M;i++)  
+    {  
+        for(j=M;j<N;j++)  
+        {  
+            if(i==(j-M))  
+            {  
+                b[i][j]=1;  
+            }  
+            else  
+            {  
+                b[i][j]=0;  
+            }  
+        }  
+    }  
+    /*****************????***********************/  
+  
+    /*****************????***********************/  
+    for(i=0;i<M;i++)  
+    {  
+        if(b[i][i]==0)  
+        {  
+            for(k=i;k<M;k++)  
+            {  
+                if(b[k][k]!=0)  
+                {  
+                    for(int j=0;j<N;j++)  
+                    {  
+                        double temp;  
+                        temp=b[i][j];  
+                        b[i][j]=b[k][j];  
+                        b[k][j]=temp;  
+                    }  
+                    break;  
+                }  
+            }  
+           
+        }  
+        for(j=N-1;j>=i;j--)  
+        {  
+            b[i][j]/=b[i][i];  
+        }  
+        for(k=0;k<M;k++)  
+        {  
+            if(k!=i)  
+            {  
+                double temp=b[k][i];  
+                for(j=0;j<N;j++)  
+                {  
+                    b[k][j]-=temp*b[i][j];  
+                }  
+            }  
+        }  
+    }  
+    /*****************????***********************/  
+  
+    /*****************????***********************/  
+    for(i=0;i<M;i++)  
+    {  
+        for(j=M;j<N;j++)  
+        {  
+            result[i*M+j-3]=b[i][j];  
+        }  
+    }  
+    /*****************????***********************/  
+  
+} 
+  
 
 void body_to_NEZ(float *vr, float *v, float *q) {
     float w, x, y, z;
@@ -68,6 +186,13 @@ static void navUkfRotateVecByRevMatrix(float *vr, float *v, float *m) {
     vr[1] = m[0*3 + 1]*v[0] + m[1*3 + 1]*v[1] + m[2*3 + 1]*v[2];
     vr[2] = m[0*3 + 2]*v[0] + m[1*3 + 2]*v[1] + m[2*3 + 2]*v[2];
 }
+
+void navUkfRotateVecByMatrix(float *vr, float *v, float *m) {
+    vr[0] = m[0*3 + 0]*v[0] + m[0*3 + 1]*v[1] + m[0*3 + 2]*v[2];
+    vr[1] = m[1*3 + 0]*v[0] + m[1*3 + 1]*v[1] + m[1*3 + 2]*v[2];
+    vr[2] = m[2*3 + 0]*v[0] + m[2*3 + 1]*v[1] + m[2*3 + 2]*v[2];
+}
+
 #define H_HIST 40
 void feed_acc_buf(float *in)
 {
@@ -87,6 +212,37 @@ static u8 cnt;
 	acc_body_buf[2][0]=in[2];
 }	
 
+
+
+#define IIR_ORDER_ACC 10
+static double b_IIR_acc[IIR_ORDER_ACC+1] ={
+  0.00049945407823310042,
+	0.0049945407823310042 ,
+	0.022475433520489523 , 
+	0.059934489387972065 , 
+	0.10488535642895111  , 
+	0.12586242771474132  , 
+	0.10488535642895111   ,
+	0.059934489387972065  ,
+	0.022475433520489523  ,
+	0.0049945407823310042 ,
+	0.00049945407823310042,
+};  //ÏµÊýb
+static double a_IIR_acc[IIR_ORDER_ACC+1] ={ 
+ 1            ,    
+-1.9924014816014133  ,
+3.0194828633553867  ,
+-2.8185224264945168  , 	
+2.0387206370625282   ,
+-1.0545446210956813  ,
+0.41444626875039958  ,
+-0.11571862523682841  ,
+0.022498509272218331 ,
+-0.0026689123535761092,
+0.0001487644521777628
+};
+static double InPut_IIR_acc[3][IIR_ORDER_ACC+1] = {0};
+static double OutPut_IIR_acc[3][IIR_ORDER_ACC+1] = {0};
 
 
 float ALT_POS_BMP,ALT_VEL_BMP;
@@ -225,11 +381,11 @@ static float temp_r;
 u8 i,j;
 float acc_temp1,temp;  
 float accIn[3];
-float acc_body_temp[3];
+float acc_body_temp[3],acc_body_temp_flt[3];
  		accIn[0] =(float) mpu6050_fc.Acc.x/4096.*9.8-acc_bias[0]*en_bias_fix;//16438.;
 		accIn[1] =(float) mpu6050_fc.Acc.y/4096.*9.8-acc_bias[1]*en_bias_fix;//16438.;
 		accIn[2] =(float) mpu6050_fc.Acc.z/4096.*9.8-acc_bias[2]*en_bias_fix;//16438.;
-    body_to_NEZ(acc_body_temp, accIn, ref_q_imd_down_fc);
+    body_to_NEZ(acc_body_temp_flt, accIn, ref_q_imd_down_fc);
     //acc_temp1=(float)(reference_vr_imd_down_fc[2] *mpu6050_fc.Acc.z + reference_vr_imd_down_fc[0] *mpu6050_fc.Acc.x + reference_vr_imd_down_fc[1] *mpu6050_fc.Acc.y - 4096  )/4096.0f*9.8;
 		//acc_temp1=acc_body_temp[2]-9.8;
 
@@ -242,34 +398,18 @@ float acc_body_temp[3];
 		
 		if(sys_init.baro_ekf)
 		{
-		wz_acc=firstOrderFilter(acc_body_temp[2]-9.78+acc_z_att_corr*0 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
+		acc_body_temp[0] = IIR_I_Filter(acc_body_temp_flt[0] , InPut_IIR_acc[0], OutPut_IIR_acc[0], b_IIR_acc, IIR_ORDER_ACC+1, a_IIR_acc, IIR_ORDER_ACC+1);
+		acc_body_temp[1] = IIR_I_Filter(acc_body_temp_flt[1] , InPut_IIR_acc[1], OutPut_IIR_acc[1], b_IIR_acc, IIR_ORDER_ACC+1, a_IIR_acc, IIR_ORDER_ACC+1);
+		acc_body_temp[2] = IIR_I_Filter(acc_body_temp_flt[2] , InPut_IIR_acc[2], OutPut_IIR_acc[2], b_IIR_acc, IIR_ORDER_ACC+1, a_IIR_acc, IIR_ORDER_ACC+1);
+	
+		//wz_acc=firstOrderFilter(acc_body_temp[2]-9.78+acc_z_att_corr*0 ,&firstOrderFilters[ACC_LOWPASS_Z],T);
 		//wz_acc+= ( 1 / ( 1 + 1 / ( 20 *3.14f *T ) ) )*my_deathzoom1( (acc_temp1 - wz_acc),0);
-		
+		wz_acc=(acc_body_temp[2]-9.78+acc_z_att_corr*0 );
 //	acc_off_baro =acc_temp1 ;
 //	acc_off_baro=LIMIT(acc_off_baro,-3,3);
 		}			 
 		
 		
-		
-    float corr_baro = flag_ero*( posz- ALT_POS_BMP_UKF_OLDX);
-		accel_bias_corr[2] -= corr_baro * w_z_baro * w_z_baro;
-    float R_control_now1[9];
-		R_control_now1[0]=R_control_now[0][0];R_control_now1[3]=R_control_now[0][1];R_control_now1[6]=R_control_now[0][2];
-		R_control_now1[1]=R_control_now[1][0];R_control_now1[4]=R_control_now[1][1];R_control_now1[7]=R_control_now[1][2];
-		R_control_now1[2]=R_control_now[2][0];R_control_now1[5]=R_control_now[2][1];R_control_now1[8]=R_control_now[2][2];
-		/* transform error vector from NED frame to body frame */
-		for (int i = 0; i < 3; i++) {
-			float c = 0.0f;
-
-			for (int j = 0; j < 3; j++) {
-				c += PX4_R(R_control_now1, j, i)*accel_bias_corr[j];
-			}
-
-			if (isfinite(c)) {
-				acc_bias[i] += c * w_acc_bias * T;
-			}
-		}
-    
 		if(NS==0)
 	  acc_off_baro=0;
 		else if((!fly_ready&&NS==2))		
@@ -435,4 +575,27 @@ float acc_body_temp[3];
 	if((fabs(ALT_POS_SONAR2-ALT_POS_BMP_UKF_OLDX)>0.36||(fabs(acc_est)>10||fabs(ALT_VEL_BMP_UKF_OLDX)>4))&&input_flag==2)	
   {ero.baro_ekf=1;ero.baro_ekf_cnt++;}
   #endif
+	float DCM_Q[9];
+	navUkfQuatToMatrix(DCM_Q,ref_q_imd_down_fc,0);
+	//float acc_bias_NEZ[3]={0,0,ALT_ACC_BMP_UKF_OLDX};
+	//navUkfRotateVecByRevMatrix(acc_bias,acc_bias_NEZ,DCM_Q);
+	  float corr_baro = flag_ero*( posz- ALT_POS_BMP_UKF_OLDX);
+		//accel_bias_corr[2] -= corr_baro * w_z_baro * w_z_baro;
+	  accel_bias_corr[2]= ALT_ACC_BMP_UKF_OLDX;
+    float R_control_now1[9];
+		R_control_now1[0]=R_control_now[0][0];R_control_now1[3]=R_control_now[0][1];R_control_now1[6]=R_control_now[0][2];
+		R_control_now1[1]=R_control_now[1][0];R_control_now1[4]=R_control_now[1][1];R_control_now1[7]=R_control_now[1][2];
+		R_control_now1[2]=R_control_now[2][0];R_control_now1[5]=R_control_now[2][1];R_control_now1[8]=R_control_now[2][2];
+		/* transform error vector from NED frame to body frame */
+		for (int i = 0; i < 3; i++) {
+			float c = 0.0f;
+
+			for (int j = 0; j < 3; j++) {
+				c += PX4_R(R_control_now1, j, i)*accel_bias_corr[j];
+			}
+
+			if (isfinite(c)) {
+				acc_bias[i] += c * w_acc_bias * T;
+			}
+		}
 }
