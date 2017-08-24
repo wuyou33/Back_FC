@@ -18,6 +18,7 @@
 #include "rc_mine.h"
 #include "alt_fushion.h"
 #include "sbus.h"
+#include "iic_hml.h"
 float pos_time;
 float baro_task_time;
 u16 Rc_Pwm_In[8];
@@ -145,7 +146,7 @@ void Duty_10ms()
 							}					
 
 //-----------------------------------------------BLE UPLOAD---------------------------蓝牙调试
-	//		flow_debug_stop=0;//强制FC蓝牙输出			
+		//	flow_debug_stop=0;//强制FC蓝牙输出			
 			 #if defined(HEIGHT_TEST) 
         UART_UP_LOAD_SEL=2;
 				flow_debug_stop=0;	
@@ -153,8 +154,14 @@ void Duty_10ms()
 				UART_UP_LOAD_SEL=3;
 				flow_debug_stop=0;
        #elif defined(POS_TEST)
+				if(mode_oldx.flow_hold_position==1)		
+        UART_UP_LOAD_SEL=3;
+        else				
 				UART_UP_LOAD_SEL=5;
-				flow_debug_stop=0;			
+				if(mode_oldx.flow_hold_position>0)		
+				flow_debug_stop=0;
+        else
+        flow_debug_stop=1;
 			 #elif defined(AUTO_DOWN)
 				UART_UP_LOAD_SEL=2;
 				flow_debug_stop=0;								
@@ -241,8 +248,8 @@ void Duty_10ms()
 											case 0://气压计融合
 											data_per_uart1(
 											ALT_POS_BMP_UKF_OLDX*100,hc_value.fusion_height/10,baro.h_flt*100,
-											ALT_VEL_BMP_UKF_OLDX*100,ALT_VEL_BMP_EKF*100,hc_value.fusion_speed/10,
-											Rc_Get_PWM.Heart_rx,Rc_Get_PWM.Heart_error,pi_flow.z_o*100,
+											ALT_VEL_BMP_UKF_OLDX*100,ALT_VEL_BMP_EKF*100,wz_speed_pid_v.exp/10,
+											ALT_VEL_BMP*100,Rc_Get_PWM.Heart_error,pi_flow.z_o*100,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 1://速度，加速度，高度和控制
 											data_per_uart1(
@@ -252,8 +259,8 @@ void Duty_10ms()
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 2://高度控制，速度z控制和速度xy
 											data_per_uart1(
-											ALT_POS_BMP_UKF_OLDX*1000,ultra_ctrl.exp,ultra_ctrl.now,
-											0, wz_speed_pid_v.exp,wz_speed_pid_v.now,
+											ALT_POS_BMP_UKF_OLDX*1000,ultra_ctrl.exp,baro.h_flt*100,
+											ALT_VEL_BMP_UKF_OLDX*1000, wz_speed_pid_v.exp,wz_speed_pid_v.now,
 											VEL_UKF_Y*100,VEL_UKF_X*100,0,
 											(int16_t)(Yaw_fc*10),(int16_t)(Pit_fc*10.0),(int16_t)(Rol_fc*10.0),thr_value,0,0/10,0);break;	
 											case 3://速度xy测试
@@ -332,14 +339,56 @@ void Duty_10ms()
 		else
 		baro_task_time=temp1;
     
+		
+		#if USE_ZIN_BMP
+  	read_zin();
+		#endif
 	  baro_ctrl(baro_task_time,&hc_value);//高度融合		
     Positon_control(baro_task_time);//位置控制	
 }
 
+float k_dj[5]={0.0068,0.068};
+void DJ_Control(float T)
+{
+	static u8 init;
+	static u16 cnt_loss;
+	if(!init){init=1;
+		robot_land.k_f=0.2;
+		
+	 }
+	
+   if(robot.track_r>0&&robot.connect)
+	 {aux.att_ctrl[0]-=LIMIT(k_dj[0]*my_deathzoom1(robot.track_y-240/2,3),-6,6);
+	  aux.att_ctrl[1]=LIMIT(k_dj[1]*my_deathzoom1(robot.track_x-320/2,3),-10,10);
+	 cnt_loss=0;}	 
+	 else if(robot.mark_check>0&&robot.connect)
+	 {aux.att_ctrl[0]-=LIMIT(k_dj[0]*my_deathzoom1(robot.mark_y-240/2,3),-6,6);
+		aux.att_ctrl[1]=LIMIT(k_dj[1]*my_deathzoom1(robot.track_x-320/2,3),-10,10);
+	 cnt_loss=0;}	  
+	 else
+	 {cnt_loss++;aux.att_ctrl[1]=0;} 
+	 
+	 if(cnt_loss>1.68/T)
+	 aux.att_ctrl[0]=0;
+		 
+	//cal distance by track	 
+	 if(((robot.track_r>0&&ABS(robot.track_y-240/2)<26)||(robot.mark_check>0&&ABS(robot.mark_y-240/2)<26))&&
+		 robot.connect&&ALT_POS_SONAR2>0.6){
+		 robot_land.robot_range=robot_land.robot_range*0.3+0.7*LIMIT(ALT_POS_SONAR2/tan(fabs(aux.att[0])*0.0173),0,20);
+			 
+		 robot_land.forward_spd=LIMIT(LIMIT(robot_land.robot_range,1,20)*robot_land.k_f,-1,1);	 			 
+		 }else robot_land.forward_spd=0;
+   //estimate mark position by aruco
+		if(robot_land.robot_range<10)
+			;
+		 
+}	
+
 void Duty_20ms()
 {   u16 temps;
-	  aux.att[0]=Pit_fc+aux.att_ctrl[0];
-	  aux.att[1]=Rol_fc+aux.att_ctrl[1];
+	  DJ_Control(0.02);
+	  aux.att[0]=Pit_fc+aux.att_ctrl[0]+aux.att_off[0];
+	  aux.att[1]=Rol_fc+aux.att_ctrl[1]*0+aux.att_off[1];
 	  SetPwm_AUX(aux.att[0],aux.att[1]);
 	
  		float temp =(float) Get_Cycle_T(GET_T_OUT_NAV)/1000000.;							
@@ -513,6 +562,11 @@ void Duty_50ms()//遥控 模式设置
 		mode_oldx.trig_flow_spd=1;
 		else
 		mode_oldx.trig_flow_spd=0;	
+		#elif defined(POS_TEST)
+	  if(Rc_Get_PWM.AUX1>1500&&mode_oldx.flow_hold_position==1)
+		mode_oldx.trig_flow_spd=1;
+		else
+		mode_oldx.trig_flow_spd=0;			
 		#elif defined(HEIGHT_TEST) 
 	  if(Rc_Get_PWM.AUX1>1500)
 	  mode_oldx.fc_test1=1;
@@ -530,13 +584,13 @@ void Duty_50ms()//遥控 模式设置
 		mode_oldx.return_home=0;
 		#endif
 	
-		//mode_oldx.test4=0;//1-->position control with acc_loop
-		if(Rc_Get_PWM.AUX2>1500) 
-   	mode_oldx.test4=1;// bmp use height
-		else
-		mode_oldx.test4=0;		
-		
-		mode_oldx.height_in_speed=0;
+		mode_oldx.test4=1;//1-->position control with acc_loop
+//		if(Rc_Get_PWM.AUX2>1500) 
+//   	mode_oldx.test4=1;// bmp use height
+//		else
+//		mode_oldx.test4=0;		
+//		
+		mode_oldx.height_in_speed=1;
 //		if(Rc_Get_PWM.AUX2>1500) 
 //   	mode_oldx.height_in_speed=0;// bmp use height
 //		else
@@ -561,17 +615,21 @@ void Duty_50ms()//遥控 模式设置
 	mode_check(CH_filter,mode_value);
 //------------------------磁力计 超声波 采集
 	static u8 hml_cnt;	
-  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)		
-  if(hml_cnt++>2-1){hml_cnt=0;		
+  if(!NAV_BOARD_CONNECT||yaw_use_fc||1)	
+	#if !USE_ZIN_BMP		
+	if(hml_cnt++>2-1){hml_cnt=0;		
 	ANO_AK8975_Read();
 	}
+	#endif	
 	#if !USE_MINI_FC_FLOW_BOARD
 	#if SONAR_USE_FC||SONAR_USE_FC1
 	static u16 cnt_sonar_idle;
+	#if !USE_ZIN_BMP	
 	if(!Thr_Low||NS==0)
 	Ultra_Duty();	
 	else if(cnt_sonar_idle++>2/0.05){cnt_sonar_idle=0;
 	Ultra_Duty();}
+	#endif
 	#endif
 	#endif
 	
@@ -579,6 +637,8 @@ void Duty_50ms()//遥控 模式设置
 	if(rc_board_connect_lose_cnt++>1000*0.2/50){rc_board_connect=0;}
 	if(imu_loss_cnt++>1500/50){NAV_BOARD_CONNECT=0;}
 		
+	if(robot.loss_cnt++>4/0.05)
+	robot.connect=0;
 	if(circle.lose_cnt++>4/0.05)
 	circle.connect=0;
 	if(marker.lose_cnt++>4/0.05)

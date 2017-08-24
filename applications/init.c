@@ -11,6 +11,7 @@
 #include "bmp.h"
 #include "spi.h"
 #include "nrf.h"
+#include "iic_hml.h"
 _SYS_INIT sys_init;
 u8 mcuID[3];
 u8 ble_imu_force;
@@ -41,13 +42,18 @@ u8 All_Init()
 	LED_Init();								//LED功能初始
 	Delay_ms(100);						//延时
 	#if EN_ATT_CAL_FC
+	#if !USE_ZIN_BMP
 	HMC5883L_SetUp();
+	#else
+	IIC_Init();
+	#endif
 	Delay_ms(100);						//延时
 	MS5611_Init_FC();
 	#endif
 	
 	Cycle_Time_Init();
   Usart1_Init(115200L);			//蓝牙
+	if(mcuID[0]==0x2B&&mcuID[1]==0x17&&mcuID[2]==0x31)
 	Usart1_Init(38400L);			//3DR
 	#if EN_DMA_UART1 
 	MYDMA_Config(DMA2_Stream7,DMA_Channel_4,(u32)&USART1->DR,(u32)SendBuff1,SEND_BUF_SIZE1+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
@@ -61,6 +67,7 @@ u8 All_Init()
 	#if EN_DMA_UART4 
 	MYDMA_Config(DMA1_Stream4,DMA_Channel_4,(u32)&UART4->DR,(u32)SendBuff4,SEND_BUF_SIZE4+2,0);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
+	#if !USE_ZIN_BMP	
 	#if USE_PXY										
 	Usart3_Init(115200L);  
 	#else
@@ -69,14 +76,17 @@ u8 All_Init()
 	#if EN_DMA_UART3
 	MYDMA_Config(DMA1_Stream3,DMA_Channel_4,(u32)&USART3->DR,(u32)SendBuff3,SEND_BUF_SIZE3+2,2);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
   #endif
+	#endif
 	#if USE_MINI_FC_FLOW_BOARD
 	Uart5_Init(100000);	
   #else
+
 	#if !SONAR_USE_FC1
   Uart5_Init(115200L);      // 图像Odroid
 	#else
 	Uart5_Init(9600);      // 超声波
 	#endif
+
 	#endif
 	Delay_ms(100);
 	#if EN_DMA_UART4 
@@ -87,16 +97,20 @@ u8 All_Init()
 	USART_DMACmd(USART2,USART_DMAReq_Tx,ENABLE);       
 	MYDMA_Enable(DMA1_Stream6,SEND_BUF_SIZE2+2);     	
 	#endif
+	#if USE_ZIN_BMP
 	#if EN_DMA_UART3
 	USART_DMACmd(USART3,USART_DMAReq_Tx,ENABLE);      
 	MYDMA_Enable(DMA1_Stream3,SEND_BUF_SIZE3+2);  	
+	#endif
 	#endif
 	#if EN_DMA_UART1 
 	USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);     
 	MYDMA_Enable(DMA2_Stream7,SEND_BUF_SIZE1+2);     
 	#endif	
 	#if SONAR_USE_FC
+	#if !USE_ZIN_BMP	
 	Ultrasonic_Init();
+	#endif
 	#endif
 	#if !FLASH_USE_STM32	
 	W25QXX_Init();		
@@ -126,6 +140,23 @@ u8 All_Init()
 //	imu_board.flow_module_offset_x=-0.05;//光流安装位置
 //	imu_board.flow_module_offset_y=0;//光流安装位置
 //	imu_board.flow_set_yaw=0;//光流安装位置
+	fan.max[0]=486;//680;
+	fan.min[0]=486;//;
+	fan.off[0]=3280;
+	fan.max[1]=486;//;
+	fan.min[1]=486;//;
+	fan.off[1]=3180;
+	fan.max[2]=486;//;
+	fan.min[2]=486;//;
+	fan.off[2]=3200;
+	fan.max[3]=486;//;
+	fan.min[3]=486;//;
+	fan.off[3]=3333;
+	fan.flag[0]=1;
+	fan.flag[1]=1;
+	fan.flag[2]=1;
+	fan.flag[3]=1;
+	fan.per_degree=1;
 	
  	return (1);
 }

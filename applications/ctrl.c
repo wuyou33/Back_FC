@@ -8,7 +8,7 @@
 #include "eso.h"
 ctrl_t ctrl_1;
 ctrl_t ctrl_2;
-
+FAN fan;
 void Ctrl_Para_Init()		//设置默认参数
 {
 //====================================
@@ -35,6 +35,9 @@ void CTRL_2(float T)
 	
 	if( !Thr_Low )
 	{
+		if(smart.rc.POS_MODE==SMART_MODE_SPD)
+		except_A.z +=  smart.att_rate.z*T ;  //50	
+		else
 		except_A.z += (s16)( MAX_CTRL_YAW_SPEED *( my_deathzoom_2( (CH_filter[YAW]) ,0,20 )/500.0f ) ) *T ;  //50
 	}
 	else
@@ -319,10 +322,10 @@ void Thr_Ctrl(float T)
 	static float Thr_tmp;
 	thr = 500 + CH_filter[THR]; //油门值 0 ~ 1000
 	
-	if(!fly_ready&&500 + CH_filter[THRr]<100)
+	if(!fly_ready&&500 + CH_filter[THRr]<200)
 	force_Thr_low=0;
-	if(((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE)&&
-    (fabs(Pit_fc)>30||fabs(Rol_fc)>30)&&fly_ready&&mode_oldx.att_pid_tune==0)||(fly_ready&&!Rc_Get_PWM.update))
+	if(((fabs(ctrl_2.err.x)>1.15*MAX_CTRL_ANGLE||fabs(ctrl_2.err.y)>1.15*MAX_CTRL_ANGLE||fabs(Pit_fc)>60||fabs(Rol_fc)>60)&&
+    fly_ready&&mode_oldx.att_pid_tune==0)||(fly_ready&&!Rc_Get_PWM.update))
 		cnt_for_low++;
 	else
 		cnt_for_low=0;
@@ -331,7 +334,7 @@ void Thr_Ctrl(float T)
 	if(cnt_for_low>0.68/T||!init_flag)
 		force_Thr_low=1;
 //protect flag init	
-//	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>100)
+//	if(fly_ready_r==0&&fly_ready==1&&500 + CH_filter[THRr]>200)
 //		force_Thr_low=1;
 		fly_ready_r=fly_ready;
 	
@@ -383,6 +386,7 @@ float motor[MAXMOTORS];
 float posture_value[MAXMOTORS];
 float curve[MAXMOTORS];
 s16 motor_out[MAXMOTORS];
+float view_out[3];
 void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 {
 
@@ -418,24 +422,38 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 	posture_value[5] = - 0.5f *out_roll - 0.5f *out_pitch - 0.5f *out_yaw ;
 	posture_value[6] = - 0.5f *out_roll - 0.5f *out_pitch + 0.5f *out_yaw ;
 	posture_value[7] = - 0.5f *out_roll + 0.5f *out_pitch - 0.5f *out_yaw ;	
-	
-#else
-
 #endif	
-
-  float tilted_fix;//补偿油门
+ 	#if EN_ATT_CAL_FC
+	view_out[0]=out_pitch;
+	view_out[1]=out_roll;
+	view_out[2]=out_yaw;
+	int en[3]={1,1,1};
+	motor[0] = + out_roll*en[0] + out_pitch*en[1] + out_yaw*en[2] ;
+	motor[1] = + out_roll*en[0] - out_pitch*en[1] + out_yaw*en[2] ;
+	motor[2] = - out_roll*en[0] - out_pitch*en[1] + out_yaw*en[2] ;
+	motor[3] = - out_roll*en[0] + out_pitch*en[1] + out_yaw*en[2] ;	
+	#endif
+  
+  static float tilted_fix;//补偿油门
+	float temp;
 	#if EN_ATT_CAL_FC
-	tilted_fix=LIMIT((thr_value/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
+	temp=LIMIT((thr_value/cos(LIMIT(my_deathzoom_21(Pit_fc,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Rol_fc,5),-45,45)/57.3)-thr_value),0,200);
 	#else
-  tilted_fix=LIMIT((thr_value/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
+  temp=LIMIT((thr_value/cos(LIMIT(my_deathzoom_21(Pitch,5),-45,45)/57.3)/
 									cos(LIMIT(my_deathzoom_21(Roll,5),-45,45)/57.3)-thr_value),0,200);
   #endif
+	tilted_fix += ( 1 / ( 1 + 1 / ( 1.2f *3.14f *T ) ) ) *(temp- tilted_fix) ;
 	for(i=0;i<MAXMOTORS;i++)
 	{
+		#if USE_FAN_AS_BLDC
+		motor[4] = thr_value+tilted_fix ;
+		#else
 		posture_value[i] = LIMIT(posture_value[i], -1000,1000 );
 		
-		motor[i] = thr_value+tilted_fix + Thr_Weight *posture_value[i] ;
+		motor[i] = thr_value+tilted_fix + LIMIT(1.2*Thr_Weight,0,1) *posture_value[i] ;
+		#endif
+		
 	}
 	
 	/* 是否解锁 */
@@ -445,14 +463,22 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 		{
 			for(i=0;i<MAXMOTORS;i++)
 			{
+				#if USE_FAN_AS_BLDC
+				motor[4] = LIMIT(motor[4], (10 *READY_SPEED),(10*MAX_PWM) );
+				#else
 				motor[i] = LIMIT(motor[i], (10 *READY_SPEED),(10*MAX_PWM) );
+				#endif
 			}
 		}
 		else						//油门低
 		{
 			for(i=0;i<MAXMOTORS;i++)
 			{
+				#if USE_FAN_AS_BLDC
+				motor[4] = LIMIT(motor[4], 0,(10*MAX_PWM) );
+				#else
 				motor[i] = LIMIT(motor[i], 0,(10*MAX_PWM) );
+				#endif
 			}
 		}
 	}
@@ -476,7 +502,7 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 				motor[i] = LIMIT(motor[i], (10 *READY_SPEED),(10*MAX_PWM) );
 		    if(!fly_ready)
 					state=0;
-				if(cnt++>2/LIMIT(T,0.001,1))
+				if(cnt++>1.68/LIMIT(T,0.001,1))
 					state=2;
 		break;
 		case 2:
@@ -489,9 +515,13 @@ void All_Out(float out_roll,float out_pitch,float out_yaw,float T)
 	{
 		motor_out[i] = (s16)(motor[i]);
 	}
-		
-	SetPwm(motor_out,0,1000); //1000
 	
+	
+	#if USE_FAN_AS_BLDC
+  SetPwm_Fan(motor_out);	
+	#else
+	SetPwm(motor_out,0,1000); //1000
+	#endif
 }
 
 

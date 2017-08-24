@@ -3,6 +3,7 @@
 #include "pwm_out.h"
 #include "include.h"
 #include "mymath.h"
+#include "ctrl.h"
 //21分频到 84000000/21 = 4M   0.25us
 
 #define INIT_DUTY 4000 //u16(1000/0.25)
@@ -57,7 +58,9 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 		GPIO_InitTypeDef GPIO_InitStructure;
 		uint16_t PrescalerValue = 0;
 		u32 hz_set = ACCURACY*hz*2;
-
+    #if USE_FAN_AS_BLDC
+	  hz_set = ACCURACY*200*2;
+		#endif
 		TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 		TIM_OCStructInit(&TIM_OCInitStructure);
 
@@ -175,10 +178,17 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
 
 		if(motor_cal)//《---------------在此处加断点 校准电调
 		MOTOR_SET();
+		#if USE_FAN_AS_BLDC
+		TIM3->CCR1 = fan.off[0];				//5	
+		TIM3->CCR2 = fan.off[1];				//6	
+		TIM3->CCR3 = fan.off[2];				//7	
+		TIM3->CCR4 = fan.off[3];				//8	
+		#else
 		TIM3->CCR1 = PWM_RADIO *( 0 ) + INIT_DUTY;				//5	
 		TIM3->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//6	
 		TIM3->CCR3 = PWM_RADIO *( 0 ) + INIT_DUTY;				//7	
 		TIM3->CCR4 = PWM_RADIO *( 0 ) + INIT_DUTY;				//8	
+		#endif
 		TIM4->CCR1 = PWM_RADIO *( 0 ) + INIT_DUTY;				//7	
 		TIM4->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//8	
 		TIM4->CCR3 = PWM_RADIO *( 0 ) + INIT_DUTY;				//7	
@@ -398,11 +408,12 @@ void SetPwm_AUX(float pit,float rol)
 	aux.init[0]=1550;
 	aux.init[1]=1625;
 	aux.min[0]=500;
-	aux.min[1]=500;
+	aux.min[1]=1530;
   aux.max[0]=2500;
-	aux.max[1]=2500;
+	aux.max[1]=1720;
+	aux.att_off[0]=-40;	
 	aux.flag[0]=1;
-  aux.flag[1]=1;		
+  aux.flag[1]=-1;		
 	aux.pwm_per_dig=5;
 	}	
 	aux.pwm_tem[0]=aux.init[0]+aux.pwm_per_dig*pit*aux.flag[0];
@@ -484,3 +495,34 @@ void SetPwm(int16_t pwm[MAXMOTORS],s16 min,s16 max)
 #endif
 }
 
+
+void SetPwm_Fan(int16_t pwm[6])
+{
+	u8 i;
+	s16 pwm_tem[6];
+	for(i=0;i<4;i++)
+	{
+		  fan.out[i]=LIMIT(pwm[i]*fan.per_degree*fan.flag[i]+fan.off[i],fan.off[i]-fan.min[i],fan.off[i]+fan.max[i]);
+	}
+		#if defined(DEBUG_MODE)
+		  pwm_tem[4] = 0 ;
+	  #else
+	    pwm_tem[4] = LIMIT(pwm[4],0,1000); 
+		#endif		
+	if(fan.test[0]!=0){	
+	TIM3->CCR1 = fan.test[0];				//1	
+	TIM3->CCR2 = fan.test[1];				//2
+	TIM3->CCR3 = fan.test[2];				//3	
+	TIM3->CCR4 = fan.test[3];				//4		
+	}else{
+	TIM3->CCR1 = fan.out[0];				//1	
+	TIM3->CCR2 = fan.out[1];				//2
+	TIM3->CCR3 = fan.out[2];				//3	
+	TIM3->CCR4 = fan.out[3];				//4
+	}
+	TIM4->CCR1 = PWM_RADIO *( pwm_tem[4] ) + INIT_DUTY;				//3	
+	TIM4->CCR2 = PWM_RADIO *( 0 ) + INIT_DUTY;				//4
+	TIM4->CCR3 = PWM_RADIO *( 0 ) + INIT_DUTY;				//3	
+	TIM4->CCR4 = PWM_RADIO *( 0 ) + INIT_DUTY;				//4
+
+}

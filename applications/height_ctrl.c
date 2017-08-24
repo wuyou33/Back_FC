@@ -72,7 +72,7 @@ void WZ_Speed_PID_Init()
 	  wz_speed_pid_use.fp=0.2;
 	//adrc
 	  eso_pos_spd[Zr].b0=15;
-	  eso_pos_spd[Zr].eso_dead=0;	
+	  eso_pos_spd[Zr].eso_dead=0.01;	
 	  eso_pos_spd[Zr].eso_for_z=1;
 }
 
@@ -187,7 +187,7 @@ void Height_Ctrl1(float T,float thr)
 						}
 						 //ultra_speed=LIMIT(ultra_speed,-2.5*1000,2.5*1000);
 				     ultra_speed=LIMIT(hc_value.fusion_speed,-2.5*1000,2.5*1000);
-				   if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
+				   if(smart.rc.POS_MODE==SMART_MODE_SPD||smart.rc.POS_MODE==SMART_MODE_SPD_RATE)//only for smart_spd
 					 {
 						 if(smart.spd.z==0)
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
@@ -198,6 +198,29 @@ void Height_Ctrl1(float T,float thr)
 						 else
 						 ultra_ctrl_out_use=ultra_ctrl_out; 
            }
+					   
+						//ban ban control for bmp now
+						float ero=(baro.h_flt*1000-exp_height);
+						float control_ban=0;
+					  if(ero>50)
+						{
+						   if(ero>500)
+								control_ban=-350;  
+							 else if(ero>200)
+								control_ban=-250;
+						}
+						else if(ero<-50)
+						{
+						   if(ero<-400)
+								control_ban=600;    
+							 else if(ero<-200)
+						    control_ban=300;
+						}	
+						else
+							control_ban=LIMIT(ultra_ctrl_out,-300,300);
+					 
+						if(height_ctrl_mode_rc==2&&height_ctrl_mode==1&&hold_alt_flag)
+		            ultra_ctrl_out_use=LIMIT(control_ban+200*my_deathzoom1(1-reference_vr_imd_down_fc[2],0.2),-1000,1000);
 						 
 					 if(ALT_POS_SONAR2>3&&height_ctrl_mode==2)
 						 ultra_ctrl_out_use=LIMIT(ultra_ctrl_out_use,-1000,0);
@@ -286,7 +309,7 @@ static float lpf_tmp,hc_speed_i,hc_speed_i_2,wz_speed_0,wz_speed_1,wz_speed_2,hc
   //-------------------------------------------PID-------------------------------
 	wz_speed_pid_v.err = wz_speed_pid_use.kp *( exp_z_speed - wz_speed );
 	wz_speed_pid_v.err_weight = (float)ABS(wz_speed_pid_v.err)/MAX_VERTICAL_SPEED;
-	wz_speed_pid_v.err_d = 0.002f/T *10*wz_speed_pid_use.kd * (-my_deathzoom1( (LIMIT(wz_acc_mms2,-9800*0.8,9800*0.8) ) ,25)) *T;
+	wz_speed_pid_v.err_d = 0.002f/T *10*wz_speed_pid_use.kd * (-my_deathzoom1( (LIMIT(wz_acc_mms2,-9800*3.3,9800*3.3) ) ,25)) *T;
 	if(fabs(wz_speed_pid_v.err)<eso_pos_spd[Zr].eso_dead||eso_pos_spd[Zr].b0==0||mode_oldx.en_eso_h_in==0||mode_oldx.height_safe==1||1){
 	wz_speed_pid_v.err_i += wz_speed_pid_use.ki *( exp_z_speed - h_speed ) *T;
 	wz_speed_pid_v.err_i = LIMIT(wz_speed_pid_v.err_i+H_INT*Thr_Weight*0,-Thr_Weight *300,Thr_Weight *300);}
@@ -336,7 +359,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 
   if(EXP_Z_SPEED!=0&&smart.rc.POS_MODE==0)
 	{  hold_alt_flag=0;
-	if(height_ctrl_mode==1)
+	 if(height_ctrl_mode==1)
 		{
 		#if EN_ATT_CAL_FC	
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;
@@ -344,7 +367,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 		exp_height=ALT_POS_BMP_UKF_OLDX*1000;	
 		#endif
 	  }
-		if(height_ctrl_mode==2)
+	  else if(height_ctrl_mode==2)
 		{exp_height=LIMIT(ALT_POS_BMP_UKF_OLDX,0.04,10)*1000;}
 	}
 	else
@@ -380,9 +403,9 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	if(smart.rc.POS_MODE==0){
 	if(height_ctrl_mode==2&&!mode_oldx.height_safe&&ALT_POS_SONAR2*1000>SONAR_HEIGHT*1.5&&mode_oldx.h_is_fix){//超声波模式期望高度固定为1.2m
 	if(circle.connect)
-	exp_height=1500;
+	exp_height=1200;
 	else
-	exp_height=1500;	
+	exp_height=1200;	
   }}
 	#endif
 	
@@ -423,10 +446,10 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 //			ultra_dis_lpf += ( 1 / ( 1 + 1 / ( k_flt_pos_z*0.6f *3.14f *T ) ) ) *(ultra_dis_tmp- ultra_dis_lpf) ;
 //		}	
 	ultra_ctrl.now=ultra_dis_lpf=  ultra_dis_tmp;	
-	if((smart.rc.POS_MODE==SMART_MODE_SPD&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&ABS(smart.rc.THROTTLE-1500)>25))
+	if(((smart.rc.POS_MODE==SMART_MODE_SPD||smart.rc.POS_MODE==SMART_MODE_SPD_RATE)&&fabs(smart.spd.z)>0)||(smart.rc.POS_MODE==SMART_MODE_RC&&ABS(smart.rc.THROTTLE-1500)>25))
 	exp_height=ultra_dis_lpf;
 	#if defined(HEIGHT_TEST) 
-	 if(mode_oldx.fc_test1)
+	 if(mode_oldx.fc_test1&&height_ctrl_mode==2)
 	    exp_height=height_test(T);
 	#endif
 	ultra_ctrl.exp=exp_height;
@@ -455,6 +478,7 @@ void Ultra_Ctrl1(float T,float thr)//位置环PID
 	else	
 	ultra_ctrl.pid_out = ultra_ctrl.err + ultra_ctrl.err_i + ultra_ctrl.err_d;
 
+	
 	ultra_ctrl.pid_out = LIMIT(ultra_ctrl.pid_out,-1000,1000);
 	ultra_ctrl_out = ultra_ctrl.pid_out;
 	ultra_ctrl.err_old = ultra_ctrl.err;

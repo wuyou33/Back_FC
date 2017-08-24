@@ -98,6 +98,17 @@ float yaw_off;
 extern CIRCLE circle,track;
 extern MARKER marker;
 
+
+ typedef struct
+{
+ float robot_range,forward_spd;
+ 
+
+ float k_f;	
+}ROBOT_LAND;
+extern ROBOT_LAND robot_land;
+
+
 #define MID_Y 152-40+14
 #define MID_X 182+60-38
 void AUTO_LAND_FLYUP(float T);
@@ -114,7 +125,7 @@ extern u8 way_point_to_go;
 #define SU_HOLD 3
 #define SD_RETRY_UP 4
 #define SD_RETRY_UP_HOLD 5
-
+#define TRACK_FAR 6
 
 #define SD_HOLD 13
 #define SD_MISS_SEARCH 14
@@ -142,6 +153,6 @@ extern u8 way_point_to_go;
 #define SMART_MODE_POS 3
 #define SMART_MODE_SPD 2
 #define SMART_MODE_RC 1
-
+#define SMART_MODE_SPD_RATE 4
 
 #endif

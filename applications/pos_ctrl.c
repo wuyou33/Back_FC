@@ -8,6 +8,7 @@
 float r1,r2;
 double home_lat,home_lon;
 double way_point[3][WAY_POINT_NUM];
+ROBOT_LAND robot_land;
 u8 way_point_to_go;
 u8 home_set=0;
 
@@ -31,7 +32,6 @@ void CalcEarthRadius(double lat) {
     *GPS_W_F=(double)posNorth/(double)(r1+0.1)+local_Lat;
     *GPS_J_F=(double)posEast/(double)(r2+0.1)+local_Lon;
 }
-
 
 // input lat/lon in degrees, returns distance in meters
 float navCalcDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -129,9 +129,9 @@ float circle_angle;
 #define Mark_Dis  0.36
 #define NUM_HAN 10
 #define NUM_LIE 10
-#define WAY_POINT_DEAD 0.1
+#define WAY_POINT_DEAD 0.25
 
-float exp_center_cycle[5]={1.50,1.50,0.78,0,20};
+float exp_center_cycle[5]={1.50,1.50,2,0,15};
 u8 line_test_num[2]={12,34};
 u8 tan_test_num[4]={12,32,34,14};
 void Nav_pos_set_test(u8 mode_in,float T)//轨迹规划
@@ -192,7 +192,7 @@ switch(mode_in){
 
 }
 }
-u8 pos_exp_test=0;
+u8 pos_exp_test=1;
 float yaw_qr_off;
 float out_timer_nav,in_timer_nav;
 float acc_temp[3];
@@ -202,6 +202,7 @@ _pos_pid nav_acc_pid;
 _pos_control nav_pos_ctrl[2];
 _pos_control nav_spd_ctrl[2];
 _pos_control nav_acc_ctrl[2];
+
 void reset_nav_pos(u8 sel)
 {
 if(sel==Y)	
@@ -210,39 +211,42 @@ if(sel==X)
 nav_pos_ctrl[X].exp=POS_UKF_X;//mm
 }
 
+float nav_spd_pid_flt_nav_rc;
 float off_GPS[2]={0.0012,0.0061};
 void Positon_control(float T)// 位置控制 
 { u8 i;
+	static u8 is_hover=1;
 	static u8 cnt[2],init;
 	if(!init){init=1;
 		//pos
 		nav_pos_ctrl[X].mode=2;
-		nav_pos_pid.kp=0.068;//3;
-		nav_pos_pid.ki=0.00;
+		nav_pos_pid.kp=0.268;//3;
+		nav_pos_pid.ki=0.05;
 		nav_pos_pid.kd=0.0;
 		nav_pos_pid.dead=0.01;
 		//adrc
 		eso_pos[X].b0=eso_pos[Y].b0=0;//4.5;
-		eso_pos[X].err_limit=eso_pos[Y].err_limit=8000;
+		eso_pos[X].err_limit=eso_pos[Y].err_limit=3500;
 		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
 		nav_spd_pid.f_kp=0.2;
-		nav_spd_pid.kp=0.268	;
+		nav_spd_pid.kp=0.33;//
 		nav_spd_pid.ki=0.050;
 		nav_spd_pid.kd=0.00;
 		nav_spd_pid.flt_nav_kd=1.0;
-		nav_spd_pid.dead=0.008*1000;
+		nav_spd_pid.dead=0.0086*1000;
 		//adrc
 		eso_pos_spd[X].b0=eso_pos_spd[Y].b0=0;
 		eso_pos_spd[X].err_limit=eso_pos_spd[Y].err_limit=MAX_CTRL_POS_SPEED*2;
 		eso_pos_spd[X].eso_dead=eso_pos_spd[Y].eso_dead=nav_spd_pid.dead;	
 		nav_spd_pid.flt_nav=1;//决定刹车手感
+		nav_spd_pid_flt_nav_rc=0.68;
 		//acc
-		nav_acc_pid.f_kp=0.2;
-		nav_acc_pid.kp=0.3;//0.15;
+		nav_acc_pid.f_kp=0.15;
+		nav_acc_pid.kp=0.16;//0.15;
 		nav_acc_pid.ki=0.00;
 		nav_acc_pid.kd=0.0;	
-		nav_acc_pid.dead=0.015*1000;
+		nav_acc_pid.dead=0.04*1000;
 		nav_acc_pid.flt_nav_kd=15;
 	}
 	static u8 pos_reset_state[2];
@@ -281,7 +285,7 @@ void Positon_control(float T)// 位置控制
   }
 	
 	if(!pos_exp_test){
-	if(ALT_POS_SONAR2<SONAR_HEIGHT*1.45||!fly_ready||mode_oldx.flow_hold_position==0)
+	if((ALT_POS_SONAR2<SONAR_HEIGHT*1.45&&module.sonar)||!fly_ready||mode_oldx.flow_hold_position==0)
 	{reset_nav_pos(Y);reset_nav_pos(X);}
 	}
 	
@@ -293,7 +297,7 @@ void Positon_control(float T)// 位置控制
  }
 	
 	static u8 mode_flow_hold_position_reg;
-	if(mode_flow_hold_position_reg!=mode_oldx.flow_hold_position)
+	if((mode_flow_hold_position_reg!=mode_oldx.flow_hold_position)||!is_hover)
 	{reset_nav_pos(Y); reset_nav_pos(X);}
 	mode_flow_hold_position_reg=mode_oldx.flow_hold_position;
 	
@@ -340,33 +344,26 @@ head  |    1 PIT y-   90d in marker
 	acc_temp[0] = a_br[1]*reference_vr_imd_down[2]  - a_br[2]*reference_vr_imd_down[1] ;
 	acc_temp[1] = a_br[2]*reference_vr_imd_down[0]  - a_br[0]*reference_vr_imd_down[2] ;
 	#endif
+	
 	float k_acc_flt;
-	if(mode_oldx.test4)
 	k_acc_flt=nav_acc_pid.flt_nav_kd;
-	else
-	k_acc_flt=15;	
+
 	//acc_flt[0] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[0] - acc_flt[0] ),0);
-	//acc_flt[1] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[1] - acc_flt[1] ),0);
-	acc_flt[0]=firstOrderFilter(-acc_temp[0] ,&firstOrderFilters[ACC_LOWPASS_X],T);
-	acc_flt[1]=firstOrderFilter(-acc_temp[1] ,&firstOrderFilters[ACC_LOWPASS_Y],T);
-	float b[3] = {0.8122  ,  1.6244  ,  0.8122};
-	float a[3] = {1.0000  ,  1.5888  ,  0.6600};
-	float xBuf1[3];
-	float yBuf1[3];
-	float xBuf2[3];
-	float yBuf2[3];
-	
-	
+	//acc_flt[1] += ( 1 / ( 1 + 1 / ( k_acc_flt *3.14f *T ) ) ) *my_deathzoom1( (-acc_temp[1] - acc_flt[1] ),0); 
+	acc_flt[0] += ( 1 / ( 1 + 1 / ( 10 *3.14f *T ) ) ) *my_deathzoom1( (firstOrderFilter(-acc_temp[0] ,&firstOrderFilters[ACC_LOWPASS_X],T) - acc_flt[0]),0 );
+	acc_flt[1] += ( 1 / ( 1 + 1 / ( 10 *3.14f *T ) ) ) *my_deathzoom1( (firstOrderFilter(-acc_temp[1] ,&firstOrderFilters[ACC_LOWPASS_Y],T) - acc_flt[1]),0 );
+
+
+
 //输入数据	
 	pos[Y]=POS_UKF_Y;//mm
   pos[X]=POS_UKF_X;//mm
 	
 	spd[Y]=VEL_UKF_Y*1000;//,&firstOrderFilters[FLOW_LOWPASS_Y],T);
 	spd[X]=VEL_UKF_X*1000;//,&firstOrderFilters[FLOW_LOWPASS_X],T);		
-//	spd[Y]=VEL_UKF_Y*1000;//mm
-//  spd[X]=VEL_UKF_X*1000;//mm
-	acc_body[Y]=acc[Y]=acc_flt[Y]*9800;//IIR_LP(acc_flt[Y]*9800,xBuf1,yBuf1,a,b,2);
-  acc_body[X]=acc[X]=acc_flt[X]*9800;//IIR_LP(acc_flt[X]*9800,xBuf2,yBuf2,a,b,2);
+
+	acc_body[Y]=acc[Y]=acc_flt[Y]*9800;
+  acc_body[X]=acc[X]=acc_flt[X]*9800;
 
 		
 //位置
@@ -429,27 +426,27 @@ else
 	temp_pos_out[X]=nav_pos_ctrl[X].pid_out;	
 	}		
 	
- if(smart.rc.POS_MODE==SMART_MODE_SPD)//only for smart_spd
+ if((smart.rc.POS_MODE==SMART_MODE_SPD||smart.rc.POS_MODE==SMART_MODE_SPD_RATE)&&is_hover==1)//only for smart_spd
 	 {
 		 if(smart.spd.y==0)
 		 nav_spd_ctrl[Y].exp=temp_pos_out[Y]; 
 		 if(smart.spd.x==0)
 		 nav_spd_ctrl[X].exp=temp_pos_out[X]; 
 	 } 
-	 else
+	 else if(is_hover==1)
 	 {
 	 nav_spd_ctrl[Y].exp=temp_pos_out[Y];
 	 nav_spd_ctrl[X].exp=temp_pos_out[X];
 	 } 
 	
-//  if(mode_oldx.flow_hold_position!=2){
-//	 nav_spd_ctrl[Y].exp*=0.0;
-//	 nav_spd_ctrl[X].exp*=0.0;}
-	
+  if(mode_oldx.flow_hold_position!=2&&module.flow==0){
+	 nav_spd_ctrl[Y].exp*=0.0;
+	 nav_spd_ctrl[X].exp*=0.0;}
+//----------------------------------速度阶越测试
 	static u8 state_tune_spd;
 	static u8 flag_way;
 	static u16 cnt_s1;
-	switch(state_tune_spd){//速度阶越测试
+	switch(state_tune_spd){
 	case 0:	
 	if(mode_oldx.trig_flow_spd)
 	{state_tune_spd=1;cnt_s1=0;flag_way=!flag_way;}
@@ -463,12 +460,12 @@ else
 	}
 	else
 	state_tune_spd=0;	
-	if(cnt_s1++>5.6/T)
+	if(cnt_s1++>6/T)
 	{cnt_s1=0;state_tune_spd=2;}
 	break;
 	case 2:
 	nav_spd_ctrl[X].exp=0;			
-	if(cnt_s1++>2/T)	
+	if(cnt_s1++>3.25/T)	
 	state_tune_spd=0;
 	if(!mode_oldx.trig_flow_spd)
 	state_tune_spd=0;
@@ -484,11 +481,24 @@ else
 		in_timer_nav=temp;
 	else
 		in_timer_nav=0.01;
+	static float nav_spd_ctrl_reg[2];
+	if(!is_hover&&fabs(nav_spd_ctrl_reg[X])<66&&fabs(nav_spd_ctrl_reg[Y])<66)//&&now spd
+	  is_hover=1;
 	
-	if(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)
-	{ nav_spd_ctrl[X].exp=nav_spd_ctrl[X].now;
-	  nav_spd_ctrl[Y].exp=nav_spd_ctrl[Y].now;
+	if(fabs(CH_filter[0])>25||fabs(CH_filter[1])>25)//in rc command
+	{ nav_spd_ctrl_reg[X]=nav_spd_ctrl[X].exp=nav_spd_ctrl[X].now;
+	  nav_spd_ctrl_reg[Y]=nav_spd_ctrl[Y].exp=nav_spd_ctrl[Y].now;
+		is_hover=0;
 	}
+	else if(!is_hover)
+	{
+	 nav_spd_ctrl_reg[X] += ( 1 / ( 1 + 1 / ( nav_spd_pid_flt_nav_rc*2.5*3.14f *T ) ) ) *(0- nav_spd_ctrl_reg[X]) ;
+	 nav_spd_ctrl_reg[Y] += ( 1 / ( 1 + 1 / ( nav_spd_pid_flt_nav_rc*2.5*3.14f *T ) ) ) *(0- nav_spd_ctrl_reg[Y]) ;
+	 nav_spd_ctrl[X].exp=nav_spd_ctrl_reg[X];
+	 nav_spd_ctrl[Y].exp=nav_spd_ctrl_reg[Y];
+	}	
+	
+		
 	
 	for (i=0;i<2;i++){	
 	nav_spd_ctrl[i].now=(spd[i]);
@@ -814,6 +824,11 @@ void AUTO_LAND_FLYUP(float T)
 //----------------------------error----------------------------
 #if defined(AUTO_DOWN)
 #elif	defined(AUTO_MAPPER)	
+#elif defined(TRACK_FAR)
+	 if(Rc_Get_PWM.AUX1>1500)
+	  state_v=SD_HOLD;
+	 else
+		state_v=SD_SAFE;
 #else	
 	 if(Rc_Get_PWM.AUX1>1500)
 	  state_v=SD_HOLD;
@@ -834,6 +849,7 @@ void AUTO_LAND_FLYUP(float T)
 			smart.spd.z=AUTO_FLY_SPD_Z;
 		}
 		else if(state_v==SD_HOLD1||state_v==SD_HOLD){//air
+			
 			smart.pos.x=smart_in.pos.x;			
 			smart.pos.y=smart_in.pos.y;		
 			smart.pos.z=smart_in.pos.z;	
@@ -895,6 +911,17 @@ void AUTO_LAND_FLYUP(float T)
 			smart.rc.RST=3;		
 			smart.rc.POS_MODE=SMART_MODE_POS;
 	  }
+		else if(state_v== TRACK_FAR){
+			
+			smart.spd.x=0;	
+			smart.spd.y=-robot_land.forward_spd;						
+			smart.spd.z=0; 
+		  smart.att_rate.z=aux.att_ctrl[1];
+			
+			smart.rc.RST=3;		
+			smart.rc.POS_MODE=SMART_MODE_SPD_RATE;	
+			
+		}
     else if(state_v== SD_CIRCLE_SLOW_DOWN||state_v== SD_CHECK_G){
 			smart.spd.x=0;//修改该控制量由视觉信息可实现，视觉导航			
 			smart.spd.y=0;//修改该控制量由视觉信息可实现，视觉导航							
@@ -912,5 +939,7 @@ void AUTO_LAND_FLYUP(float T)
 			smart.rc.RST=0;		
 			smart.rc.POS_MODE=0;
 		}
-	
+		//RC Interupt
+	  if(fabs(CH_filter[THR])>DEAD_NAV_RC||fabs(CH_filter[ROL])>DEAD_NAV_RC||fabs(CH_filter[PIT])>DEAD_NAV_RC||fabs(CH_filter[YAW])>DEAD_NAV_RC)
+			smart.rc.POS_MODE=0;
 }

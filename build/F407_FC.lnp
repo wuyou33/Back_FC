@@ -39,7 +39,7 @@
 ".\build\rt_nonfinite.o"
 ".\build\rtgetinf.o"
 ".\build\rtgetnan.o"
-".\applications\kf_oldx.lib"
+".\build\kf_oldx_nav.o"
 ".\applications\oldx_kf2.lib"
 ".\build\pos_ctrl.o"
 ".\build\ctrl.o"

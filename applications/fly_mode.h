@@ -32,4 +32,5 @@ typedef struct
 }MOUDLE;
 extern MOUDLE module;
 void mode_check(float *ch_in,u8 *mode_value);
+extern u8 height_ctrl_mode_rc;
 #endif

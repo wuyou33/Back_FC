@@ -105,18 +105,12 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	  yaw_mag=Yaw_fc1;
 	#else
 	static float yaw_imu_off;
-	static u8 imu_flag;
-	if(!NAV_BOARD_CONNECT)
-		yaw_mag=Yaw_fc1;
-	else
-	  yaw_imu_off=Yaw;
+	if(NAV_BOARD_CONNECT)
+	yaw_imu_off=Yaw_fc-yaw_mag;	
 	
-	if(NAV_BOARD_CONNECT==0&&imu_flag==1)
-	yaw_mag=Yaw_fc1=yaw_imu_off+21;
-	
-	imu_flag=NAV_BOARD_CONNECT;
-	
+	yaw_mag=Yaw_fc1+yaw_imu_off;
 	#endif
+	  yaw_mag=Yaw_fc1;
 //---------acc norm---------
 	float norm;
 	norm = sqrt(ax*(ax) + ay*(ay) + az*az)/4096.*9.8;

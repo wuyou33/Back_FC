@@ -23,12 +23,15 @@ extern u8 mcuID[3];
 //--------------任选1个------------------
 //#define  HEIGHT_TEST  // 高度自动控制
 //#define  POS_TEST     // 位置自动控制
-#define  POS_SPD_TEST   // 速度自动控制
+//#define  POS_SPD_TEST   // 速度自动控制
 //#define  AUTO_DOWN    // 自动降落
 //#define  AUTO_MAPPER   // 自动测绘
 //#define  PID_TUNNING   // 姿态调参模式
 //#define  AUTO_HOME     // 回航测试
+//#define  ROBOT_LAND    // 移动平台降落测试
+
 //#define  DEBUG_MODE    //测试模式 PWM不输出 可与其他模式互选
+
 //================系统===================
 #define USE_MINI_FC_FLOW_BOARD 0 //使用MINI——OLDX——FLOW板子
 #define USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS 1
@@ -38,16 +41,22 @@ extern u8 mcuID[3];
 #define USE_HT_GROUND  0  //与匿名互选 则使用HTlink协议
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
+#define USE_FAN_AS_BLDC 0  //使用单旋翼四轴
 
+#define USE_ZIN_BMP 0
 #define USE_M100_IMU 0  
 #define USE_FLOW_PI 0  //使用OLDX光流模块
-#define TUNING_X 1   //0->y 1->x   
-#define TUNING_Z 1   //higher than tuning x or y
+#define TUNING_X 0   //0->y 1->x   
+#define TUNING_Z 0   //higher than tuning x or y
 #define SONAR_USE_FC 0  //FC采集超声波USE IDLE 串口
 #define SONAR_USE_FC1 0  //FC采集超声波USE ODROID 串口
 #define USE_US100           //使用us100型号超声波 
 #define USE_BEEP 0   //无用
+#if USE_FAN_AS_BLDC
+#define MAXMOTORS 		(6)		//电机数量	
+#else	
 #define MAXMOTORS 		(4)		//电机数量
+#endif
 #define GET_TIME_NUM 	(30)		//设置获取时间的数组数量
 #define CH_NUM 				(8) 	//接收机通道数量
 #define USE_TOE_IN_UNLOCK 1 // 0：默认解锁方式，1：外八解锁方式

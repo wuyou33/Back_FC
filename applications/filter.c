@@ -125,8 +125,9 @@ float Moving_Median(u8 item,u8 width_num,float in)
 	u8 i,j;
 	float t;
 	float tmp[MED_WIDTH_NUM];
-	
-	if(item >= MED_FIL_ITEM || width_num >= MED_WIDTH_NUM )
+	if(width_num==0)
+	return in;
+	else if(item >= MED_FIL_ITEM || width_num >= MED_WIDTH_NUM )
 	{
 		return 0;
 	}
@@ -288,7 +289,7 @@ float ACC_LOWPASS_GX1      ;
 float ACC_LOWPASS_GX2      ;
 float ACC_LOWPASS_GX3      ;
 
-float BARO_LOWPASS_TAU        = 0.001f;
+float BARO_LOWPASS_TAU        = 0.05f;
 float BARO_LOWPASS_SAMPLE_TIME =0.02f;
 float BARO_LOWPASS_A        ;
 float BARO_LOWPASS_GX1      ;

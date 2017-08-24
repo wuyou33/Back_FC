@@ -36,6 +36,19 @@ typedef struct
 
 }ctrl_t;
 
+typedef struct
+{
+float min[4];
+float	max[4];
+float	off[4];
+float out[4],test[4];
+int flag[4];
+float	per_degree;
+float thr;
+
+}FAN;
+
+extern FAN fan;
 extern ctrl_t ctrl_1;
 extern ctrl_t ctrl_2;
 extern xyz_f_t except_AS;

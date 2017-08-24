@@ -218,20 +218,20 @@ int debug_pi_flow[20];
     m100.Rol=Roll=(float)((int16_t)(*(data_buf+6)<<8)|*(data_buf+7))/10.;
 		m100.Yaw=Yaw=(float)((int16_t)(*(data_buf+8)<<8)|*(data_buf+9))/10.;
 		
-		ALT_VEL_SONAR=(float)(int16_t)((*(data_buf+10)<<8)|*(data_buf+11))/1000.;//m
+		ALT_VEL_BMP=(float)(int16_t)((*(data_buf+10)<<8)|*(data_buf+11))/1000.;//m
 		float temp=(float)(int16_t)((*(data_buf+12)<<8)|*(data_buf+13))/1000.;//m
 		#if !SONAR_USE_FC&&!SONAR_USE_FC1
 			if(temp<3){ultra.measure_ok=1;
 			m100.H_G=ALT_POS_SONAR2 = temp;}
 		#endif
-		ALT_VEL_BMP_EKF=Moving_Median(0,6,(float)(int16_t)((*(data_buf+14)<<8)|*(data_buf+15))/1000.);//m
+		ALT_VEL_BMP_EKF=Moving_Median(0,0,(float)(int16_t)((*(data_buf+14)<<8)|*(data_buf+15))/1000.);//m
 		ALT_POS_BMP_EKF=(float)(int32_t)((*(data_buf+16)<<24)|(*(data_buf+17)<<16)|(*(data_buf+18)<<8)|*(data_buf+19))/1000.;//m
 
 		m100.X_Pos_local=POS_UKF_X=(float)(int16_t)((*(data_buf+20)<<8)|*(data_buf+21))/1000.;//m  ->0
 		m100.Y_Pos_local=POS_UKF_Y=(float)(int16_t)((*(data_buf+22)<<8)|*(data_buf+23))/1000.;//m  ->1
 		
-		m100.X_Spd_b=VEL_UKF_X=Moving_Median(1,6,(float)(int16_t)((*(data_buf+24)<<8)|*(data_buf+25))/1000.);//m
-		m100.Y_Spd_b=VEL_UKF_Y=Moving_Median(2,6,(float)(int16_t)((*(data_buf+26)<<8)|*(data_buf+27))/1000.);//m			
+		m100.X_Spd_b=VEL_UKF_X=Moving_Median(1,0,(float)(int16_t)((*(data_buf+24)<<8)|*(data_buf+25))/1000.);//m
+		m100.Y_Spd_b=VEL_UKF_Y=Moving_Median(2,0,(float)(int16_t)((*(data_buf+26)<<8)|*(data_buf+27))/1000.);//m			
 		
     now_position[LON]=POS_UKF_X;//m  lon->0 X
 		now_position[LAT]=POS_UKF_Y;//m  lat->1 Y			
@@ -249,6 +249,8 @@ int debug_pi_flow[20];
 		m100.STATUS=*(data_buf+48);
 		m100.GPS_STATUS=*(data_buf+49);
 		#endif
+		
+		
 	}
   else if(*(data_buf+2)==0x12)//FLOW_MINE_frame
   { 
@@ -899,6 +901,8 @@ void Uart5_Init(u32 br_num)//-----odroid
 	//使能USART5
 	USART_Cmd(UART5, ENABLE); 
 }
+
+struct ROBOT robot;
 float mark_map[10][5];//x y z yaw id
 u16 PWM_DJI[4]={0};
 void Data_Receive_Anl5(u8 *data_buf,u8 num)
@@ -967,7 +971,46 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
 	mark_map[5][3]=(int16_t)((*(data_buf+37)<<8)|*(data_buf+38));
 	mark_map[5][4]=*(data_buf+39);
 	}
-		
+	else if(*(data_buf+2)==0x61)//move robot
+	{
+	robot.connect=1;
+  robot.loss_cnt=0;		
+	robot.track_x=(int16_t)((*(data_buf+4)<<8)|*(data_buf+5));
+	robot.track_y=(int16_t)((*(data_buf+6)<<8)|*(data_buf+7));
+	robot.track_r=(int16_t)((*(data_buf+8)<<8)|*(data_buf+9));
+	robot.mark_check=(int16_t)((*(data_buf+10)<<8)|*(data_buf+11));
+	robot.camera_x=(int16_t)((*(data_buf+12)<<8)|*(data_buf+13));
+	robot.camera_y=(int16_t)((*(data_buf+14)<<8)|*(data_buf+15));
+	robot.camera_z=(int16_t)((*(data_buf+16)<<8)|*(data_buf+17));
+	robot.pit=(int16_t)((*(data_buf+18)<<8)|*(data_buf+19));
+  robot.rol=(int16_t)((*(data_buf+20)<<8)|*(data_buf+21));
+  robot.yaw=(int16_t)((*(data_buf+22)<<8)|*(data_buf+23));
+  robot.mark_x=(int16_t)((*(data_buf+24)<<8)|*(data_buf+25));
+  robot.mark_y=(int16_t)((*(data_buf+26)<<8)|*(data_buf+27));		
+	}	
+	else if(*(data_buf+2)==0x62)//move robot map
+	{
+	robot.mark_map[0][0]=(int16_t)((*(data_buf+4)<<8)|*(data_buf+5));
+	robot.mark_map[0][1]=(int16_t)((*(data_buf+6)<<8)|*(data_buf+7));
+	robot.mark_map[0][2]=(int16_t)((*(data_buf+8)<<8)|*(data_buf+9));
+	robot.mark_map[0][3]=(int16_t)((*(data_buf+10)<<8)|*(data_buf+11));
+	robot.mark_map[0][4]=*(data_buf+12);
+	robot.mark_map[1][0]=(int16_t)((*(data_buf+13)<<8)|*(data_buf+14));
+	robot.mark_map[1][1]=(int16_t)((*(data_buf+15)<<8)|*(data_buf+16));
+	robot.mark_map[1][2]=(int16_t)((*(data_buf+17)<<8)|*(data_buf+18));
+	robot.mark_map[1][3]=(int16_t)((*(data_buf+19)<<8)|*(data_buf+20));
+	robot.mark_map[1][4]=*(data_buf+21);
+	robot.mark_map[2][0]=(int16_t)((*(data_buf+22)<<8)|*(data_buf+23));
+	robot.mark_map[2][1]=(int16_t)((*(data_buf+24)<<8)|*(data_buf+25));
+	robot.mark_map[2][2]=(int16_t)((*(data_buf+26)<<8)|*(data_buf+27));
+	robot.mark_map[2][3]=(int16_t)((*(data_buf+28)<<8)|*(data_buf+29));
+	robot.mark_map[2][4]=*(data_buf+30);	
+	robot.mark_map[3][0]=(int16_t)((*(data_buf+31)<<8)|*(data_buf+32));
+	robot.mark_map[3][1]=(int16_t)((*(data_buf+33)<<8)|*(data_buf+34));
+	robot.mark_map[3][2]=(int16_t)((*(data_buf+35)<<8)|*(data_buf+36));
+	robot.mark_map[3][3]=(int16_t)((*(data_buf+37)<<8)|*(data_buf+38));
+	robot.mark_map[3][4]=*(data_buf+39);
+	}	
 }
 u8 TxBuffer5[256];
 u8 TxCounter5=0;

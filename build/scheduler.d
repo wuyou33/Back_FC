@@ -59,3 +59,4 @@
 .\build\scheduler.o: applications\rc_mine.h
 .\build\scheduler.o: applications\alt_fushion.h
 .\build\scheduler.o: applications\sbus.h
+.\build\scheduler.o: applications\iic_hml.h

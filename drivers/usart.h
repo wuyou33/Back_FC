@@ -91,6 +91,7 @@ extern struct _sensor sensor;
 struct SMART{   
 	struct _float pos;
 	struct _float spd;
+	struct _float att_rate;
   RC_GETDATA rc;
               };	
 extern struct SMART smart,smart_in;
@@ -451,6 +452,15 @@ u16 loss_cnt;
 };
 extern struct _QR qr;
 
+struct ROBOT{
+float track_x,track_y,track_r;
+float camera_x,camera_y,camera_z,pit,rol,yaw,mark_x,mark_y;
+u8 connect,mark_check;
+float mark_map[6][5];
+u16 loss_cnt;
+};
+extern struct ROBOT robot;
+extern float k_dj[5];
 
 struct _FLOW_PI{
 float x,y,z,z_o,pit,rol,yaw;

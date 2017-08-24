@@ -55,3 +55,4 @@
 .\build\init.o: applications\bmp.h
 .\build\init.o: applications\spi.h
 .\build\init.o: applications\nrf.h
+.\build\init.o: applications\iic_hml.h

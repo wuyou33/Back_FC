@@ -664,9 +664,9 @@
               <FilePath>.\applications\rtGetNaN.c</FilePath>
             </File>
             <File>
-              <FileName>kf_oldx.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\applications\kf_oldx.lib</FilePath>
+              <FileName>KF_OLDX_NAV.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\KF_OLDX_NAV.c</FilePath>
             </File>
             <File>
               <FileName>oldx_kf2.lib</FileName>

@@ -85,8 +85,7 @@ float bmp_w;
 float wz_speed,baro_com_val;				
 void baro_ctrl(float dT,_hc_value_st *height_value)
 { 
-      //baro.h_flt=firstOrderFilter((baro.relative_height) ,&firstOrderFilters[BARO_LOWPASS],dT);
-			//baro.h_flt=baro.relative_height;
+     
 	    baro.h_dt = dT; 
 	    ukf_baro_task1(dT)	;//¸ß¶ÈÈÚºÏ
 //////////////////////////////////////////				
@@ -103,18 +102,11 @@ void baro_ctrl(float dT,_hc_value_st *height_value)
 			height_value->fusion_acc =  acc_body[2];
 			
 			if(!mode_oldx.baro_f_use_ukfm){
-		  float bmp_wt = LIMIT(LIMIT(fabs(Pit_fc)/30.,0,1)*LIMIT(fabs(Rol_fc)/30.,0,1),0,1);   
-      bmp_w+= ( 1 / ( 1 + 1 / ( 3.14f *dT*0.5 ) ) )*( (bmp_wt - bmp_w));				
-      if(height_ctrl_mode==2&&NS==2)		
-			bmp_w=0;
-      else{
-//			if(Rc_Get_PWM.RST>1500)	
-//			bmp_w=1;	
-//			else
-			bmp_w=0;	
-		  }
-			height_value->fusion_speed = my_deathzoom(LIMIT( ((ALT_VEL_BMP_UKF_OLDX*(1-bmp_w)+(bmp_w)*ALT_VEL_BMP_EKF)*1000),-MAX_VERTICAL_SPEED_DW,MAX_VERTICAL_SPEED_UP),height_value->fusion_speed,0);
-			height_value->fusion_height =( ALT_POS_BMP_UKF_OLDX*(1-bmp_w)+(bmp_w)*ALT_POS_BMP_EKF)*1000;
+			if(Rc_Get_PWM.AUX2>1500&&height_ctrl_mode==1) 		
+			height_value->fusion_speed = LIMIT( ALT_VEL_BMP*1000,-MAX_VERTICAL_SPEED_UP,MAX_VERTICAL_SPEED_UP);
+			else
+			height_value->fusion_speed = LIMIT( ALT_VEL_BMP_UKF_OLDX*1000,-MAX_VERTICAL_SPEED_UP,MAX_VERTICAL_SPEED_UP);
+			height_value->fusion_height = ALT_POS_BMP_UKF_OLDX*1000;
 	    }
 			else
 			{

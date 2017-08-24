@@ -37,7 +37,7 @@ static float Alt_Offset_m = 0;
 //
 #define PA_OFFSET_INIT_NUM 50	
 
-static float Alt_offset_Pa=0; //存放着0米(离起飞所在平面)时 对应的气压值  这个值存放上电时的气压值 
+static float Alt_offset_Pa=99180; //存放着0米(离起飞所在平面)时 对应的气压值  这个值存放上电时的气压值 
 double paOffsetNum = 0; 
 uint16_t  paInitCnt=0;
 uint8_t paOffsetInited=0;
@@ -247,23 +247,23 @@ float MS561101BA_get_altitude(void)
 	uint32_t current=0;
 	static uint32_t tp=0;
 
-	// 是否初始化过0米气压值？
-	if(Alt_offset_Pa == 0)
-	{ 
-		if(paInitCnt > PA_OFFSET_INIT_NUM)
-		{
-			Alt_offset_Pa = paOffsetNum / paInitCnt;
-			paOffsetInited=1;
-		}
-		else
-			paOffsetNum += MS5611_Pressure;
-		
-		paInitCnt++;
-		
-		Altitude = 0; //高度 为 0
-		
-		return Altitude;
-	}
+//	// 是否初始化过0米气压值？
+//	if(Alt_offset_Pa == 0)
+//	{ 
+//		if(paInitCnt > PA_OFFSET_INIT_NUM)
+//		{
+//			Alt_offset_Pa = paOffsetNum / paInitCnt;
+//			paOffsetInited=1;
+//		}
+//		else
+//			paOffsetNum += MS5611_Pressure;
+//		
+//		paInitCnt++;
+//		
+//		Altitude = 0; //高度 为 0
+//		
+//		return Altitude;
+//	}
 	//计算相对于上电时的位置的高度值 。单位为m
 	Altitude = 4433000.0 * (1 - pow((MS5611_Pressure / Alt_offset_Pa), 0.1903))*0.01f;  
 	#if !DEBUG_WITHOUT_SB
@@ -322,7 +322,7 @@ void MS561101BA_getPressure(void)
 	float press_limit_coe = 1.0f; 
 	
 	//机动时限制气压值降低（气压高度增高）
-	if(mode_oldx.baro_lock&& (fabs(Pit_fc)>angle_baro || fabs(Rol_fc)>angle_baro))
+	if(mode_oldx.baro_lock&& (fabs(Pit_fc)>angle_baro || fabs(Rol_fc)>angle_baro)&&0)
 	{		
 		press_limit_coe = 0.01f;   //0.005
 		if(newPress<lastPress)

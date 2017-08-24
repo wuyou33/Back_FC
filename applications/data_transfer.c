@@ -335,7 +335,7 @@ void ANO_DT_Data_Exchange(void)
     temp2=-temp2+1;			
 		ANO_DT_Send_PID(6,imu_board.k_flow_sel,temp1,temp2,
 											k_sensitivity[0],k_sensitivity[1],k_sensitivity[2],
-											0,(float)LENGTH_OF_DRONE/1000.,(float)UART_UP_LOAD_SEL_FORCE/1000.);
+											k_dj[1],(float)LENGTH_OF_DRONE/1000.,(float)UART_UP_LOAD_SEL_FORCE/1000.);
 		f.send_pid1=0;
 		}
 	 }
@@ -586,7 +586,7 @@ void ANO_DT_Data_Receive_Anl(u8 *data_buf,u8 num)
 		k_sensitivity[1] = 0.001*( (vs16)(*(data_buf+12)<<8)|*(data_buf+13) );
 		k_sensitivity[2] = 0.001*( (vs16)(*(data_buf+14)<<8)|*(data_buf+15) );
 		
-		
+		k_dj[1]					 = 0.001*( (vs16)(*(data_buf+17)<<8)|*(data_buf+16) );
 		LENGTH_OF_DRONE=    ( (vs16)(*(data_buf+18)<<8)|*(data_buf+19) );
 		UART_UP_LOAD_SEL_FORCE=    ( (vs16)(*(data_buf+20)<<8)|*(data_buf+21) );
 		if(f.send_check == 0)

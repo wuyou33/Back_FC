@@ -55,21 +55,21 @@ void mode_check(float *ch_in,u8 *mode_value)
 		}
 static u16 cnt_sonar_mask;		
 //auto switch for height feedback		
-//	if(height_ctrl_mode_rc==2&&NS==2 ){
-//    if(ALT_POS_SONAR2<1.8&&cnt_sonar_mask>2/0.05){
-//			height_ctrl_mode=2;
-//			cnt_sonar_mask=65530;
-//		}
-//		else{
-//			height_ctrl_mode=1;
-//		}
-//		
-//		if(ALT_POS_SONAR2<1.8)
-//			cnt_sonar_mask++;
-//		else
-//			cnt_sonar_mask=0;
-//	}
-//	else
+	if(height_ctrl_mode_rc==2&&NS==2&&0 ){
+    if(ALT_POS_SONAR2<2&&cnt_sonar_mask>2/0.05&&module.sonar ==1){
+			height_ctrl_mode=2;
+			cnt_sonar_mask=65530;
+		}
+		else{
+			height_ctrl_mode=1;
+		}
+		
+		if(ALT_POS_SONAR2<1.5)
+			cnt_sonar_mask++;
+		else
+			cnt_sonar_mask=0;
+	}
+	else
 	height_ctrl_mode=height_ctrl_mode_rc;
 		
 		//定点模式判断
@@ -78,7 +78,7 @@ static u16 cnt_sonar_mask;
 		else if(Rc_Get_PWM.POS_MODE<1400)
 		mode_oldx.flow_hold_position=0;  //手动
     else 
-		mode_oldx.flow_hold_position=1;	//光流	
+		mode_oldx.flow_hold_position=1;	//速度
    
 		static u8 state_cal_en,mode_reg;
 		static u16 cnt1,cnt_time;
