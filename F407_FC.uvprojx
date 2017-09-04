@@ -533,6 +533,11 @@
               <FileType>4</FileType>
               <FilePath>.\applications\sbus_oldx.lib</FilePath>
             </File>
+            <File>
+              <FileName>Ano_OF.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\Ano_OF.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

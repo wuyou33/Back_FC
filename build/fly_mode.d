@@ -40,6 +40,7 @@
 .\build\fly_mode.o: applications\eso.h
 .\build\fly_mode.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\fly_mode.o: applications\fly_mode.h
+.\build\fly_mode.o: applications\ano_of.h
 .\build\fly_mode.o: applications\rc.h
 .\build\fly_mode.o: .\drivers\ak8975.h
 .\build\fly_mode.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

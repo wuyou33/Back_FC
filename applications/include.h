@@ -15,7 +15,7 @@
 #include "stm32f4xx_dma.h"
 #include "eso.h"
 #include "fly_mode.h"
-
+#include "ano_of.h"
 extern u8 ble_imu_force;
 extern u8 mcuID[3];
 #define TUNNING_DRONE_CHIP_ID 0x2F
@@ -28,7 +28,7 @@ extern u8 mcuID[3];
 //#define  AUTO_MAPPER   // 自动测绘
 //#define  PID_TUNNING   // 姿态调参模式
 //#define  AUTO_HOME     // 回航测试
-//#define  ROBOT_LAND    // 移动平台降落测试
+#define  ROBOT_LAND_TEST    // 移动平台降落测试
 
 //#define  DEBUG_MODE    //测试模式 PWM不输出 可与其他模式互选
 
@@ -42,8 +42,8 @@ extern u8 mcuID[3];
 #define USE_MINI_BOARD  1  //使用新OLD-X 飞控板
 #define USE_BLE_FOR_APP 1  //使用蓝牙
 #define USE_FAN_AS_BLDC 0  //使用单旋翼四轴
-
-#define USE_ZIN_BMP 0
+#define USE_ANO_FLOW 0
+#define USE_ZIN_BMP 0  
 #define USE_M100_IMU 0  
 #define USE_FLOW_PI 0  //使用OLDX光流模块
 #define TUNING_X 0   //0->y 1->x   

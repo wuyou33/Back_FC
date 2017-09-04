@@ -40,3 +40,4 @@
 .\build\main.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\main.o: applications\fly_mode.h
 .\build\main.o: applications\include.h
+.\build\main.o: applications\ano_of.h

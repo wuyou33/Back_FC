@@ -41,3 +41,4 @@
 .\build\spi.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\spi.o: applications\fly_mode.h
 .\build\spi.o: applications\include.h
+.\build\spi.o: applications\ano_of.h

@@ -42,6 +42,7 @@
 .\build\imu.o: applications\eso.h
 .\build\imu.o: applications\fly_mode.h
 .\build\imu.o: applications\include.h
+.\build\imu.o: applications\ano_of.h
 .\build\imu.o: .\drivers\mpu6050.h
 .\build\imu.o: .\drivers\ak8975.h
 .\build\imu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

@@ -41,6 +41,7 @@
 .\build\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\mpu6050.o: .\applications\fly_mode.h
 .\build\mpu6050.o: .\applications\include.h
+.\build\mpu6050.o: .\applications\ano_of.h
 .\build\mpu6050.o: .\applications\mymath.h
 .\build\mpu6050.o: drivers\i2c_soft.h
 .\build\mpu6050.o: .\applications\imu.h

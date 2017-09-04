@@ -40,6 +40,7 @@
 .\build\rc.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\rc.o: applications\fly_mode.h
 .\build\rc.o: applications\include.h
+.\build\rc.o: applications\ano_of.h
 .\build\rc.o: applications\rc.h
 .\build\rc.o: applications\mymath.h
 .\build\rc.o: .\drivers\mpu6050.h

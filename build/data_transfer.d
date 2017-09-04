@@ -43,6 +43,7 @@
 .\build\data_transfer.o: .\applications\eso.h
 .\build\data_transfer.o: .\applications\fly_mode.h
 .\build\data_transfer.o: .\applications\include.h
+.\build\data_transfer.o: .\applications\ano_of.h
 .\build\data_transfer.o: .\drivers\ak8975.h
 .\build\data_transfer.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\build\data_transfer.o: .\drivers\ms5611.h

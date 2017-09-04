@@ -35,7 +35,7 @@ void CTRL_2(float T)
 	
 	if( !Thr_Low )
 	{
-		if(smart.rc.POS_MODE==SMART_MODE_SPD)
+		if(smart.rc.POS_MODE==SMART_MODE_SPD_RATE)
 		except_A.z +=  smart.att_rate.z*T ;  //50	
 		else
 		except_A.z += (s16)( MAX_CTRL_YAW_SPEED *( my_deathzoom_2( (CH_filter[YAW]) ,0,20 )/500.0f ) ) *T ;  //50

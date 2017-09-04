@@ -53,7 +53,7 @@ void Ultra_PID_Init()
 	ultra_pid_safe.kd = 0.0;
 	//adrc
 	eso_pos[Zr].b0=0;
-	eso_pos[Zr].eso_dead=5;
+	eso_pos[Zr].eso_dead=0.005*1000;
 	eso_pos[Zr].eso_for_z=1;
 }
 
@@ -72,7 +72,7 @@ void WZ_Speed_PID_Init()
 	  wz_speed_pid_use.fp=0.2;
 	//adrc
 	  eso_pos_spd[Zr].b0=15;
-	  eso_pos_spd[Zr].eso_dead=0.01;	
+	  eso_pos_spd[Zr].eso_dead=0.01*1000;	
 	  eso_pos_spd[Zr].eso_for_z=1;
 }
 

@@ -40,6 +40,7 @@
 .\build\pos_ctrl.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\pos_ctrl.o: applications\fly_mode.h
 .\build\pos_ctrl.o: applications\include.h
+.\build\pos_ctrl.o: applications\ano_of.h
 .\build\pos_ctrl.o: applications\rc.h
 .\build\pos_ctrl.o: applications\imu.h
 .\build\pos_ctrl.o: applications\mymath.h

@@ -48,6 +48,7 @@
 .\build\height_ctrl.o: .\applications\dma.h
 .\build\height_ctrl.o: .\applications\fly_mode.h
 .\build\height_ctrl.o: .\applications\include.h
+.\build\height_ctrl.o: .\applications\ano_of.h
 .\build\height_ctrl.o: applications\alt_fushion.h
 .\build\height_ctrl.o: .\drivers\ultrasonic.h
 .\build\height_ctrl.o: .\drivers\ms5611.h

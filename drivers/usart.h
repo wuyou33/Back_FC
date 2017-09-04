@@ -454,7 +454,9 @@ extern struct _QR qr;
 
 struct ROBOT{
 float track_x,track_y,track_r;
-float camera_x,camera_y,camera_z,pit,rol,yaw,mark_x,mark_y;
+float camera_x,camera_y,camera_z,pit,rol,yaw,mark_x,mark_y,mark_r,mark_track_off[2];
+float pos_est[3],vel_est[3],att_est[3];
+float spd_robot[2];
 u8 connect,mark_check;
 float mark_map[6][5];
 u16 loss_cnt;

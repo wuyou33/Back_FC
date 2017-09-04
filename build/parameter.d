@@ -40,6 +40,7 @@
 .\build\parameter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\parameter.o: applications\fly_mode.h
 .\build\parameter.o: applications\include.h
+.\build\parameter.o: applications\ano_of.h
 .\build\parameter.o: .\drivers\mpu6050.h
 .\build\parameter.o: .\drivers\ak8975.h
 .\build\parameter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

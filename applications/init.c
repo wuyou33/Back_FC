@@ -31,7 +31,7 @@ u8 All_Init()
 	Delay_ms(66);						//启动延时
 	PWM_Out_Init(400);				//初始化电调输出功能	
 	PWM_AUX_Out_Init(50);
-	Delay_ms(6666);						//启动延时
+	Delay_ms(3666);						//启动延时
 	#if EN_ATT_CAL_FC
 	#if USE_MINI_FC_FLOW_BOARD
 	MPU6050_Init(20);
@@ -71,7 +71,11 @@ u8 All_Init()
 	#if USE_PXY										
 	Usart3_Init(115200L);  
 	#else
+	#if USE_ANO_FLOW
+	Usart3_Init(500000L); 
+	#else
 	Usart3_Init(230400L);     // 未使用 或者 超声波
+	#endif
 	#endif
 	#if EN_DMA_UART3
 	MYDMA_Config(DMA1_Stream3,DMA_Channel_4,(u32)&USART3->DR,(u32)SendBuff3,SEND_BUF_SIZE3+2,2);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.

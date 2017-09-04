@@ -40,6 +40,7 @@
 .\build\bmp.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\bmp.o: applications\fly_mode.h
 .\build\bmp.o: applications\include.h
+.\build\bmp.o: applications\ano_of.h
 .\build\bmp.o: applications\bmp.h
 .\build\bmp.o: .\drivers\ms5611.h
 .\build\bmp.o: .\drivers\i2c_soft.h

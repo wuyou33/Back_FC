@@ -41,6 +41,7 @@
 .\build\pwm_out.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\pwm_out.o: .\applications\fly_mode.h
 .\build\pwm_out.o: .\applications\include.h
+.\build\pwm_out.o: .\applications\ano_of.h
 .\build\pwm_out.o: .\applications\mymath.h
 .\build\pwm_out.o: .\applications\ctrl.h
 .\build\pwm_out.o: .\applications\rc.h

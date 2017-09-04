@@ -42,6 +42,7 @@
 .\build\ak8975.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ak8975.o: .\applications\fly_mode.h
 .\build\ak8975.o: .\applications\include.h
+.\build\ak8975.o: .\applications\ano_of.h
 .\build\ak8975.o: .\applications\mymath.h
 .\build\ak8975.o: .\applications\iic_hml.h
 .\build\ak8975.o: drivers\i2c_soft.h

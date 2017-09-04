@@ -15,6 +15,7 @@
 ".\build\spi.o"
 ".\build\rc_mine.o"
 ".\applications\sbus_oldx.lib"
+".\build\ano_of.o"
 ".\build\misc.o"
 ".\build\stm32f4xx_dbgmcu.o"
 ".\build\stm32f4xx_dma.o"

@@ -40,6 +40,7 @@
 .\build\rc_mine.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\rc_mine.o: applications\fly_mode.h
 .\build\rc_mine.o: applications\include.h
+.\build\rc_mine.o: applications\ano_of.h
 .\build\rc_mine.o: applications\imu.h
 .\build\rc_mine.o: applications\mymath.h
 .\build\rc_mine.o: applications\nrf.h

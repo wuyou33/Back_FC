@@ -192,6 +192,7 @@ switch(mode_in){
 
 }
 }
+
 u8 pos_exp_test=1;
 float yaw_qr_off;
 float out_timer_nav,in_timer_nav;
@@ -230,7 +231,7 @@ void Positon_control(float T)// 位置控制
 		eso_pos[X].eso_dead=eso_pos[Y].eso_dead=nav_pos_pid.dead*1000;
 	  //spd	
 		nav_spd_pid.f_kp=0.2;
-		nav_spd_pid.kp=0.33;//
+		nav_spd_pid.kp=0.28;//0.33;//
 		nav_spd_pid.ki=0.050;
 		nav_spd_pid.kd=0.00;
 		nav_spd_pid.flt_nav_kd=1.0;
@@ -359,6 +360,7 @@ head  |    1 PIT y-   90d in marker
 	pos[Y]=POS_UKF_Y;//mm
   pos[X]=POS_UKF_X;//mm
 	
+	
 	spd[Y]=VEL_UKF_Y*1000;//,&firstOrderFilters[FLOW_LOWPASS_Y],T);
 	spd[X]=VEL_UKF_X*1000;//,&firstOrderFilters[FLOW_LOWPASS_X],T);		
 
@@ -442,6 +444,14 @@ else
   if(mode_oldx.flow_hold_position!=2&&module.flow==0){
 	 nav_spd_ctrl[Y].exp*=0.0;
 	 nav_spd_ctrl[X].exp*=0.0;}
+		#if USE_ANO_FLOW
+		if(ALT_POS_SONAR2<2)
+		{
+		reset_nav_pos(Y); reset_nav_pos(X);
+		nav_spd_ctrl[Y].exp*=0.0;
+		nav_spd_ctrl[X].exp*=0.0;
+		}
+		#endif
 //----------------------------------速度阶越测试
 	static u8 state_tune_spd;
 	static u8 flag_way;
@@ -824,9 +834,9 @@ void AUTO_LAND_FLYUP(float T)
 //----------------------------error----------------------------
 #if defined(AUTO_DOWN)
 #elif	defined(AUTO_MAPPER)	
-#elif defined(TRACK_FAR)
+#elif defined(ROBOT_LAND_TEST)
 	 if(Rc_Get_PWM.AUX1>1500)
-	  state_v=SD_HOLD;
+	  state_v=TRACK_FAR;
 	 else
 		state_v=SD_SAFE;
 #else	
@@ -940,6 +950,6 @@ void AUTO_LAND_FLYUP(float T)
 			smart.rc.POS_MODE=0;
 		}
 		//RC Interupt
-	  if(fabs(CH_filter[THR])>DEAD_NAV_RC||fabs(CH_filter[ROL])>DEAD_NAV_RC||fabs(CH_filter[PIT])>DEAD_NAV_RC||fabs(CH_filter[YAW])>DEAD_NAV_RC)
+	  if(fabs(CH_filter[THR])>DEAD_NAV_RC*1.6||fabs(CH_filter[ROL])>DEAD_NAV_RC||fabs(CH_filter[PIT])>DEAD_NAV_RC||fabs(CH_filter[YAW])>DEAD_NAV_RC)
 			smart.rc.POS_MODE=0;
 }

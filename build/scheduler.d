@@ -40,6 +40,7 @@
 .\build\scheduler.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\scheduler.o: applications\fly_mode.h
 .\build\scheduler.o: applications\include.h
+.\build\scheduler.o: applications\ano_of.h
 .\build\scheduler.o: .\drivers\mpu6050.h
 .\build\scheduler.o: .\drivers\ak8975.h
 .\build\scheduler.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

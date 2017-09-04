@@ -40,6 +40,7 @@
 .\build\init.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\init.o: applications\fly_mode.h
 .\build\init.o: applications\include.h
+.\build\init.o: applications\ano_of.h
 .\build\init.o: .\drivers\pwm_out.h
 .\build\init.o: .\drivers\mpu6050.h
 .\build\init.o: .\drivers\i2c_soft.h

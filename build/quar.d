@@ -46,6 +46,7 @@
 .\build\quar.o: .\applications\dma.h
 .\build\quar.o: .\applications\fly_mode.h
 .\build\quar.o: .\applications\include.h
+.\build\quar.o: .\applications\ano_of.h
 .\build\quar.o: applications\quar.h
 .\build\quar.o: applications\FastMath.h
 .\build\quar.o: applications\Double.h

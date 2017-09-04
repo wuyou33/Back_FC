@@ -346,30 +346,48 @@ void Duty_10ms()
 	  baro_ctrl(baro_task_time,&hc_value);//高度融合		
     Positon_control(baro_task_time);//位置控制	
 }
-
-float k_dj[5]={0.0068,0.068};
+//<----------------------------------云台控制
+float k_dj[5]={0.00664,0.168,1};
 void DJ_Control(float T)
-{
+{ 
+	int ero_pix[2];
+	static int ero_pix_reg[2];
 	static u8 init;
 	static u16 cnt_loss;
 	if(!init){init=1;
-		robot_land.k_f=0.2;
+		robot_land.k_f=-0.0;
 		
 	 }
-	
-   if(robot.track_r>0&&robot.connect)
-	 {aux.att_ctrl[0]-=LIMIT(k_dj[0]*my_deathzoom1(robot.track_y-240/2,3),-6,6);
-	  aux.att_ctrl[1]=LIMIT(k_dj[1]*my_deathzoom1(robot.track_x-320/2,3),-10,10);
-	 cnt_loss=0;}	 
-	 else if(robot.mark_check>0&&robot.connect)
-	 {aux.att_ctrl[0]-=LIMIT(k_dj[0]*my_deathzoom1(robot.mark_y-240/2,3),-6,6);
-		aux.att_ctrl[1]=LIMIT(k_dj[1]*my_deathzoom1(robot.track_x-320/2,3),-10,10);
+	float mark_range;
+	float dj_scale_witch=1;
+	mark_range= sqrt(pow(robot.camera_x,2)+pow(robot.camera_y,2));
+	u8 track_in_mid=0;
+	if(fabs(robot.track_y-240/2)<240/2*0.9&&fabs(robot.track_x-320/2)<320/2*0.9) 
+	 track_in_mid=1;
+  if(robot.mark_check>0&&robot.connect&&1)//mark
+	 {ero_pix[Xr]=-my_deathzoom1(robot.mark_y-240/2,10);
+		ero_pix[Yr]=my_deathzoom1(robot.mark_x-320/2,10);
+		robot.mark_track_off[Xr]=robot.mark_x- robot.track_x; 
+		robot.mark_track_off[Yr]=robot.mark_y- robot.track_y;
+    dj_scale_witch=1.26;		 
 	 cnt_loss=0;}	  
+	 else if(robot.track_r>0&&robot.connect&&mark_range>15&&track_in_mid&&1)
+	 {ero_pix[Xr]=-my_deathzoom1(robot.track_y+robot.mark_track_off[Yr]-240/2,10);
+	  ero_pix[Yr]=my_deathzoom1(robot.track_x+robot.mark_track_off[Xr]-320/2,10);
+	 cnt_loss=0;}	 
 	 else
-	 {cnt_loss++;aux.att_ctrl[1]=0;} 
+	 {cnt_loss++;ero_pix[Xr]=ero_pix[Yr]=0;} 
 	 
+	 static float z_scale;
+	 z_scale=1;//99/LIMIT(robot.camera_z,50,100);
+	 aux.att_ctrl[0]+=LIMIT(k_dj[0]*ero_pix[Xr],-6,6)*z_scale*dj_scale_witch+(ero_pix[Xr]-ero_pix_reg[Xr])*T*k_dj[2]*z_scale;
+	 aux.att_ctrl[1]=LIMIT(k_dj[1]*ero_pix[Yr],-33,33)*dj_scale_witch;
+
+	 ero_pix_reg[Xr]=ero_pix[Xr];
+	 ero_pix_reg[Yr]=ero_pix[Yr];
+
 	 if(cnt_loss>1.68/T)
-	 aux.att_ctrl[0]=0;
+	 {aux.att_ctrl[0]=0;robot.mark_track_off[Xr]=robot.mark_track_off[Yr]=0;}
 		 
 	//cal distance by track	 
 	 if(((robot.track_r>0&&ABS(robot.track_y-240/2)<26)||(robot.mark_check>0&&ABS(robot.mark_y-240/2)<26))&&
@@ -383,12 +401,12 @@ void DJ_Control(float T)
 			;
 		 
 }	
-
+float k_fp_dj[2]={0.068,0.068};
 void Duty_20ms()
 {   u16 temps;
 	  DJ_Control(0.02);
-	  aux.att[0]=Pit_fc+aux.att_ctrl[0]+aux.att_off[0];
-	  aux.att[1]=Rol_fc+aux.att_ctrl[1]*0+aux.att_off[1];
+	  aux.att[0]=Pit_fc+aux.att_ctrl[0]+aux.att_off[0]-LIMIT(mpu6050_fc.Gyro_deg.y,-120,120)*k_fp_dj[0];
+	  aux.att[1]=Rol_fc+aux.att_ctrl[1]*0+aux.att_off[1]+LIMIT(mpu6050_fc.Gyro_deg.x,-120,120)*k_fp_dj[1];
 	  SetPwm_AUX(aux.att[0],aux.att[1]);
 	
  		float temp =(float) Get_Cycle_T(GET_T_OUT_NAV)/1000000.;							

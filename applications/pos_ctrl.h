@@ -126,6 +126,8 @@ extern u8 way_point_to_go;
 #define SD_RETRY_UP 4
 #define SD_RETRY_UP_HOLD 5
 #define TRACK_FAR 6
+#define TRACK_CLOSE 7
+#define TRACL_PLANNER 8
 
 #define SD_HOLD 13
 #define SD_MISS_SEARCH 14

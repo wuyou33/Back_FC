@@ -41,6 +41,7 @@
 .\build\usart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\usart.o: .\applications\fly_mode.h
 .\build\usart.o: .\applications\include.h
+.\build\usart.o: .\applications\ano_of.h
 .\build\usart.o: drivers\ultrasonic.h
 .\build\usart.o: drivers\ms5611.h
 .\build\usart.o: drivers\i2c_soft.h

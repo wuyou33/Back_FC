@@ -40,6 +40,7 @@
 .\build\ultrasonic.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\ultrasonic.o: .\applications\fly_mode.h
 .\build\ultrasonic.o: .\applications\include.h
+.\build\ultrasonic.o: .\applications\ano_of.h
 .\build\ultrasonic.o: drivers\ultrasonic.h
 .\build\ultrasonic.o: drivers\ms5611.h
 .\build\ultrasonic.o: drivers\i2c_soft.h

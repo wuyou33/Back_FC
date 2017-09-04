@@ -41,3 +41,4 @@
 .\build\iic_hml.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\iic_hml.o: applications\fly_mode.h
 .\build\iic_hml.o: applications\include.h
+.\build\iic_hml.o: applications\ano_of.h

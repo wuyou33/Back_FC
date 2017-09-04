@@ -411,10 +411,13 @@ void SetPwm_AUX(float pit,float rol)
 	aux.min[1]=1530;
   aux.max[0]=2500;
 	aux.max[1]=1720;
-	aux.att_off[0]=-40;	
+	aux.att_off[0]=-46;	
+	if(mcuID[0]==0x2B&&mcuID[1]==0x17&&mcuID[2]==0x31)	
 	aux.flag[0]=1;
+	else
+	aux.flag[0]=-1;	
   aux.flag[1]=-1;		
-	aux.pwm_per_dig=5;
+	aux.pwm_per_dig=4.8;
 	}	
 	aux.pwm_tem[0]=aux.init[0]+aux.pwm_per_dig*pit*aux.flag[0];
 	aux.pwm_tem[1]=aux.init[1]+aux.pwm_per_dig*rol*aux.flag[1];

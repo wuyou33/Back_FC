@@ -232,7 +232,13 @@ int debug_pi_flow[20];
 		
 		m100.X_Spd_b=VEL_UKF_X=Moving_Median(1,0,(float)(int16_t)((*(data_buf+24)<<8)|*(data_buf+25))/1000.);//m
 		m100.Y_Spd_b=VEL_UKF_Y=Moving_Median(2,0,(float)(int16_t)((*(data_buf+26)<<8)|*(data_buf+27))/1000.);//m			
-		
+		#if USE_ANO_FLOW
+		if(ALT_POS_SONAR2<2)
+		{
+		m100.Y_Spd_b=VEL_UKF_Y=ano_flow.spdy;
+		m100.X_Spd_b=VEL_UKF_X=ano_flow.spdx;
+		}
+		#endif
     now_position[LON]=POS_UKF_X;//m  lon->0 X
 		now_position[LAT]=POS_UKF_Y;//m  lat->1 Y			
 		
@@ -293,7 +299,13 @@ int debug_pi_flow[20];
 		VEL_UKF_Y=imu_nav.flow.speed.y_f;
 		VEL_UKF_X=imu_nav.flow.speed.x_f;
 		}
-		
+		#if USE_ANO_FLOW
+		if(ALT_POS_SONAR2<2)
+		{
+		VEL_UKF_Y=ano_flow.spdy;//,&firstOrderFilters[FLOW_LOWPASS_Y],T);
+		VEL_UKF_X=ano_flow.spdx;//,&firstOrderFilters[FLOW_LOWPASS_X],T);	
+		}
+		#endif
     if(mode_oldx.flow_f_use_ukfm){
     now_position[LON]=POS_UKF_X;//m  lon->0 X
 		now_position[LAT]=POS_UKF_Y;//m  lat->1 Y			
@@ -987,6 +999,7 @@ void Data_Receive_Anl5(u8 *data_buf,u8 num)
   robot.yaw=(int16_t)((*(data_buf+22)<<8)|*(data_buf+23));
   robot.mark_x=(int16_t)((*(data_buf+24)<<8)|*(data_buf+25));
   robot.mark_y=(int16_t)((*(data_buf+26)<<8)|*(data_buf+27));		
+	robot.mark_r=(int16_t)((*(data_buf+28)<<8)|*(data_buf+29));		
 	}	
 	else if(*(data_buf+2)==0x62)//move robot map
 	{
@@ -1044,6 +1057,7 @@ void UART5_IRQHandler(void)
 		USART_ClearITPendingBit(UART5,USART_IT_RXNE);//清除中断标志
 
 		com_data = UART5->DR;
+	
 		#if USE_MINI_FC_FLOW_BOARD	
 		
 		Rc_Get_SBUS.lose_cnt=0;
@@ -2359,6 +2373,9 @@ void USART3_IRQHandler(void)
 
 		com_data = USART3->DR;
     Ultra_Get(com_data);
+		#if USE_ANO_FLOW
+		AnoOF_GetOneByte(com_data);
+		#endif
 				if(RxState3==0&&com_data==0xAA)
 		{
 			RxState3=1;

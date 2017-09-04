@@ -40,5 +40,6 @@
 .\build\filter.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\filter.o: applications\fly_mode.h
 .\build\filter.o: applications\include.h
+.\build\filter.o: applications\ano_of.h
 .\build\filter.o: applications\filter.h
 .\build\filter.o: applications\mymath.h

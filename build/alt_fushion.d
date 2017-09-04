@@ -41,6 +41,7 @@
 .\build\alt_fushion.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\alt_fushion.o: applications\fly_mode.h
 .\build\alt_fushion.o: applications\include.h
+.\build\alt_fushion.o: applications\ano_of.h
 .\build\alt_fushion.o: applications\mymath.h
 .\build\alt_fushion.o: applications\filter.h
 .\build\alt_fushion.o: applications\imu.h

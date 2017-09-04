@@ -41,4 +41,5 @@
 .\build\nrf.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\nrf.o: applications\fly_mode.h
 .\build\nrf.o: applications\include.h
+.\build\nrf.o: applications\ano_of.h
 .\build\nrf.o: applications\spi.h

@@ -40,4 +40,5 @@
 .\build\i2c_soft.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\i2c_soft.o: .\applications\fly_mode.h
 .\build\i2c_soft.o: .\applications\include.h
+.\build\i2c_soft.o: .\applications\ano_of.h
 .\build\i2c_soft.o: drivers\i2c_soft.h

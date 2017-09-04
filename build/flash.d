@@ -40,6 +40,7 @@
 .\build\flash.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\build\flash.o: applications\fly_mode.h
 .\build\flash.o: applications\include.h
+.\build\flash.o: applications\ano_of.h
 .\build\flash.o: .\drivers\ak8975.h
 .\build\flash.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\build\flash.o: .\drivers\mpu6050.h
