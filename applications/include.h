@@ -30,6 +30,7 @@ extern u8 mcuID[3];
 //#define  AUTO_HOME     // 回航测试
 #define  ROBOT_LAND_TEST    // 移动平台降落测试
 
+#define  SD_SAVER        // 使能AUX2通道作为SD卡存储使能
 //#define  DEBUG_MODE    //测试模式 PWM不输出 可与其他模式互选
 
 //================系统===================

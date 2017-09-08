@@ -17,6 +17,7 @@ typedef struct
 	u16 min[2];
 	float att[2],att_ctrl[2],att_off[2];
 	float pwm_per_dig;
+	float ero[2],ero_reg[2];
 }AUX_S;
 
 extern AUX_S aux;

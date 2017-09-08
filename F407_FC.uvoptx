@@ -213,7 +213,7 @@
           <Type>0</Type>
           <LineNumber>25</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134229198</Address>
+          <Address>134229650</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -229,7 +229,7 @@
           <Type>0</Type>
           <LineNumber>299</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134317164</Address>
+          <Address>134317616</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -331,6 +331,36 @@
           <count>17</count>
           <WinNumber>1</WinNumber>
           <ItemText>k_dj</ItemText>
+        </Ww>
+        <Ww>
+          <count>18</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Yaw_fc</ItemText>
+        </Ww>
+        <Ww>
+          <count>19</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Rc_Get_PWM,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>20</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>mpu6050_fc</ItemText>
+        </Ww>
+        <Ww>
+          <count>21</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>k_scan</ItemText>
+        </Ww>
+        <Ww>
+          <count>22</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>d_sita</ItemText>
+        </Ww>
+        <Ww>
+          <count>23</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>off_scan</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>

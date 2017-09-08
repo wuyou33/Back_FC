@@ -347,9 +347,12 @@ void Duty_10ms()
     Positon_control(baro_task_time);//位置控制	
 }
 //<----------------------------------云台控制
-float k_dj[5]={0.00664,0.168,1};
+float k_dj[5]={0.008864,0.288,1};
+float k_scan[2]={20,10};
+float off_scan=5;
+float d_sita=1;
 void DJ_Control(float T)
-{ 
+{ static u8 scan=1;
 	int ero_pix[2];
 	static int ero_pix_reg[2];
 	static u8 init;
@@ -358,23 +361,24 @@ void DJ_Control(float T)
 		robot_land.k_f=-0.0;
 		
 	 }
-	float mark_range;
+	static float mark_range=100;
 	float dj_scale_witch=1;
-	mark_range= sqrt(pow(robot.camera_x,2)+pow(robot.camera_y,2));
+	
 	u8 track_in_mid=0;
-	if(fabs(robot.track_y-240/2)<240/2*0.9&&fabs(robot.track_x-320/2)<320/2*0.9) 
+	if(fabs(robot.track_y-240/2)<240/2*0.96&&fabs(robot.track_x-320/2)<320/2*0.96) 
 	 track_in_mid=1;
   if(robot.mark_check>0&&robot.connect&&1)//mark
 	 {ero_pix[Xr]=-my_deathzoom1(robot.mark_y-240/2,10);
 		ero_pix[Yr]=my_deathzoom1(robot.mark_x-320/2,10);
 		robot.mark_track_off[Xr]=robot.mark_x- robot.track_x; 
 		robot.mark_track_off[Yr]=robot.mark_y- robot.track_y;
-    dj_scale_witch=1.26;		 
+    dj_scale_witch=1.26;	scan=0;	 
+		 mark_range= sqrt(pow(robot.camera_x,2)+pow(robot.camera_y,2));
 	 cnt_loss=0;}	  
-	 else if(robot.track_r>0&&robot.connect&&mark_range>15&&track_in_mid&&1)
+	 else if(robot.track_r>0&&robot.connect&&mark_range>0&&track_in_mid&&1)
 	 {ero_pix[Xr]=-my_deathzoom1(robot.track_y+robot.mark_track_off[Yr]-240/2,10);
 	  ero_pix[Yr]=my_deathzoom1(robot.track_x+robot.mark_track_off[Xr]-320/2,10);
-	 cnt_loss=0;}	 
+	 cnt_loss=0;scan=0;}	 
 	 else
 	 {cnt_loss++;ero_pix[Xr]=ero_pix[Yr]=0;} 
 	 
@@ -382,12 +386,28 @@ void DJ_Control(float T)
 	 z_scale=1;//99/LIMIT(robot.camera_z,50,100);
 	 aux.att_ctrl[0]+=LIMIT(k_dj[0]*ero_pix[Xr],-6,6)*z_scale*dj_scale_witch+(ero_pix[Xr]-ero_pix_reg[Xr])*T*k_dj[2]*z_scale;
 	 aux.att_ctrl[1]=LIMIT(k_dj[1]*ero_pix[Yr],-33,33)*dj_scale_witch;
-
+   static float sita;
+	 if(robot.mark_check==0&&robot.track_r==0&&scan&&state_v==TRACK_FAR){
+		 sita+=d_sita;
+		 aux.att_ctrl[0]=k_scan[0]*sin(sita*0.0173)+off_scan; 
+		 aux.att_ctrl[1]=k_scan[1]*sin(sita*0.0173);
+		 if(sita>360)sita=0;
+	 }
+	 
+	 if(ero_pix[Xr]!=0||ero_pix[Yr]!=0){
+	 aux.ero[Xr]=ero_pix[Xr];
+	 aux.ero[Yr]=ero_pix[Yr]; 
+   }		 
 	 ero_pix_reg[Xr]=ero_pix[Xr];
 	 ero_pix_reg[Yr]=ero_pix[Yr];
 
 	 if(cnt_loss>1.68/T)
-	 {aux.att_ctrl[0]=0;robot.mark_track_off[Xr]=robot.mark_track_off[Yr]=0;}
+	 {  if(state_v==TRACK_FAR)
+		  scan=1;
+		  else
+		  aux.att_ctrl[0]=0;
+		
+	 robot.mark_track_off[Xr]=robot.mark_track_off[Yr]=0;}
 		 
 	//cal distance by track	 
 	 if(((robot.track_r>0&&ABS(robot.track_y-240/2)<26)||(robot.mark_check>0&&ABS(robot.mark_y-240/2)<26))&&
@@ -618,12 +638,13 @@ void Duty_50ms()//遥控 模式设置
 //		mode_oldx.show_qr_origin=1;
 //		else
 //		mode_oldx.show_qr_origin=0;	
-
+#if defined(SD_SAVER)	
 //sd save
-//		if(Rc_Get_PWM.AUX2>1500) 
-//   		mode_oldx.en_sd_save=1;
-//		else
-//		  mode_oldx.en_sd_save=0;
+		if(Rc_Get_PWM.AUX2>1500) 
+   		mode_oldx.en_sd_save=1;
+		else
+		  mode_oldx.en_sd_save=0;
+#endif		
 //-------------------------------------------------------------------------------------------		
 	#if defined(PID_TUNNING)	
 	mode_oldx.att_pid_tune=1;

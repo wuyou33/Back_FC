@@ -3401,11 +3401,11 @@ switch(sel){
 }
 }
 #include "rc.h"
-u8 sd_pub_sel=0;
+u8 sd_pub_sel=1;
 void sd_publish(void)
 {u8 cnt=0;
 	switch(sd_pub_sel){
-	case 0:	
+	case 0:	//mark slam
 	//sd 1	
 	sd_save[cnt++]=mark_map[0][0];
 	sd_save[cnt++]=mark_map[0][1];
@@ -3480,6 +3480,83 @@ void sd_publish(void)
 	sd_save[cnt++]=POS_UKF_X*100;
 	sd_save[cnt++]=POS_UKF_Y*100;
 	sd_save[cnt++]=0;
+	break;
+	///
+	case 1:	//track 
+	//sd 1	
+	sd_save[cnt++]=Pit_fc*100;
+	sd_save[cnt++]=Rol_fc*100;
+	sd_save[cnt++]=Yaw_fc*100;	
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+
+	sd_save[cnt++]=ALT_POS_SONAR2*1000;
+	sd_save[cnt++]=POS_UKF_Y*1000;
+	sd_save[cnt++]=POS_UKF_X*1000;	
+	sd_save[cnt++]=VEL_UKF_Y*1000;
+	sd_save[cnt++]=VEL_UKF_X*1000;
+
+	sd_save[cnt++]=acc_body[Y];
+	sd_save[cnt++]=acc_body[X];
+	sd_save[cnt++]=0;	
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+
+	sd_save[cnt++]=robot.connect&&robot.mark_check;
+	sd_save[cnt++]=robot.camera_x;
+	sd_save[cnt++]=robot.camera_y;	
+	sd_save[cnt++]=robot.camera_z;
+	sd_save[cnt++]=robot.yaw;
+
+	//sd 2  20~39
+	sd_save[cnt++]=robot.rol;
+	sd_save[cnt++]=robot.pit;
+	sd_save[cnt++]=robot.track_x;	
+	sd_save[cnt++]=robot.track_y;
+	sd_save[cnt++]=robot.track_r;
+
+	sd_save[cnt++]=robot.mark_x;
+	sd_save[cnt++]=robot.mark_y;
+	sd_save[cnt++]=robot.mark_r;	
+	sd_save[cnt++]=aux.ero[Xr];
+	sd_save[cnt++]=aux.ero[Yr];
+
+	sd_save[cnt++]=aux.att[0]*10;
+	sd_save[cnt++]=aux.att[1]*10;
+	sd_save[cnt++]=0;//spd obo
+	sd_save[cnt++]=0;
+	sd_save[cnt++]=0;
+
+	sd_save[cnt++]=robot.mark_map[0][0];
+	sd_save[cnt++]=robot.mark_map[0][1];
+	sd_save[cnt++]=robot.mark_map[0][2];	
+	sd_save[cnt++]=robot.mark_map[0][3];
+	sd_save[cnt++]=robot.mark_map[0][4];	
+	//sd 3 40~59
+
+	sd_save[cnt++]=robot.mark_map[1][0];
+	sd_save[cnt++]=robot.mark_map[1][1];
+	sd_save[cnt++]=robot.mark_map[1][2];	
+	sd_save[cnt++]=robot.mark_map[1][3];
+	sd_save[cnt++]=robot.mark_map[1][4];	
+
+	sd_save[cnt++]=robot.mark_map[2][0];
+	sd_save[cnt++]=robot.mark_map[2][1];
+	sd_save[cnt++]=robot.mark_map[2][2];	
+	sd_save[cnt++]=robot.mark_map[2][3];
+	sd_save[cnt++]=robot.mark_map[2][4];		
+
+	sd_save[cnt++]=robot.mark_map[3][0];
+	sd_save[cnt++]=robot.mark_map[3][1];
+	sd_save[cnt++]=robot.mark_map[3][2];	
+	sd_save[cnt++]=robot.mark_map[3][3];
+	sd_save[cnt++]=robot.mark_map[3][4];	
+
+	sd_save[cnt++]=robot.mark_map[4][0];
+	sd_save[cnt++]=robot.mark_map[4][1];
+	sd_save[cnt++]=robot.mark_map[4][2];	
+	sd_save[cnt++]=robot.mark_map[4][3];
+	sd_save[cnt++]=robot.mark_map[4][4];	
 	break;
 	}
 }	
