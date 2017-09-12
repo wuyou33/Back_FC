@@ -32,12 +32,12 @@
 #endif
 
 /***************LED GPIO定义******************/
-#define ANO_RCC_LED			RCC_AHB1Periph_GPIOE
-#define ANO_GPIO_LED		GPIOE
-#define ANO_Pin_LED1		GPIO_Pin_3
-#define ANO_Pin_LED2		GPIO_Pin_2
-#define ANO_Pin_LED3		GPIO_Pin_1
-#define ANO_Pin_LED4		GPIO_Pin_0
+#define ANO_RCC_LED			RCC_AHB1Periph_GPIOC
+#define ANO_GPIO_LED		GPIOC
+#define ANO_Pin_LED1		GPIO_Pin_5
+#define ANO_Pin_LED2		GPIO_Pin_6
+#define ANO_Pin_LED3		GPIO_Pin_7
+#define ANO_Pin_LED4		GPIO_Pin_8
 /*********************************************/
 /*
 //RGB_Info == 0，蓝色连续双闪1次：当前模式为3轴飞行器。
@@ -106,5 +106,5 @@ void LED_Mag_Err(void);
 void LED_MS5611_Err(void);
 void aircraft_mode_led(u8 maxmotors);
 void LEDRGB(void);
-
+void LED_RGB_Init();
 #endif

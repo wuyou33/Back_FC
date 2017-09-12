@@ -47,3 +47,5 @@
 .\build\ak8975.o: .\applications\iic_hml.h
 .\build\ak8975.o: drivers\i2c_soft.h
 .\build\ak8975.o: .\applications\filter.h
+.\build\ak8975.o: .\applications\mpu9250.h
+.\build\ak8975.o: .\applications\spi.h

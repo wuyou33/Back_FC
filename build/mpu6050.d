@@ -1,5 +1,6 @@
 .\build\mpu6050.o: drivers\mpu6050.c
-.\build\mpu6050.o: drivers\mpu6050.h
+.\build\mpu6050.o: .\applications\include.h
+.\build\mpu6050.o: .\applications\flash.h
 .\build\mpu6050.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\build\mpu6050.o: .\Libraries\CMSIS\Include\core_cm4.h
 .\build\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -24,8 +25,6 @@
 .\build\mpu6050.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
 .\build\mpu6050.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\build\mpu6050.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
-.\build\mpu6050.o: .\applications\include.h
-.\build\mpu6050.o: .\applications\flash.h
 .\build\mpu6050.o: .\applications\scheduler.h
 .\build\mpu6050.o: .\drivers\time.h
 .\build\mpu6050.o: .\applications\init.h
@@ -42,8 +41,11 @@
 .\build\mpu6050.o: .\applications\fly_mode.h
 .\build\mpu6050.o: .\applications\include.h
 .\build\mpu6050.o: .\applications\ano_of.h
+.\build\mpu6050.o: drivers\mpu6050.h
 .\build\mpu6050.o: .\applications\mymath.h
 .\build\mpu6050.o: drivers\i2c_soft.h
 .\build\mpu6050.o: .\applications\imu.h
 .\build\mpu6050.o: .\applications\mymath.h
+.\build\mpu6050.o: .\applications\mpu9250.h
+.\build\mpu6050.o: .\applications\spi.h
 .\build\mpu6050.o: drivers\cycle_cal_oldx.h

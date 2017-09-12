@@ -27,10 +27,18 @@
 						  	    													  
 void SPI2_Init(void);			 //初始化SPI1口
 u8 Spi_RW(u8 TxData);//SPI1总线读写一个字节
-#define SPI_CE_H()   GPIO_SetBits(GPIOB, GPIO_Pin_8) 
-#define SPI_CE_L()   GPIO_ResetBits(GPIOB, GPIO_Pin_8)
 
-#define SPI_CSN_H()  GPIO_SetBits(GPIOB, GPIO_Pin_12)
-#define SPI_CSN_L()  GPIO_ResetBits(GPIOB, GPIO_Pin_12) 
+#define MPU9250 0
+#define NRF2401 1
+#define MS5611  2
+void SPI_CS(u8 sel,u8 set);
+
+#define SPI_CE_H()   GPIO_SetBits(GPIOC, GPIO_Pin_2) 
+#define SPI_CE_L()   GPIO_ResetBits(GPIOC, GPIO_Pin_2)
+
+#define SPI_CSN_H()  SPI_CS(NRF2401,1)//GPIO_SetBits(GPIOB, GPIO_Pin_12)
+#define SPI_CSN_L()  SPI_CS(NRF2401,0)//GPIO_ResetBits(GPIOB, GPIO_Pin_12) 
+
+
 #endif
 

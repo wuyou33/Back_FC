@@ -22,27 +22,39 @@ void SPI2_Init(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
   GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化
 	/*??SPI_NRF_SPI?CE??,?SPI_NRF_SPI? CSN ??:*/   //ce pc4
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; //ce
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; //ce
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12; //csn  pa4
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0; //csn  pa4
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
+	GPIO_Init(GPIOC, &GPIO_InitStructure);	
+	/*??SPI_NRF_SPI?IRQ??,*/  //pc5
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3; 
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输出模式
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8; //csn  pa4
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
 	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
 	GPIO_Init(GPIOB, &GPIO_InitStructure);	
-	/*??SPI_NRF_SPI?IRQ??,*/  //pc5
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11; 
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
-	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输出模式
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; //csn  pa4
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
+	GPIO_Init(GPIOB, &GPIO_InitStructure);	
 	
-	
-	
-	SPI_CSN_H();
+
+	SPI_CS(NRF2401,1);
+	SPI_CS(MPU9250,1);
+	SPI_CS(MS5611,1);
 	
   GPIO_PinAFConfig(GPIOB,GPIO_PinSource13,GPIO_AF_SPI2); //PB3复用为 SPI1
 	GPIO_PinAFConfig(GPIOB,GPIO_PinSource14,GPIO_AF_SPI2); //PB4复用为 SPI1
@@ -66,6 +78,7 @@ void SPI2_Init(void)
 	/* Enable SPI1 */ 
 	SPI_Cmd(SPI2, ENABLE);
 }
+
 u8 Spi_RW(u8 dat) 
 { 
 	/* ? SPI?????????? */ 
@@ -77,3 +90,35 @@ u8 Spi_RW(u8 dat)
 	/* Return the byte read from the SPI bus */ 
 	return SPI_I2S_ReceiveData(SPI2); 
 }
+
+
+void SPI_CS(u8 sel,u8 set)
+{
+	
+	GPIO_SetBits(GPIOC, GPIO_Pin_0);
+	GPIO_SetBits(GPIOB, GPIO_Pin_8);//9250
+	GPIO_SetBits(GPIOB, GPIO_Pin_9);//ms5611
+switch(sel)
+{
+	case MPU9250:
+  if(set)	
+	GPIO_SetBits(GPIOB, GPIO_Pin_8);
+	else
+	GPIO_ResetBits(GPIOB, GPIO_Pin_8);
+	break;
+	case NRF2401:
+	if(set)	
+	GPIO_SetBits(GPIOC, GPIO_Pin_0);
+	else
+	GPIO_ResetBits(GPIOC, GPIO_Pin_0);
+	break;
+	case MS5611:
+	if(set)	
+	GPIO_SetBits(GPIOB, GPIO_Pin_9);
+	else
+	GPIO_ResetBits(GPIOB, GPIO_Pin_9);
+	break;
+	
+	
+}
+}	

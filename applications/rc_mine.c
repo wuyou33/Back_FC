@@ -3,7 +3,7 @@
 #include "nrf.h"
 #include "fly_mode.h"
 #include "rc.h"
-#if USE_MINI_FC_FLOW_BOARD
+#if USE_MINI_FC_FLOW_BOARD||USE_VER_3
 #define RX_DR			6		//????
 #define TX_DS			5
 #define MAX_RT		4

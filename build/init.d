@@ -57,3 +57,6 @@
 .\build\init.o: applications\spi.h
 .\build\init.o: applications\nrf.h
 .\build\init.o: applications\iic_hml.h
+.\build\init.o: applications\mpu9250.h
+.\build\init.o: applications\ms5611_spi.h
+.\build\init.o: applications\beep.h

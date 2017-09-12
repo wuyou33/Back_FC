@@ -43,3 +43,8 @@
 .\build\led.o: .\applications\include.h
 .\build\led.o: .\applications\ano_of.h
 .\build\led.o: .\applications\mymath.h
+.\build\led.o: drivers\ak8975.h
+.\build\led.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\build\led.o: drivers\mpu6050.h
+.\build\led.o: .\applications\rc.h
+.\build\led.o: .\applications\beep.h

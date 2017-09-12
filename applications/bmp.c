@@ -11,7 +11,7 @@ float baro_alt_speed_ano;
 int baroAlt,baroAlt_fc;
 u8 baro_set;
 _height_st baro;
-
+#if !USE_VER_3
 #undef ALTI_SPEED
 
 //#define MS5611Press_OSR  MS561101BA_OSR_2048  //气压采样精度
@@ -618,6 +618,7 @@ void MS5611_BaroAltCalculate(void)
 			
 		
 }
+#endif
 
 
 

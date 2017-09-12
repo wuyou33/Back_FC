@@ -5,6 +5,7 @@
 #include "iic_hml.h"
 #include "i2c_soft.h"
 #include "filter.h"
+#include "mpu9250.h"
 ak8975_t ak8975 = { {0,0,0},{124,-449,369},{1,0.532,0.486},{0,0,0} };
 ak8975_t ak8975_fc = { {0,0,0},{232,-221,-119},{1.17,1.339,1},{0,0,0} };
 
@@ -244,6 +245,9 @@ void HMC58X3_writeReg(unsigned char reg, unsigned char val) {
 *******************************************************************************/
 void HMC58X3_getRaw(int16_t *x,int16_t *y,int16_t *z) {
    unsigned char vbuff[6];
+	#if USE_VER_3
+	HMC58X3_newValues(rawMag[0].value/10,rawMag[1].value/10,rawMag[2].value/10);
+	#else
    vbuff[0]=vbuff[1]=vbuff[2]=vbuff[3]=vbuff[4]=vbuff[5]=0;
    IICreadBytes(HMC58X3_ADDR,HMC58X3_R_XM,6,vbuff);
 	 //IIC_Read_nByte(HMC58X3_ADDR,HMC58X3_R_XM,6,vbuff);
@@ -251,6 +255,7 @@ void HMC58X3_getRaw(int16_t *x,int16_t *y,int16_t *z) {
 	   HMC58X3_newValues(((int16_t)vbuff[0] << 8) | vbuff[1],((int16_t)(vbuff[4] << 8 | vbuff[5])),-((int16_t)vbuff[2] << 8) | vbuff[3]);
 //   HMC58X3_newValues(((int16_t)vbuff[0] << 8) | vbuff[1],-(((int16_t)vbuff[4] << 8) | vbuff[5]),-(((int16_t)vbuff[2] << 8) | vbuff[3]));
 	//#endif
+	#endif
    *x = HMC5883_FIFO[0][10];
    *y = HMC5883_FIFO[1][10];
    *z = HMC5883_FIFO[2][10];

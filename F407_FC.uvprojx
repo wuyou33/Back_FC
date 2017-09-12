@@ -538,6 +538,11 @@
               <FileType>1</FileType>
               <FilePath>.\applications\Ano_OF.c</FilePath>
             </File>
+            <File>
+              <FileName>beep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\beep.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -739,6 +744,11 @@
               <FilePath>.\drivers\mpu6050.c</FilePath>
             </File>
             <File>
+              <FileName>mpu9250.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\mpu9250.c</FilePath>
+            </File>
+            <File>
               <FileName>ak8975.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\drivers\ak8975.c</FilePath>
@@ -747,6 +757,11 @@
               <FileName>bmp.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\bmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>ms5611_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\ms5611_spi.c</FilePath>
             </File>
             <File>
               <FileName>ultrasonic.c</FileName>

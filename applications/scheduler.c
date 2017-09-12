@@ -19,6 +19,7 @@
 #include "alt_fushion.h"
 #include "sbus.h"
 #include "iic_hml.h"
+#include "ms5611_spi.h"
 float pos_time;
 float baro_task_time;
 u16 Rc_Pwm_In[8];
@@ -41,21 +42,78 @@ void Loop_check()  //TIME INTTERRUPT
 	{	
 		loop.check_flag = 1;	//该标志位在循环的最后被清零
 	}
+	 #if USE_VER_3
+	 LED_1ms_DRV();
+	 #endif
 }
-
-
-void Duty_1ms()
-{
-	  MS5611_ThreadNew();baro.relative_height = baroAlt_fc;baro.height=MS5611_Pressure;
-	  
-//none spi mems sample for future
-}
-
+float outer_loop_time;
 float inner_loop_time,inner_loop_time_yaw;
 float test[5];	
 float Rol_fc1,Pit_fc1,Yaw_fc1;
+void Duty_1ms()
+{
+	  #if USE_VER_3
+	  MS5611_ThreadNew_SPI();baroAlt_fc=ms5611Alt*1000;MS5611_Pressure=ms5611Press;
+	  #else
+	  MS5611_ThreadNew();
+	  #endif
+	
+	  baro.relative_height = baroAlt_fc;baro.height=MS5611_Pressure;
+	  
+	#if USE_VER_3
+	static u8 init;
+	static u8 cnt;
+	static u16 cnt_init;
+	float temp;
+	temp = Get_Cycle_T(GET_T_INNER)/1000000.0f; 						//获取内环准确的执行周期
+	if(temp<0.0005||temp>0.0015)
+	inner_loop_time=0.001;
+	else
+	inner_loop_time=temp;
+
+	#if EN_ATT_CAL_FC
+	MPU6050_Read(); 															//读取mpu6轴传感器
+
+	MPU6050_Data_Prepare( inner_loop_time );			//mpu6轴传感器数据处理
+
+	inner_loop_time_yaw = Get_Cycle_T(GET_T_IMU_YAW)/1000000.0f;	
+	/*IMU更新姿态。输入：半个执行周期，三轴陀螺仪数据（转换到度每秒），三轴加速度计数据（4096--1G）；输出：ROLPITYAW姿态角*/
+	if(cnt_init++>2/0.002){cnt_init=65530;
+
+	IMUupdate(0.5f *inner_loop_time_yaw,mpu6050_fc.Gyro_deg.x, mpu6050_fc.Gyro_deg.y, mpu6050_fc.Gyro_deg.z, mpu6050_fc.Acc.x, mpu6050_fc.Acc.y, mpu6050_fc.Acc.z
+	,&Rol_fc1,&Pit_fc1,&Yaw_fc1);
+
+	Pit_fc=Pit_fc1-mpu6050_fc.att_off[0]*mpu6050_fc.Cali_3d;	
+	Rol_fc=Rol_fc1-mpu6050_fc.att_off[1]*mpu6050_fc.Cali_3d;		
+	if(NAV_BOARD_CONNECT&&!yaw_use_fc)
+	Yaw_fc=Yaw;
+	else
+	Yaw_fc=Yaw_fc1;
+	}	
+	#endif
+	CTRL_1( inner_loop_time ); 							//内环角速度控制
+	#endif
+//none spi mems sample for future
+}
+
+
 void Duty_2ms()
-{ static u8 init;
+{ 
+	#if USE_VER_3
+	static u8 cnt;
+	float temp;
+	temp = Get_Cycle_T(GET_T_OUTTER)/1000000.0f;								//获取外环准确的执行周期
+	if(temp<0.001||temp>0.0035)
+		outer_loop_time=0.002;
+	else
+		outer_loop_time=temp;
+	
+ 	CTRL_2( outer_loop_time ); // 外环角度控制
+	
+	RC_Duty( outer_loop_time , Rc_Pwm_In );		// 遥控器通道数据处理 ，输入：执行周期，接收机pwm捕获的数据。
+	
+	#else
+	static u8 init;
 	static u8 cnt;
 	static u16 cnt_init;
   float temp;
@@ -88,13 +146,15 @@ void Duty_2ms()
 	CTRL_1( inner_loop_time ); 							//内环角速度控制
 	
 	RC_Duty( inner_loop_time , Rc_Pwm_In );		// 遥控器通道数据处理 ，输入：执行周期，接收机pwm捕获的数据。
-	
+	#endif
 
 }
 
-float outer_loop_time;
+
 void Duty_5ms()
-{ static u8 cnt;
+{ 
+	#if !USE_VER_3
+	static u8 cnt;
 	float temp;
 	temp = Get_Cycle_T(GET_T_OUTTER)/1000000.0f;								//获取外环准确的执行周期
 	if(temp<0.004||temp>0.006)
@@ -103,7 +163,7 @@ void Duty_5ms()
 		outer_loop_time=temp;
 	
  	CTRL_2( outer_loop_time ); // 外环角度控制
-			
+  #endif
 }
 
 
@@ -437,7 +497,7 @@ void Duty_20ms()
 			
 		AUTO_LAND_FLYUP(pos_time);//自动降落
 	 	
-		#if USE_MINI_FC_FLOW_BOARD
+		#if USE_MINI_FC_FLOW_BOARD||USE_VER_3
 			#if USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS
 			temps=((channels[0])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
 			if(temps>900&&temps<2100)
@@ -529,6 +589,9 @@ void Duty_20ms()
 
 void Duty_50ms()//遥控 模式设置
 {   
+	  #if USE_VER_3
+	  LED_Duty();
+	  #endif
 	  if(ak8975_fc.Mag_CALIBRATED==1)
 			mode_oldx.mems_state=31;	
 	  else

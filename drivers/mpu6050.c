@@ -1,7 +1,9 @@
+#include "include.h"
 #include "mpu6050.h"
 #include "mymath.h"
 #include "i2c_soft.h"
 #include "imu.h"
+#include "mpu9250.h"
 MPU6050_STRUCT mpu6050,mpu6050_fc;
 
 u8 mpu6050_buffer[14];
@@ -9,10 +11,14 @@ u8 mpu6050_ok;
 void MPU6050_Read(void)
 {
     I2C_FastMode = 1;
+	  #if USE_VER_3
+    MPU9250_ReadValue();
+	  #else
     IIC_Read_nByte(MPU6050_ADDR,MPU6050_RA_ACCEL_XOUT_H,14,mpu6050_buffer);
+	  #endif
 }
 
-
+#if !USE_VER_3
 /**************************实现函数********************************************
 *函数原型:		u8 IICwriteBit(u8 dev, u8 reg, u8 bitNum, u8 data)
 *功　　能:	  读 修改 写 指定设备 指定寄存器一个字节 中的1个位
@@ -214,6 +220,7 @@ void MPU6050_Init(u16 lpf)
     MPU6050_setI2CBypassEnabled(1);	 //主控制器的I2C与	MPU6050的AUXI2C	直通。控制器可以直接访问HMC5883L
     Delay_ms(10);	
 }
+#endif
 #include "cycle_cal_oldx.h"
 s32 sum_temp[7]= {0,0,0,0,0,0,0};
 float sum_temp_att[2]={0};
@@ -368,6 +375,14 @@ void MPU6050_Data_Prepare(float T)
     MPU6050_Data_Offset(); //校准函数
 
     /*读取buffer原始数据*/
+		#if USE_VER_3
+		mpu6050_fc.Acc_I16.x=rawAccel[1].value;
+		mpu6050_fc.Acc_I16.y=rawAccel[0].value;
+		mpu6050_fc.Acc_I16.z=rawAccel[2].value;
+		mpu6050_fc.Gyro_I16.x=rawGyro[1].value;
+		mpu6050_fc.Gyro_I16.y=rawGyro[0].value;
+		mpu6050_fc.Gyro_I16.z=rawGyro[2].value;	
+		#else
     mpu6050_fc.Acc_I16.x = ((((int16_t)mpu6050_buffer[0]) << 8) | mpu6050_buffer[1]) ;
     mpu6050_fc.Acc_I16.y = ((((int16_t)mpu6050_buffer[2]) << 8) | mpu6050_buffer[3]) ;
     mpu6050_fc.Acc_I16.z = ((((int16_t)mpu6050_buffer[4]) << 8) | mpu6050_buffer[5]) ;
@@ -375,12 +390,15 @@ void MPU6050_Data_Prepare(float T)
     mpu6050_fc.Gyro_I16.x = ((((int16_t)mpu6050_buffer[ 8]) << 8) | mpu6050_buffer[ 9]) ;
     mpu6050_fc.Gyro_I16.y = ((((int16_t)mpu6050_buffer[10]) << 8) | mpu6050_buffer[11]) ;
     mpu6050_fc.Gyro_I16.z = ((((int16_t)mpu6050_buffer[12]) << 8) | mpu6050_buffer[13]) ;
-
+    #endif
     Gyro_tmp[0] = mpu6050_fc.Gyro_I16.x ;//
     Gyro_tmp[1] = mpu6050_fc.Gyro_I16.y ;//
     Gyro_tmp[2] = mpu6050_fc.Gyro_I16.z ;//
-
+    #if USE_VER_3
+    mpu6050_fc.Tempreature=rawMPU6050Temperature.value;
+		#else
     mpu6050_fc.Tempreature = ((((int16_t)mpu6050_buffer[6]) << 8) | mpu6050_buffer[7]); //tempreature
+		#endif
     mpu6050_fc.TEM_LPF += 2 *3.14f *T *(mpu6050_fc.Tempreature - mpu6050_fc.TEM_LPF);
     mpu6050_fc.Ftempreature = mpu6050_fc.TEM_LPF/340.0f + 36.5f;
 

@@ -35,6 +35,7 @@ extern u8 mcuID[3];
 
 //================系统===================
 #define USE_MINI_FC_FLOW_BOARD 0 //使用MINI——OLDX——FLOW板子
+#define USE_VER_3 1
 #define USE_MINI_FC_FLOW_BOARD_BUT_USB_SBUS 1
 #define USE_RECIVER_MINE 0  
 #define EN_ATT_CAL_FC 1  //姿态使用FC解算

@@ -12,6 +12,9 @@
 #include "spi.h"
 #include "nrf.h"
 #include "iic_hml.h"
+#include "mpu9250.h"
+#include "ms5611_spi.h"
+#include "beep.h"
 _SYS_INIT sys_init;
 u8 mcuID[3];
 u8 ble_imu_force;
@@ -27,21 +30,25 @@ u8 All_Init()
 	NVIC_PriorityGroupConfig(NVIC_GROUP);		//中断优先级组别设置
 	SysTick_Configuration(); 	//滴答时钟
 	cpuidGetId();
+	#if !USE_VER_3
 	I2c_Soft_Init();					//初始化模拟I2C
-	Delay_ms(66);						//启动延时
+	#endif
 	PWM_Out_Init(400);				//初始化电调输出功能	
-	PWM_AUX_Out_Init(50);
-	Delay_ms(3666);						//启动延时
-	#if EN_ATT_CAL_FC
-	#if USE_MINI_FC_FLOW_BOARD
-	MPU6050_Init(20);
-	#else
-	MPU6050_Init(20);   			//加速度计、陀螺仪初始化，配置20hz低通
-	#endif
-	#endif
-	LED_Init();								//LED功能初始
+	PWM_AUX_Out_Init(50);	
 	Delay_ms(100);						//延时
+	LED_Init();								//LED功能初始
+	Delay_ms(2000);						//启动延时
+	#if USE_VER_3
+	Beep_Init(0,84-1);//2k=1M/500
+	#endif
+	Delay_ms(1000);
+	SPI2_Init();
+	#if USE_VER_3
+	Mpu9250_Init();
+	ms5611DetectSpi();
+	#else
 	#if EN_ATT_CAL_FC
+	MPU6050_Init(20);
 	#if !USE_ZIN_BMP
 	HMC5883L_SetUp();
 	#else
@@ -50,6 +57,8 @@ u8 All_Init()
 	Delay_ms(100);						//延时
 	MS5611_Init_FC();
 	#endif
+	#endif
+	
 	
 	Cycle_Time_Init();
   Usart1_Init(115200L);			//蓝牙
@@ -59,7 +68,6 @@ u8 All_Init()
 	MYDMA_Config(DMA2_Stream7,DMA_Channel_4,(u32)&USART1->DR,(u32)SendBuff1,SEND_BUF_SIZE1+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
 	Usart2_Init(576000L);			//IMU_LINK
-	//SPI2_Init();
 	#if EN_DMA_UART2
 	MYDMA_Config(DMA1_Stream6,DMA_Channel_4,(u32)&USART2->DR,(u32)SendBuff2,SEND_BUF_SIZE2+2,1);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
 	#endif
@@ -123,8 +131,7 @@ u8 All_Init()
 	#endif
 	READ_PARM();//读取参数
 	Para_Init();//参数初始
-	#if USE_MINI_FC_FLOW_BOARD
-	SPI2_Init();		
+	#if USE_MINI_FC_FLOW_BOARD||USE_VER_3		
 	Nrf24l01_Init(MODEL_RX2,40);
 	Nrf24l01_Check();
 	#endif
@@ -161,6 +168,12 @@ u8 All_Init()
 	fan.flag[2]=1;
 	fan.flag[3]=1;
 	fan.per_degree=1;
-	
+	#if USE_VER_3
+	Delay_ms(1000);
+	if(module.acc_imu==2&&module.gyro_imu==2&&module.hml_imu==2&&1)
+		Play_Music_Direct(MEMS_RIGHT_BEEP);
+	else
+		Play_Music_Direct(MEMS_ERROR_BEEP);
+	#endif
  	return (1);
 }
